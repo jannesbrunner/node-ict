@@ -6,14 +6,11 @@
  */
 
 // Node Imports 
-const http = require('http');
+
 // 3rd Party Imports
 const express = require('express');
 // App Imports
 
+const app = express();
 
-const server = http.createServer( (req, res, next) => {
-    res.write("<h1> Hello World! </h1>");
-    res.end();
-});
-server.listen(3000);
+app.listen(3000);
