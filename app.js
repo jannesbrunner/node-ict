@@ -16,5 +16,7 @@ const app = express();
 
 app.listen(3000);
 // Set static content folder
+app.set('view engine', 'pug');
+app.set('views', 'views');
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(errorController.get404);
