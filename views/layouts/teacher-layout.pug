@@ -9,15 +9,21 @@ html(lang="en")
         link(rel="stylesheet", href="/css/teacher.css")
         block styles
     body
-        header.main-header
+        .app-container
+            header.main-header
+                .main-header__logo
+                    h1 Node ICT
+                    h2 Lehrer Bereich
                 nav.main-header__nav
                     ul.main-header__item-list
+                        li.main-header__item
+                            a(href="/teacher/") Start
                         li.main-header__item
                             a(href="/teacher/settings") Einstellungen
                         li.main-header__item
                             a(href="/teacher/sessions") Lehreinheiten
                         li.main-header__item 
                             a(href="/client/") Zu Teilnehmer wechseln
-        block content
+            block content
                 
              
