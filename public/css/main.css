@@ -1,0 +1,101 @@
+body {
+    margin: 2em;
+}
+
+a {
+    text-transform: uppercase;
+    text-decoration: none;
+    font-weight: 700;
+}
+
+h1 { font-family: "Open Sans"; font-size: 50px; font-style: normal; font-variant: normal; font-weight: 700; line-height: 1.1px; } h3 { font-family: "Open Sans"; font-size: 14px; font-style: normal; font-variant: normal; font-weight: 700; line-height: 15.4px; } p { font-family: "Open Sans"; font-size: 14px; font-style: normal; font-variant: normal; font-weight: 400; line-height: 20px; } blockquote { font-family: "Open Sans"; font-size: 21px; font-style: normal; font-variant: normal; font-weight: 400; line-height: 30px; } pre { font-family: "Open Sans"; font-size: 13px; font-style: normal; font-variant: normal; font-weight: 400; line-height: 18.5714px; }
+
+.main-container {
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.main-container__header {
+    margin: 2em;
+}
+
+.main-container__buttons {
+    margin-top: 1em;
+    justify-content: space-between;
+}
+
+.main-container__button {
+    position: relative;
+    letter-spacing: 0.15em;
+    margin: 0 auto;
+    padding: 1rem 2.5rem;
+    background: transparent;
+    outline: none;
+    font-size: 28px;
+    color: #111;
+    transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.15s;
+}
+
+.main-container__button::after, .main-container__button::before {
+    content: "";
+    position: absolute;
+    height: 40%;
+    width: 10%;
+    transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    z-index: -2;
+    border-radius: 50%;
+  }
+  .main-container__button::before {
+    background-color: #c92918;
+    top: -0.75rem;
+    left: 0.5rem;
+    animation: top 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.25s infinite alternate;
+  }
+  .main-container__button::after {
+    background-color: #e74c3c;
+    top: 3rem;
+    left: 13rem;
+    animation: bottom 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.5s infinite alternate;
+  }
+  .main-container__button:hover {
+    color: white;
+  }
+  .main-container__button:hover::before, .main-container__button:hover::after {
+    top: 0;
+    height: 100%;
+    width: 100%;
+    border-radius: 0;
+    animation: none;
+  }
+  .main-container__button:hover::after {
+    left: 0rem;
+  }
+  .main-container__button:hover::before {
+    top: 0.5rem;
+    left: 0.35rem;
+  }
+
+
+  @keyframes top {
+    from {
+      transform: translate(0rem, 0);
+    }
+    to {
+      transform: translate(0rem, 3.5rem);
+    }
+  }
+  @keyframes bottom {
+    from {
+      transform: translate(-11.5rem, 0);
+    }
+    to {
+      transform: translate(0rem, 0);
+    }
+  }
+ 
+
+.main-container__info {
+    margin-top: 2em;
+}

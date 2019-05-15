@@ -6,16 +6,18 @@ html(lang="en")
         meta(http-equiv="X-UA-Compatible", content="ie=edge")
         title #{docTitle}
         link(rel="stylesheet", href="/css/normalize.css")
-        link(rel="stylesheet", href="/css/main.css")
+        link(rel="stylesheet", href="/css/teacher.css")
         block styles
     body
         header.main-header
                 nav.main-header__nav
                     ul.main-header__item-list
                         li.main-header__item
-                            a(href="/admin") Dozent
+                            a(href="/teacher/settings") Einstellungen
+                        li.main-header__item
+                            a(href="/teacher/sessions") Lehreinheiten
                         li.main-header__item 
-                            a(href="/client/") Teilnehmer
+                            a(href="/client/") Zu Teilnehmer wechseln
         block content
                 
              
