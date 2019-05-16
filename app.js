@@ -40,6 +40,4 @@ database.sequelize
 
 database.User.sync();
 
-
-
 app.use(errorController.get404);
