@@ -15,6 +15,6 @@ exports.getSettings = (req, res, next) => {
 exports.getSessions = (req, res, next) => {
     res.render('teacher/sessions',
     {
-        docTitle: 'Teacher > Sessions| Node ICT'
+        docTitle: 'Teacher > Sessions | Node ICT'
     });
 };

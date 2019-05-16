@@ -13,8 +13,11 @@ const express = require('express');
 const errorController = require('./controllers/error');
 const mainRoutes = require('./routes/main');
 const teacherRoutes = require('./routes/teacher');
-
+const database = require('./util/database');
+// ------------------------------------------------ //
 const app = express();
+
+const User = require('./models/user');
 
 app.listen(3000);
 // Set static content folder
@@ -25,5 +28,20 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/teacher', teacherRoutes);
 app.use('/', mainRoutes);
 
+database
+  .authenticate()
+  .then(() => {
+    /*eslint no-console: "error"*/  
+    console.log('Database Connection has been established successfully.');
+  })
+  .catch(err => {
+    /*eslint no-console: "error"*/
+    console.error('Unable to connect to the database:', err);
+    process.exit(1);
+  });
+
+let testuser = new User({name: "Harri"});
+testuser.save()
+.then(result => console.log(result)).catch(err => console.log(err));
 
 app.use(errorController.get404);
