@@ -17,8 +17,6 @@ const database = require('./util/database');
 // ------------------------------------------------ //
 const app = express();
 
-const User = require('./models/user');
-
 app.listen(3000);
 // Set static content folder
 app.set('view engine', 'pug');
@@ -28,7 +26,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/teacher', teacherRoutes);
 app.use('/', mainRoutes);
 
-database
+database.sequelize
   .authenticate()
   .then(() => {
     /*eslint no-console: "error"*/  
@@ -40,8 +38,8 @@ database
     process.exit(1);
   });
 
-let testuser = new User({name: "Harri"});
-testuser.save()
-.then(result => console.log(result)).catch(err => console.log(err));
+database.User.sync();
+
+
 
 app.use(errorController.get404);

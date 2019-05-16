@@ -7,43 +7,38 @@
 
 // imports
 const Sequelize = require('sequelize');
-const database = require('./../util/database');
+const sequelize = require('./../util/database');
 
 // the model
 
 class User extends Sequelize.Model {
-    constructor(...args) {
-        super(...args);
-      }
     get name() {
         return this.getDataValue('name');
     }
     set name(val) {
         this.setDataValue('name', val);
     }
-}
-
-const attributes = {
-    id: {
-        type: Sequelize.INTEGER,
-        autoIncrement: true,
-        allowNull: false,
-        primaryKey: true
-    },
-    name: {
-        type: Sequelize.STRING,
+    static init(sequelize, DataTypes) {
+      return super.init(
+        {
+          id: {
+            type: DataTypes.INTEGER,
+            autoIncrement: true,
+            allowNull: false,
+            primaryKey: true
+            },
+           name: {  
+               type: DataTypes.STRING
+           } 
+        },
+        { sequelize }
+      );
+      
     }
-}
-
-const options = {};
-
-User.init(attributes, { ...options,database });
-
-database.User = User.init(attributes, { ...options,database });
+  }
 
 
-
-module.exports = database.User;
+module.exports = User;
 
 
 
