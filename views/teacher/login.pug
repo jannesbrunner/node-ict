@@ -1,0 +1,14 @@
+extends ../layouts/teacher-layout.pug
+
+block styles
+    link(rel="stylesheet", href="/css/teacher.css")
+block content
+    h1 Bitte authentifizieren!
+    form(method='POST' action='/teacher/login')
+        div.form-group
+            label(for='Name') Name
+            input.form-control(type='text' id='name' placeholder='Ihr Name' name='name')
+        div.form-group
+            label(for='password') Passwort
+            input.form-control(type='password' id='password' placeholder='Passwort' name='password')
+        button.btn.btn-primary(type='submit') Log in 

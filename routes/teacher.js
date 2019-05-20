@@ -14,6 +14,8 @@ const router = express.Router();
 const teacherController = require('../controllers/teacher');
 
 router.get('/', teacherController.getMain);
+router.post('/login', teacherController.postLogin)
+router.get('/login', teacherController.getLogin);
 router.get('/sessions', teacherController.getSessions);
 router.get('/settings', teacherController.getSettings);
 module.exports = router;

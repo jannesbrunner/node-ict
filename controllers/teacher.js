@@ -5,6 +5,17 @@ exports.getMain = (req, res, next) => {
     });
 };
 
+exports.getLogin = (req, res, next) => {
+    res.render('teacher/login',
+    {
+        docTitle: 'Login | Node ICT'
+    });
+};
+
+exports.postLogin = (req, res, next) => {
+    res.redirect('/teacher');
+}
+
 exports.getSettings = (req, res, next) => {
     res.render('teacher/settings',
     {
