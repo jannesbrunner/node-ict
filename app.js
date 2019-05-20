@@ -36,6 +36,19 @@ app.use('/teacher', teacherRoutes);
 app.use('/client', clientRoutes);
 app.use('/', mainRoutes);
 
+database.sequelize
+  .authenticate()
+  .then(() => {
+    /*eslint no-console: "error"*/  
+    console.log('Database Connection has been established successfully.');
+  })
+  .catch(err => {
+    /*eslint no-console: "error"*/
+    console.error('Unable to connect to the database:', err);
+    process.exit(1);
+  });
+
+database.User.sync();
 
 
 database.sequelize

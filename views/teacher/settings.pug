@@ -4,3 +4,7 @@ block styles
     link(rel="stylesheet", href="/css/teacher.css")
 block content
     h1 Hello Settings
+    ul
+    each user in users
+        b= user.id + user.name    
+
