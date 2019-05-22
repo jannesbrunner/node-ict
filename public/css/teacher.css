@@ -16,7 +16,7 @@
 
 .main-header__logo {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
 }
 
 .main-header__nav {

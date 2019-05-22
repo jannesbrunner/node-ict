@@ -1,33 +1,30 @@
 <!DOCTYPE html>
 html(lang="en")
-    head
-        meta(charset="UTF-8")
-        meta(name="viewport", content="width=device-width, initial-scale=1.0")
-        meta(http-equiv="X-UA-Compatible", content="ie=edge")
-        title #{docTitle}
-        link(rel="stylesheet", href="/css/normalize.css")
-        link(rel="stylesheet", href="/css/teacher.css")
-        block styles
-    body
-        .app-container
-            header.main-header
-                .main-header__logo
-                    h1 Node ICT
-                    h2 Lehrer Bereich
-                nav.main-header__nav
-                    ul.main-header__item-list
-                        li.main-header__item
-                            a(href="/teacher/") Start
-                        li.main-header__item
-                            a(href="/teacher/settings") Einstellungen
-                        li.main-header__item
-                            a(href="/teacher/sessions") Lehreinheiten
-                        li.main-header__item 
-                            a(href="/client/") Zu Teilnehmer wechseln
-                        li.main-header__item 
-                            form(method="POST" action="/teacher/logout")
-                                button(type="SUBMIT") Log Out
+  head
+    meta(charset="UTF-8")
+    mmeta(name="viewport", conten="width=device-width, initial-scale=1, shrink-to-fit=no")
+    meta(http-equiv="X-UA-Compatible", content="ie=edge")
+    title #{docTitle}
+    link(rel="stylesheet", href="/css/normalize.css")
+    link(rel="stylesheet", href="/css/teacher.css")
+    link(rel="stylesheet", href="/css/bootstrap.min.css")
+    script(src="/js/jquery.min.js")
+    script(src="/js/bootstrap.min.js")
+    block styles
+  body
+    .container
+      header.row.bg-warning
+        div.col-sm           
+          h1 Node ICT
+          bold Lehrer Bereich
+        nav.navbar.navbar-dark.justify-content-center
+          a.nav-link(href="/teacher/") Start
+          a.nav-link(href="/teacher/settings") Einstellungen
+          a.nav-link(href="/teacher/sessions") Lehreinheiten
+          a.nav-link(href="/client/") Zu Teilnehmer wechseln
+          form(method="POST" action="/teacher/logout")
+            button(type="SUBMIT") Log Out
+      div.row
+        div.col.bg-light
+          block content
 
-            block content
-                
-             
