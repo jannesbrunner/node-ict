@@ -22,7 +22,8 @@ exports.checkSettings = (req, res, next) => {
         .then( 
             data => {
                 if (data === null) {
-                    res.render('error', { error: "Datenbank Error"})
+                    // res.render('error', { error: "Datenbank Error"})
+                    res.redirect('/teacher/new');
                 } else {
                     next();
                 }   
@@ -63,20 +64,25 @@ exports.postLogout = (req, res, next) => {
 }
 
 exports.getSettings = (req, res, next) => {
-    let users = [];
-
-    db.User.findAll()
-        .then(result => {
-            const foundUsers = [result[0].dataValues];
-            console.log(foundUsers, 'RESULST');
-            res.render('teacher/settings',
+    res.render('teacher/settings',
                 {
-                    'docTitle': 'Teacher > Settings | Node ICT', 'users': foundUsers,
+                    'docTitle': 'Teacher > Settings | Node ICT', 'users': [],
                 });
-        })
-        .catch(err => {
-            res.status(500).send(err);
-        });
+   
+    // let users = [];
+
+    // db.User.findAll()
+    //     .then(result => {
+    //         const foundUsers = [result[0].dataValues];
+    //         console.log(foundUsers, 'RESULST');
+    //         res.render('teacher/settings',
+    //             {
+    //                 'docTitle': 'Teacher > Settings | Node ICT', 'users': foundUsers,
+    //             });
+    //     })
+    //     .catch(err => {
+    //         res.send(err);
+    //     });
 
 
 };
