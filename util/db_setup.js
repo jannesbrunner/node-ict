@@ -1,10 +1,10 @@
 const db = require('./database');
 
-exports.connect = new Promise( (resolve, reject) => {
-    db.sequelize
+exports.connect = new Promise((resolve, reject) => {
+  db.sequelize
     .authenticate()
     .then(() => {
-      /*eslint no-console: "error"*/  
+      /*eslint no-console: "error"*/
       console.log('Database Connection has been established successfully.');
       resolve(true)
     })
@@ -15,20 +15,24 @@ exports.connect = new Promise( (resolve, reject) => {
     });
 })
 
+exports.sync = new Promise((resolve, reject) => {
+  db.User.sync().then((result) => {
+    resolve(result)
 
+  }).catch((err) => {
+    reject(err);
+  });
 
+  db.Settings.sync().then((result) => {
+    resolve(result)
 
+  }).catch((err) => {
+    reject(err);
+  });
+})
 
-
-exports.sync = new Promise( (resolve, reject) => {
-    db.User.sync().then((result) => {
-        console.log(result);
-        resolve(result)
-    
-    }).catch((err) => {
-        console.err(err);
-        reject(err);
-    });
-}) 
-    
-
+exports.forceSync = new Promise((resolve, reject) => {
+  db.sequelize.sync({
+    force: true
+  }).then( result => resolve(result)).catch( err => reject(err))
+})
