@@ -51,19 +51,19 @@ app.use('/', mainRoutes);
 
 // dbSetup.forceSync.then( res => console.log(res)).catch( err => console.log(err));
 
-dbSetup.connect.then((res) => {
-  // Sync Database tables  
-  sessionStore.sync();
-  dbSetup.sync
-  .then(result => { console.log(result, "Sync Database") })
-  .catch(err => console.log(err, "Database Sync Error"));
-}).catch((err) => {
-  console.log(err, "Database Sync Error");
-});
-
-
 app.use(errorController.get404);
 
+async function init() {
+  try {
+    await sessionStore.sync();
+    await dbSetup.connect();
+    await dbSetup.sync();
+
+  } catch (error) {
+    console.log(err, "App init error");
+    server.close();
+  }
+}
 
 
 process.on('uncaughtException', (err) => {
@@ -72,3 +72,5 @@ process.on('uncaughtException', (err) => {
   // opn('http://localhost:3000/error');
   server.close();
 })
+
+init();
