@@ -19,9 +19,10 @@ const sequelize = new Sequelize({
 })
 
 const User = require("../models/user");
-
+const Settings = require("../models/settings");
 const models = {
         User: User.init(sequelize, Sequelize),
+        Settings: Settings.init(sequelize, Sequelize)
 };
 
 Object.values(models)
