@@ -11,12 +11,14 @@ const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser')
 const opn = require('opn');
+const session = require('express-session');
 // App Imports //
 const errorController = require('./controllers/error');
 const mainRoutes = require('./routes/main');
 const teacherRoutes = require('./routes/teacher');
 const clientRoutes = require('./routes/client');
 const database = require('./util/database');
+const dbSetup = require('./util/db_setup');
 // ------------------------------------------------ //
 const app = express();
 
@@ -25,47 +27,39 @@ const server = app.listen(3000);
 app.set('view engine', 'pug');
 app.set('views', 'views');
 app.use(express.static(path.join(__dirname, 'public')));
-
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }))
-
 // parse application/json
 app.use(bodyParser.json())
+// configure sessions
+const SequelizeStore = require('connect-session-sequelize')(session.Store);
+const sessionStore = new SequelizeStore({
+  db: database.sequelize
+})
+
+app.use(session({
+  secret: 'my secret',
+  resave: false,
+  store: sessionStore,
+  saveUninitialized: false,
+}))
+
 app.get('/error', errorController.getError)
 app.use('/teacher', teacherRoutes);
 app.use('/client', clientRoutes);
 app.use('/', mainRoutes);
 
-database.sequelize
-  .authenticate()
-  .then(() => {
-    /*eslint no-console: "error"*/  
-    console.log('Database Connection has been established successfully.');
-  })
-  .catch(err => {
-    /*eslint no-console: "error"*/
-    console.error('Unable to connect to the database:', err);
-    process.exit(1);
-  });
+// dbSetup.forceSync.then( res => console.log(res)).catch( err => console.log(err));
 
-database.User.sync();
-
-
-database.sequelize
-  .authenticate()
-  .then(() => {
-    /*eslint no-console: "error"*/  
-    console.log('Database Connection has been established successfully.');
-    // opn('http:localhost:3000');
-
-  })
-  .catch(err => {
-    /*eslint no-console: "error"*/
-    console.error('Unable to connect to the database:', err);
-    process.exit(1);
-  });
-
-database.User.sync();
+dbSetup.connect.then((res) => {
+  // Sync Database tables  
+  sessionStore.sync();
+  dbSetup.sync
+  .then(result => { console.log(result, "Sync Database") })
+  .catch(err => console.log(err, "Database Sync Error"));
+}).catch((err) => {
+  console.log(err, "Database Sync Error");
+});
 
 
 app.use(errorController.get404);
@@ -74,7 +68,7 @@ app.use(errorController.get404);
 
 process.on('uncaughtException', (err) => {
   console.log(err);
-  errorController.setError(err);
-  opn('http://localhost:3000/error');
-  server.close();  
+  //errorController.setError(err);
+  // opn('http://localhost:3000/error');
+  server.close();
 })
