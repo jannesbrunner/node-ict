@@ -1,38 +1,27 @@
 const db = require('./database');
 
-exports.connect = new Promise((resolve, reject) => {
-  db.sequelize
-    .authenticate()
-    .then(() => {
-      /*eslint no-console: "error"*/
-      console.log('Database Connection has been established successfully.');
-      resolve(true)
-    })
-    .catch(err => {
-      /*eslint no-console: "error"*/
-      console.error('Unable to connect to the database:', err);
-      reject(false)
-    });
-})
+exports.connect = async () => {
+  try {
+    db.sequelize.authenticate();
+    console.log('Database Connection has been established successfully.');
+    return true;
+  } catch (err) {
+    console.error('Unable to connect to the database:', err);
+    return err;
+  }
+}
 
-exports.sync = new Promise((resolve, reject) => {
-  db.User.sync().then((result) => {
-    resolve(result)
+async function syncDB( options = {} ) {
+  try {
+    console.log(`Sync Databse with Option(s): ${JSON.stringify(options)}`)
+    db.sequelize.sync(options);
+    // await db.User.sync();  
+    // await db.Settings.sync();
+  } catch (error) {
+    return error;
+  }
+}
+exports.sync = () => syncDB();
 
-  }).catch((err) => {
-    reject(err);
-  });
+exports.forceSync = () => syncDB({ force: true });
 
-  db.Settings.sync().then((result) => {
-    resolve(result)
-
-  }).catch((err) => {
-    reject(err);
-  });
-})
-
-exports.forceSync = new Promise((resolve, reject) => {
-  db.sequelize.sync({
-    force: true
-  }).then( result => resolve(result)).catch( err => reject(err))
-})
