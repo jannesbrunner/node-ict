@@ -15,37 +15,44 @@ const db = require('../util/database');
 //     })
 // })
 
-     
 
-exports.checkSettings = (req, res, next) => {
-    db.Settings.findOne({where: {id: 1}})
-        .then( 
-            data => {
-                if (data === null) {
-                    // res.render('error', { error: "Datenbank Error"})
-                    res.redirect('/teacher/new');
-                } else {
-                    next();
-                }   
-            }
-            )
-        .catch( error => {console.err(error)
-            res.render('error', { error: error})
-        });
-   
+async function getSettings() {
+    try {
+        const settings = await db.Settings.findOne({ where: { id: 1 } });
+        return settings;
+    } catch (error) {
+        return error;
+    }
+}
+
+
+exports.checkSettings = async (req, res, next) => {
+
+    try {
+        const settings = await getSettings();
+        if (settings === null) {
+            // res.render('error', { error: "Datenbank Error"})
+            res.redirect('/teacher/new');
+        } else {
+            next();
+        }
+    } catch (error) {
+        res.render('error', { error: error })
+    }
+
 }
 
 
 
 exports.getMain = (req, res, next) => {
-        
-        
 
-        res.render('teacher/index',
-            {
-                docTitle: 'Teacher | Node ICT'
-            });
-    
+
+
+    res.render('teacher/index',
+        {
+            docTitle: 'Teacher | Node ICT'
+        });
+
 };
 
 exports.getLogin = (req, res, next) => {
@@ -65,10 +72,10 @@ exports.postLogout = (req, res, next) => {
 
 exports.getSettings = (req, res, next) => {
     res.render('teacher/settings',
-                {
-                    'docTitle': 'Teacher > Settings | Node ICT', 'users': [],
-                });
-   
+        {
+            'docTitle': 'Teacher > Settings | Node ICT', 'users': [],
+        });
+
     // let users = [];
 
     // db.User.findAll()
@@ -94,31 +101,36 @@ exports.getSessions = (req, res, next) => {
         });
 };
 
-exports.getNew = (req, res, next) => {
-    // console.log(checkSettings());
-    // if( !checkSettings() ) {
-        res.render('teacher/new',
-        {
-            docTitle: 'Setup | Node ICT'
-        });
-    // } 
-    res.redirect('/teacher');
+exports.getNew = async (req, res, next) => {
+    try {
+        const settings = await getSettings();
+        if (settings !== null) {
+            res.status(403).render('error', { error: 'Forbidden' });
+        } else {
+            res.render('teacher/new',
+                {
+                    docTitle: 'Setup | Node ICT'
+                });
+        }
+    } catch (error) {
+        res.render('error', { error: error })
+    }
 }
 
 exports.postNew = (req, res, next) => {
     console.log(req.body);
-    
+
     db.Settings.create({
         isSetup: false,
         superAdmin: req.body.name
     }).
-    then( result => {
-        console.log(result);
-        res.redirect('/teacher/login');
-    })
-    .catch(err => {
-        console.err(err);
-        res.render('/error', {error: err});
-    });
-    
+        then(result => {
+            console.log(result);
+            res.redirect('/teacher/login');
+        })
+        .catch(err => {
+            console.err(err);
+            res.render('/error', { error: err });
+        });
+
 }
