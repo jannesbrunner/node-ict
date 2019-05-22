@@ -1,5 +1,5 @@
 /**
- * User Model
+ * Applikation Settings Model
  * @author Jannes Brunner
  * @version 1.0
  * @copyright 2019
@@ -11,12 +11,18 @@ const sequelize = require('./../util/database');
 
 // the model
 
-class User extends Sequelize.Model {
-    get name() {
-        return this.getDataValue('name');
+class Settings extends Sequelize.Model {
+    get isSetup() {
+        return this.getDataValue('isSetup');
     }
-    set name(val) {
+    set isSetup(val) {
         this.setDataValue('name', val);
+    }
+    get superAdmin() {
+        return this.getDataValue('superAdmin');
+    }
+    set superAdmin(val) {
+        this.setDataValue('superAdmin', val);
     }
     static init(sequelize, DataTypes) {
       return super.init(
@@ -27,10 +33,10 @@ class User extends Sequelize.Model {
             allowNull: false,
             primaryKey: true
             },
-           name: {  
-               type: DataTypes.STRING
+           isSetup: {  
+               type: DataTypes.BOOLEAN
            },
-           email: {
+           superAdmin: {
              type: DataTypes.STRING
            } 
         },
@@ -41,7 +47,7 @@ class User extends Sequelize.Model {
   }
 
 
-module.exports = User;
+module.exports = Settings;
 
 
 
