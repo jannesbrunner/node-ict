@@ -24,6 +24,10 @@ html(lang="en")
                             a(href="/teacher/sessions") Lehreinheiten
                         li.main-header__item 
                             a(href="/client/") Zu Teilnehmer wechseln
+                        li.main-header__item 
+                            form(method="POST" action="/teacher/logout")
+                                button(type="SUBMIT") Log Out
+
             block content
                 
              

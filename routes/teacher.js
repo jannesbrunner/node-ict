@@ -12,9 +12,12 @@ const express = require('express');
 const router = express.Router();
 // App Imports
 const teacherController = require('../controllers/teacher');
-
+router.get('/', teacherController.checkSettings);
 router.get('/', teacherController.getMain);
-router.post('/login', teacherController.postLogin)
+router.get('/new', teacherController.getNew);
+router.post('/new', teacherController.postNew);
+router.post('/login', teacherController.postLogin);
+router.post('/logout', teacherController.postLogout);
 router.get('/login', teacherController.getLogin);
 router.get('/sessions', teacherController.getSessions);
 router.get('/settings', teacherController.getSettings);
