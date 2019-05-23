@@ -15,6 +15,7 @@ const teacherController = require('../controllers/teacher');
 router.get('/', teacherController.checkSettings);
 router.get('/', teacherController.getMain);
 router.get('/new', teacherController.getNew);
+router.get('/signup', teacherController.getSignup);
 router.post('/new', teacherController.postNew);
 router.post('/login', teacherController.postLogin);
 router.post('/logout', teacherController.postLogout);

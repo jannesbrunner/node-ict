@@ -1,6 +1,7 @@
 const db = require('../util/database');
 const dbSetup = require('../util/db_setup');
 
+
 async function getSettings() {
     try {
         const settings = await db.Settings.findOne({ where: { id: 1 } });
@@ -35,7 +36,9 @@ exports.getMain = (req, res, next) => {
 
     res.render('teacher/index',
         {
-            docTitle: 'Teacher | Node ICT'
+            docTitle: 'Teacher | Node ICT',
+            isLoggedIn: req.session.isLoggedIn
+            
         });
 
 };
@@ -43,16 +46,24 @@ exports.getMain = (req, res, next) => {
 exports.getLogin = (req, res, next) => {
     res.render('teacher/login',
         {
-            docTitle: 'Login | Node ICT'
+            docTitle: 'Login | Node ICT',
+            isLoggedIn: req.session.isLoggedIn
         });
 };
 
 exports.postLogin = (req, res, next) => {
+    req.session.isLoggedIn = true;
     res.redirect('/teacher');
 }
 
-exports.postLogout = (req, res, next) => {
-    res.redirect('/teacher');
+exports.postLogout = async (req, res, next) => {
+    try {
+        await req.session.destroy();
+        res.redirect('/teacher');
+    } catch (error) {
+        res.render('error', { error: error })
+    }
+   
 }
 
 exports.getSettings = async (req, res, next) => {
@@ -60,7 +71,10 @@ exports.getSettings = async (req, res, next) => {
         let settings = await getSettings();
         res.render('teacher/settings',
             {
-                'docTitle': 'Teacher > Settings | Node ICT', 'settings': settings.dataValues,
+                'docTitle': 'Teacher > Settings | Node ICT',
+                'settings': settings.dataValues,
+                'isLoggedIn': req.session.isLoggedIn
+                
             });
     } catch (error) {
         res.render('error', { error: error })
@@ -72,7 +86,8 @@ exports.getSessions = async (req, res, next) => {
 
     res.render('teacher/sessions',
         {
-            docTitle: 'Teacher > Sessions | Node ICT'
+            docTitle: 'Teacher > Sessions | Node ICT',
+            isLoggedIn: req.session.isLoggedIn
         });
 };
 
@@ -84,7 +99,7 @@ exports.getNew = async (req, res, next) => {
         } else {
             res.render('teacher/new',
                 {
-                    docTitle: 'Setup | Node ICT'
+                    docTitle: 'Setup | Node ICT',
                 });
         }
     } catch (error) {
@@ -119,3 +134,10 @@ exports.postNew = (req, res, next) => {
 
 }
 
+exports.getSignup = (req, res, next) => {
+    res.render('teacher/signup',
+        {
+            docTitle: 'Neuer Lehrender | Node ICT',
+            isLoggedIn: req.session.isLoggedIn
+        });
+}

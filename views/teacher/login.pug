@@ -9,8 +9,10 @@ block content
       form(method='POST' action='/teacher/login')
         div.form-group
           label(for='Name') Name
-          input.form-control(type='text' id='name' placeholder='Ihr Name' name='name')
+          input.form-control(type='text' id='name' placeholder='Ihr Name' name='name' required)
         div.form-group
           label(for='password') Passwort
-          input.form-control(type='password' id='password' placeholder='Passwort' name='password')
+          input.form-control(type='password' id='password' placeholder='Passwort' name='password' required)
         button.btn.btn-primary(type='submit') Log in 
+  p Neuer Dozierender? 
+    a(href="/teacher/signup") Hier registrieren!
