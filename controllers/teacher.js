@@ -110,7 +110,7 @@ exports.getNew = async (req, res, next) => {
 exports.postReset = async (req, res, next) => {
     try {
         await dbSetup.forceSync()
-        res.redirect('/');
+        res.render('reset');
     } catch (error) {
         res.render('error', { error: error })
     }
