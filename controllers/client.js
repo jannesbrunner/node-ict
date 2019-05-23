@@ -15,7 +15,7 @@ exports.postNew = (req, res, next) => {
 };
 
 function userCookie(cookie) {
-
+    
     if( cookie == undefined || !cookie.includes('ict_username')  ) {
         return false;
     } 
@@ -34,6 +34,7 @@ function userCookie(cookie) {
 }
 
 exports.getMain = (req, res, next) => {
+    console.log(req.cookies);
     let username = userCookie(req.get('Cookie'));
 
     if (username != false) {

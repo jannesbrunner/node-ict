@@ -10,6 +10,7 @@ const path = require('path');
 // 3rd Party Imports
 const express = require('express');
 const bodyParser = require('body-parser')
+const cookieParser = require('cookie-parser');
 const opn = require('opn');
 const session = require('express-session');
 // App Imports //
@@ -34,6 +35,8 @@ app.use('/css', express.static(__dirname + '/node_modules/bootstrap/dist/css'));
 app.use(bodyParser.urlencoded({ extended: false }))
 // parse application/json
 app.use(bodyParser.json())
+// parse cookies
+app.use(cookieParser())
 // configure sessions
 const SequelizeStore = require('connect-session-sequelize')(session.Store);
 const sessionStore = new SequelizeStore({
