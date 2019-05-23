@@ -1,5 +1,6 @@
 const db = require('../util/database');
 
+
 exports.getNew = (req, res, next) => {
     
     res.render('client/new',
@@ -14,28 +15,34 @@ exports.postNew = (req, res, next) => {
     res.redirect('/client')
 };
 
-function userCookie(cookie) {
+function userCookie(cookies) {
     
-    if( cookie == undefined || !cookie.includes('ict_username')  ) {
-        return false;
-    } 
-    if ( cookie.includes(';') ) {
-        const cookieData = cookie.split(';');
-        let cookieValue = "";
-        for (let data in cookieData) {
-            if (data.includes('ict_username=')) {
-                cookieValue = data;
-                return cookieValue.split('=')[1].trim();
-            }
-        }
-    } else {
-        return cookie.split('=')[1].trim();
-    }
+    console.log(cookies);
+
+    if (cookies.ict_username) {
+        return cookies.ict_username;
+    } else return false;
+    
+    // if( cookie == undefined || !cookie.includes('ict_username')  ) {
+    //     return false;
+    // } 
+    // if ( cookie.includes(';') ) {
+    //     const cookieData = cookie.split(';');
+    //     let cookieValue = "";
+    //     for (let data in cookieData) {
+    //         if (data.includes('ict_username=')) {
+    //             cookieValue = data;
+    //             return cookieValue.split('=')[1].trim();
+    //         }
+    //     }
+    // } else {
+    //     return cookie.split('=')[1].trim();
+    // }
 }
 
 exports.getMain = (req, res, next) => {
-    console.log(req.cookies);
-    let username = userCookie(req.get('Cookie'));
+    
+    let username = userCookie(req.cookies);
 
     if (username != false) {
         res.render('client/index',
