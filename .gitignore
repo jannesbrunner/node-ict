@@ -88,6 +88,9 @@ typings/
 # DynamoDB Local files
 .dynamodb/
 
+# SQLITE
+data/db.sqlite
+
 ### Vuejs ###
 # Recommended template: Node.gitignore
 
