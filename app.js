@@ -48,6 +48,7 @@ app.use(session({
   resave: false,
   store: sessionStore,
   saveUninitialized: false,
+  cookie: {maxAge:600000},
 }))
 
 app.get('/error', errorController.getError)
