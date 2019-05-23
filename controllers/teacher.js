@@ -1,20 +1,5 @@
 const db = require('../util/database');
-
-// const checkSettings = new Promise( (resolve, reject) => {
-//     db.Settings.findOne({ where: { id: 1 } })
-//     .then( (data) => {
-//         if (data != null) {
-//             resolve(data);
-//         }
-//         console.log(data);
-//         resolve(":(");
-//     })
-//     .catch(err => {
-//         console.err(err);
-//         reject(false);
-//     })
-// })
-
+const dbSetup = require('../util/db_setup');
 
 async function getSettings() {
     try {
@@ -70,31 +55,21 @@ exports.postLogout = (req, res, next) => {
     res.redirect('/teacher');
 }
 
-exports.getSettings = (req, res, next) => {
-    res.render('teacher/settings',
-        {
-            'docTitle': 'Teacher > Settings | Node ICT', 'users': [],
-        });
-
-    // let users = [];
-
-    // db.User.findAll()
-    //     .then(result => {
-    //         const foundUsers = [result[0].dataValues];
-    //         console.log(foundUsers, 'RESULST');
-    //         res.render('teacher/settings',
-    //             {
-    //                 'docTitle': 'Teacher > Settings | Node ICT', 'users': foundUsers,
-    //             });
-    //     })
-    //     .catch(err => {
-    //         res.send(err);
-    //     });
+exports.getSettings = async (req, res, next) => {
+    try {
+        let settings = await getSettings();
+        res.render('teacher/settings',
+            {
+                'docTitle': 'Teacher > Settings | Node ICT', 'settings': settings.dataValues,
+            });
+    } catch (error) {
+        res.render('error', { error: error })
+    }
+}
 
 
-};
+exports.getSessions = async (req, res, next) => {
 
-exports.getSessions = (req, res, next) => {
     res.render('teacher/sessions',
         {
             docTitle: 'Teacher > Sessions | Node ICT'
@@ -117,6 +92,15 @@ exports.getNew = async (req, res, next) => {
     }
 }
 
+exports.postReset = async (req, res, next) => {
+    try {
+        await dbSetup.forceSync()
+        res.redirect('/');
+    } catch (error) {
+        res.render('error', { error: error })
+    }
+}
+
 exports.postNew = (req, res, next) => {
     console.log(req.body);
 
@@ -134,3 +118,4 @@ exports.postNew = (req, res, next) => {
         });
 
 }
+

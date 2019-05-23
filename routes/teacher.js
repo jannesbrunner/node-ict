@@ -21,5 +21,6 @@ router.post('/logout', teacherController.postLogout);
 router.get('/login', teacherController.getLogin);
 router.get('/sessions', teacherController.getSessions);
 router.get('/settings', teacherController.getSettings);
+router.post('/reset', teacherController.postReset);
 module.exports = router;
 

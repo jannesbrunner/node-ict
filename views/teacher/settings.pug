@@ -1,10 +1,22 @@
 extends ../layouts/teacher-layout.pug
 
 block styles
-    link(rel="stylesheet", href="/css/teacher.css")
+  link(rel="stylesheet", href="/css/teacher.css")
 block content
-    h1 Hello Settings
-    ul
-    each user in users
-        b= user.id + user.name    
+  h2 App-Einstellungen
+  ul
+    unless settings.isSetup
+      li 
+        b Setup Status: 
+        span Abgeschlossen
+    else 
+      li 
+        b Setup Status: 
+        span Nicht abgeschlossen
+    li 
+      b Super Administrator: 
+      span #{settings.superAdmin}
+  form(method='POST' action='/teacher/reset')
+    button.btn.btn-danger(type='submit') App Reset
+
 
