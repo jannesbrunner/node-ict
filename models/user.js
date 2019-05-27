@@ -15,6 +15,10 @@ class User extends Sequelize.Model {
     get name() {
         return this.getDataValue('name');
     }
+
+    get password() {
+        return this.getDataValue('password');
+    }
     set name(val) {
         this.setDataValue('name', val);
     }
@@ -28,10 +32,21 @@ class User extends Sequelize.Model {
             primaryKey: true
             },
            name: {  
-               type: DataTypes.STRING
+               type: DataTypes.STRING,
+               allowNull: false
            },
            email: {
-             type: DataTypes.STRING
+             type: DataTypes.STRING,
+             allowNull: false
+           }, 
+           password: {
+            type: DataTypes.STRING,
+            allowNull: false
+           },
+           isSuperAdmin: { 
+             type: DataTypes.BOOLEAN,
+             allowNull: false,
+
            } 
         },
         { sequelize }

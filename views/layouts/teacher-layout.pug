@@ -26,7 +26,8 @@ html(lang="en")
             form(method="POST" action="/teacher/logout")
               button(type="SUBMIT") Log Out
           unless isLoggedIn
-            a(href="/teacher/login")
+            a.nav-link(href="/teacher/signup") Registrieren
+            a.nav-link(href="/teacher/login")
               button Log In
       div.row
         div.col.bg-light

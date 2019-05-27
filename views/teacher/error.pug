@@ -1,0 +1,9 @@
+extends ../layouts/teacher-layout.pug
+
+block styles
+  link(rel="stylesheet", href="/css/teacher.css")
+block content
+  h1.text-danger Error!
+  p.text-muted #{error}
+  
+  a(href=`/${backLink}`) Klicken Sie hier um es noch einmal zu probieren.

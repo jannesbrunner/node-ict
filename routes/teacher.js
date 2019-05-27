@@ -12,10 +12,13 @@ const express = require('express');
 const router = express.Router();
 // App Imports
 const teacherController = require('../controllers/teacher');
-router.get('/', teacherController.checkSettings);
-router.get('/', teacherController.getMain);
+const isAuth = require('../middleware/is-auth');
+const hasSettings = require('../middleware/has-settings');
+
+router.get('/', hasSettings, isAuth, teacherController.getMain);
 router.get('/new', teacherController.getNew);
 router.get('/signup', teacherController.getSignup);
+router.post('/signup', teacherController.postSignup);
 router.post('/new', teacherController.postNew);
 router.post('/login', teacherController.postLogin);
 router.post('/logout', teacherController.postLogout);
