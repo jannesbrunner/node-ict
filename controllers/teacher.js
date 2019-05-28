@@ -66,7 +66,7 @@ exports.postLogin = async (req, res, next) => {
                     backLink: "teacher/login",
                 });
             }
-            const pwCheck = await user.checkPassword(password);
+            const pwCheck = await User.checkPassword(password, user.password);
             if (pwCheck) {
                 req.session.isLoggedIn = true;
                 req.session.user = user;
@@ -142,8 +142,15 @@ exports.postNew = async (req, res, next) => {
             isSetup: false,
             superAdmin: email
         });
-        const user = new User(name, email, password, true, true)
-        await user.save();
+        let user = {
+            name: name,
+            email: email,
+            password: password,
+            isSuperAdmin: true,
+            canLogIn: true,
+        }
+        
+        await User.saveUser(user);
         return res.redirect('/teacher/login');
     } catch (error) {
        return res.render('error', { error: error })
@@ -221,8 +228,7 @@ exports.postSignup = async (req, res, next) => {
                 backLink: "teacher/signup",
             })
         } else {
-            
-            const newUser = new User(name, email, password)
+            let newUser = {name: name, email: email, password: password}
             await newUser.save();
             res.redirect('/teacher/login');
         }
