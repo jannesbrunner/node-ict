@@ -7,6 +7,8 @@
 
 // Imports
 const db = require('../util/database');
+const User = require("../models/user");
+const Setting = require("../models/settings");
 const dbSetup = require('../util/db_setup');
 const bcrypt = require('bcryptjs')
 
@@ -19,6 +21,7 @@ async function getSettings() {
         return error;
     }
 }
+
 
 
 // GET => /teacher
@@ -48,7 +51,7 @@ exports.postLogin = async (req, res, next) => {
     const email = req.body.mail;
     const password = req.body.password;
     try {
-        const user = await db.User.findOne({ where: { email: email } });
+        const user = await User.getUser({ email: email })
         if (!user) {
             return res.render('teacher/error', {
                 'docTitle': "Error! | Node ICT",
@@ -63,7 +66,7 @@ exports.postLogin = async (req, res, next) => {
                     backLink: "teacher/login",
                 });
             }
-            const pwCheck = await bcrypt.compare(password, user.password);
+            const pwCheck = await user.checkPassword(password);
             if (pwCheck) {
                 req.session.isLoggedIn = true;
                 req.session.user = user;
@@ -79,7 +82,7 @@ exports.postLogin = async (req, res, next) => {
             }
         }
     } catch (error) {
-        res.render('error', { error: error })
+        res.render('error', { error: error})
     }
 }
 
@@ -97,7 +100,7 @@ exports.postLogout = async (req, res, next) => {
 exports.getSettings = async (req, res, next) => {
     try {
         let settings = await getSettings();
-        let users = await db.User.findAll();
+        let users = await User.getUsers();
         return res.render('teacher/settings',
             {
                 'docTitle': 'Teacher > Settings | Node ICT',
@@ -139,17 +142,11 @@ exports.postNew = async (req, res, next) => {
             isSetup: false,
             superAdmin: email
         });
-        const cryptedPw = await bcrypt.hash(password, 12);
-        await db.User.create({
-            name: name,
-            email: email,
-            password: cryptedPw,
-            isSuperAdmin: true,
-            canLogIn: true,
-        });
+        const user = new User(name, email, password, true, true)
+        await user.save();
         return res.redirect('/teacher/login');
     } catch (error) {
-       return res.render('/error', { error: error })
+       return res.render('error', { error: error })
     }
 }
 
@@ -169,7 +166,7 @@ exports.postReset = async (req, res, next) => {
 exports.getUserEdit = async (req, res, next) => {
     const userId = req.params.userId;
     try {
-        const foundUser = await db.User.findOne({ where: { id: userId } });
+        const foundUser = await User.getUser({ id: userId })
         const settings = await getSettings();
         if(foundUser) {
             return res.render('teacher/user-edit', {
@@ -216,7 +213,7 @@ exports.postSignup = async (req, res, next) => {
         })
     }
     try {
-        const foundUser = await db.User.findOne({ where: { email: email } })
+        const foundUser = await User.getUser({email: email})
         if (foundUser) {
             res.render('teacher/error', {
                 'docTitle': "Error! | Node ICT",
@@ -224,15 +221,9 @@ exports.postSignup = async (req, res, next) => {
                 backLink: "teacher/signup",
             })
         } else {
-            const cryptedPw = await bcrypt.hash(password, 12);
             
-            await db.User.create({
-                name: name,
-                email: email,
-                password: cryptedPw,
-                isSuperAdmin: false,
-                canLogIn: false,
-            });
+            const newUser = new User(name, email, password)
+            await newUser.save();
             res.redirect('/teacher/login');
         }
     } catch (error) {

@@ -10,10 +10,8 @@ const path = require('../util/path')
 // 3rd Party Imports
 const Sequelize = require('sequelize');
 
-// Models
-const UserModel = require("../models/user");
-const SettingsModel = require("../models/settings");
-const eduSessionModel = require("../models/eduSession");
+// Tables
+const tables = require('../data/tables')
 
 
 
@@ -30,20 +28,14 @@ const sequelize = new Sequelize({
               }
 })
 
-const User = UserModel(sequelize, Sequelize);
-const Settings = SettingsModel(sequelize, Sequelize);
-const eduSession = eduSessionModel(sequelize, Sequelize);
-
-const models = { 
-        User,
-        Settings,
-        eduSession
-}
 
 
-const db = {
-        ...models,
-        sequelize
-};
+const User = tables.user(sequelize, Sequelize);
+const Settings = tables.settings(sequelize, Sequelize);
+const eduSession = tables.eduSession(sequelize, Sequelize);
+
+const db = { sequelize, User, Settings, eduSession }
+
+
 
 module.exports = db;

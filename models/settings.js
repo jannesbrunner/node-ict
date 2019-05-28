@@ -5,29 +5,12 @@
  * @copyright 2019
  */
 
-// the model
+const db = require('../util/database');
 
-module.exports = (sequelize, type) => {
-  return sequelize.define('setting',
-    {
-      id: {
-        type: type.INTEGER,
-        autoIncrement: true,
-        allowNull: false,
-        primaryKey: true
-      },
-      isSetup: {
-        type: type.BOOLEAN
-      },
-      superAdmin: {
-        type: type.STRING
-      }
-    }
-
-  );
+// Model 
+exports.model = class Setting { }
 
 
-}
 
 
 
