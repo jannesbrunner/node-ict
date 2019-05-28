@@ -5,63 +5,38 @@
  * @copyright 2019
  */
 
-// imports
-const Sequelize = require('sequelize');
-const sequelize = require('./../util/database');
 
 // the model
-
-class User extends Sequelize.Model {
-    get name() {
-        return this.getDataValue('name');
-    }
-
-    get password() {
-        return this.getDataValue('password');
-    }
-    set name(val) {
-        this.setDataValue('name', val);
-    }
-    static init(sequelize, DataTypes) {
-      return super.init(
-        {
+module.exports = (sequelize, type) => {
+    return sequelize.define('user', {
           id: {
-            type: DataTypes.INTEGER,
+            type: type.INTEGER,
             autoIncrement: true,
             allowNull: false,
             primaryKey: true
             },
            name: {  
-               type: DataTypes.STRING,
+               type: type.STRING,
                allowNull: false
            },
            email: {
-             type: DataTypes.STRING,
+             type: type.STRING,
              allowNull: false
            }, 
            password: {
-            type: DataTypes.STRING,
+            type: type.STRING,
             allowNull: false
            },
            isSuperAdmin: { 
-             type: DataTypes.BOOLEAN,
+             type: type.BOOLEAN,
              allowNull: false,
              defaultValue: false,
            },
            canLogIn: {
-             type: DataTypes.BOOLEAN,
+             type: type.BOOLEAN,
              allowNull: false,
              defaultValue: false,
            } 
         },
-        { sequelize }
       );
-      
-    }
-  }
-
-
-module.exports = User;
-
-
-
+}

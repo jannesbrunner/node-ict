@@ -10,26 +10,36 @@ const path = require('../util/path')
 // 3rd Party Imports
 const Sequelize = require('sequelize');
 
+// Models
+const UserModel = require("../models/user");
+const SettingsModel = require("../models/settings");
+const eduSessionModel = require("../models/eduSession");
+
+
 
 const dbPath = `${path}/data/db.sqlite`;
 
 const sequelize = new Sequelize({
         dialect: 'sqlite',
-        storage: dbPath
+        storage: dbPath,
+        pool: {
+                max: 10,
+                min: 0,
+                acquire: 30000,
+                idle: 10000
+              }
 })
 
-const User = require("../models/user");
-const Settings = require("../models/settings");
-const eduSession = require("../models/eduSession");
-const models = {
-        User: User.init(sequelize, Sequelize),
-        Settings: Settings.init(sequelize, Sequelize),
-        eduSession: eduSession.init(sequelize, Sequelize),
-};
+const User = UserModel(sequelize, Sequelize);
+const Settings = SettingsModel(sequelize, Sequelize);
+const eduSession = eduSessionModel(sequelize, Sequelize);
 
-Object.values(models)
-        .filter(model => typeof model.associate === "function")
-        .forEach(model => model.associate(models));
+const models = { 
+        User,
+        Settings,
+        eduSession
+}
+
 
 const db = {
         ...models,

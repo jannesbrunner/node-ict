@@ -5,49 +5,29 @@
  * @copyright 2019
  */
 
-// imports
-const Sequelize = require('sequelize');
-const sequelize = require('./../util/database');
-
 // the model
 
-class Settings extends Sequelize.Model {
-    get isSetup() {
-        return this.getDataValue('isSetup');
+module.exports = (sequelize, type) => {
+  return sequelize.define('setting',
+    {
+      id: {
+        type: type.INTEGER,
+        autoIncrement: true,
+        allowNull: false,
+        primaryKey: true
+      },
+      isSetup: {
+        type: type.BOOLEAN
+      },
+      superAdmin: {
+        type: type.STRING
+      }
     }
-    set isSetup(val) {
-        this.setDataValue('name', val);
-    }
-    get superAdmin() {
-        return this.getDataValue('superAdmin');
-    }
-    set superAdmin(val) {
-        this.setDataValue('superAdmin', val);
-    }
-    static init(sequelize, DataTypes) {
-      return super.init(
-        {
-          id: {
-            type: DataTypes.INTEGER,
-            autoIncrement: true,
-            allowNull: false,
-            primaryKey: true
-            },
-           isSetup: {  
-               type: DataTypes.BOOLEAN
-           },
-           superAdmin: {
-             type: DataTypes.STRING
-           } 
-        },
-        { sequelize }
-      );
-      
-    }
-  }
+
+  );
 
 
-module.exports = Settings;
+}
 
 
 
