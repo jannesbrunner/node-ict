@@ -20,9 +20,11 @@ const sequelize = new Sequelize({
 
 const User = require("../models/user");
 const Settings = require("../models/settings");
+const eduSession = require("../models/eduSession");
 const models = {
         User: User.init(sequelize, Sequelize),
-        Settings: Settings.init(sequelize, Sequelize)
+        Settings: Settings.init(sequelize, Sequelize),
+        eduSession: eduSession.init(sequelize, Sequelize),
 };
 
 Object.values(models)

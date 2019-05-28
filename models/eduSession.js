@@ -1,5 +1,5 @@
 /**
- * User Model
+ * Session Model
  * @author Jannes Brunner
  * @version 1.0
  * @copyright 2019
@@ -7,18 +7,16 @@
 
 // imports
 const Sequelize = require('sequelize');
-const sequelize = require('./../util/database');
+const sequelize = require('../util/database');
 
 // the model
 
-class User extends Sequelize.Model {
+class eduSession extends Sequelize.Model {
+  
     get name() {
         return this.getDataValue('name');
     }
 
-    get password() {
-        return this.getDataValue('password');
-    }
     set name(val) {
         this.setDataValue('name', val);
     }
@@ -35,24 +33,25 @@ class User extends Sequelize.Model {
                type: DataTypes.STRING,
                allowNull: false
            },
-           email: {
+           isActive: {
+             type: DataTypes.BOOLEAN,
+             allowNull: false,
+             defaultValue: false,
+           },
+           type: {
              type: DataTypes.STRING,
-             allowNull: false
+             allowNull: false,
+             validate: {
+              isIn: [['brainstorming', 'quizzing']]
+             }
            }, 
-           password: {
-            type: DataTypes.STRING,
-            allowNull: false
+           sessionJSON: {
+             type: DataTypes.JSON,
+             allowNull: true,
+             defaultValue: null,
            },
-           isSuperAdmin: { 
-             type: DataTypes.BOOLEAN,
-             allowNull: false,
-             defaultValue: false,
-           },
-           canLogIn: {
-             type: DataTypes.BOOLEAN,
-             allowNull: false,
-             defaultValue: false,
-           } 
+           
+           
         },
         { sequelize }
       );
@@ -61,7 +60,7 @@ class User extends Sequelize.Model {
   }
 
 
-module.exports = User;
+module.exports = eduSession;
 
 
 

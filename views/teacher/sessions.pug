@@ -3,4 +3,23 @@ extends ../layouts/teacher-layout.pug
 block styles
     link(rel="stylesheet", href="/css/teacher.css")
 block content
-    h1 Hello Sessions
+    h1 Lehreinheiten
+    ul.nav.nav-pills.nav-fill
+      li.nav-item
+        a.nav-link.active(href="#") Alle Lehreinheiten
+      li.nav-item
+        a.nav-link(href="#") Neue Brainstorm Session anlegen
+      li.nav-item
+        a.nav-link(href="#") Neue Quiz Session anlegen
+    hr
+    if sessions.length == 0
+      p Noch keine Lehreinheiten vorhanden
+    else 
+      ul.list-unstyled
+      each session in sessions
+        li.media
+          img.mr-3(src="" alt="")
+          div.media-body
+            h5.mt-0.mb-1 session.name
+            strong session.type
+            em Lorem ipsum

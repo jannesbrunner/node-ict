@@ -21,13 +21,16 @@ exports.getMain = (req, res, next) => {
         {
             docTitle: 'Teacher | Node ICT',
             isLoggedIn: req.session.isLoggedIn
-            
+
         });
 
 };
 
 exports.getLogin = (req, res, next) => {
-    res.render('teacher/login',
+    if (req.session.isLoggedIn) {
+        return res.redirect('/teacher');
+    }
+    return res.render('teacher/login',
         {
             docTitle: 'Login | Node ICT',
             isLoggedIn: req.session.isLoggedIn
@@ -37,40 +40,48 @@ exports.getLogin = (req, res, next) => {
 exports.postLogin = async (req, res, next) => {
     const email = req.body.mail;
     const password = req.body.password;
+    
     try {
-        
-        const user = await db.User.findOne({where: {email: email}});
-        
+
+        const user = await db.User.findOne({ where: { email: email } });
+
         if (!user) {
-            res.render('teacher/error', {
+            return res.render('teacher/error', {
                 'docTitle': "Error! | Node ICT",
                 'error': "Dieser Nutzer existiert nicht!",
                 backLink: "teacher/login",
-                
+
             })
         } else {
-           const pwCheck = await bcrypt.compare(password, user.password);
-           if(pwCheck) {
-            req.session.isLoggedIn = true;
-            req.session.user = user;
-            await req.session.save();
-            res.redirect('/teacher');
-            
-           } else {
-            res.render('teacher/error', {
-                'docTitle': "Error! | Node ICT",
-                'error': "Falsche Zugangsdaten!",
-                backLink: "teacher/login",
-                
-            })   
-           }
+            if (!user.canLogIn) {
+                return res.render('teacher/error', {
+                    'docTitle': "Error! | Node ICT",
+                    'error': "Dieser Nutzer ist nicht freigeschaltet.",
+                    backLink: "teacher/login",
+                });
+            }
+            const pwCheck = await bcrypt.compare(password, user.password);
+            if (pwCheck) {
+                req.session.isLoggedIn = true;
+                req.session.user = user;
+                await req.session.save();
+                return res.redirect('/teacher');
+
+            } else {
+                return res.render('teacher/error', {
+                    'docTitle': "Error! | Node ICT",
+                    'error': "Falsche Zugangsdaten!",
+                    backLink: "teacher/login",
+
+                })
+            }
         }
 
     } catch (error) {
         res.render('error', { error: error })
     }
-    
-    
+
+
 }
 
 exports.postLogout = async (req, res, next) => {
@@ -80,33 +91,26 @@ exports.postLogout = async (req, res, next) => {
     } catch (error) {
         res.render('error', { error: error })
     }
-   
+
 }
 
 exports.getSettings = async (req, res, next) => {
     try {
         let settings = await getSettings();
-        res.render('teacher/settings',
+        let users = await db.User.findAll();
+        return res.render('teacher/settings',
             {
                 'docTitle': 'Teacher > Settings | Node ICT',
                 'settings': settings.dataValues,
-                'isLoggedIn': req.session.isLoggedIn
-                
+                'isLoggedIn': req.session.isLoggedIn,
+                'loggedUser': req.session.user,
+                'users': users
+
             });
     } catch (error) {
         res.render('error', { error: error })
     }
 }
-
-
-exports.getSessions = async (req, res, next) => {
-
-    res.render('teacher/sessions',
-        {
-            docTitle: 'Teacher > Sessions | Node ICT',
-            isLoggedIn: req.session.isLoggedIn
-        });
-};
 
 exports.getNew = async (req, res, next) => {
     try {
@@ -150,6 +154,7 @@ exports.postNew = async (req, res, next) => {
             email: email,
             password: cryptedPw,
             isSuperAdmin: true,
+            canLogIn: true,
         });
         res.redirect('/teacher/login');
     } catch (error) {
@@ -158,6 +163,34 @@ exports.postNew = async (req, res, next) => {
     }
 
 }
+
+exports.getUserEdit = async (req, res, next) => {
+    const userId = req.params.userId;
+    try {
+        const foundUser = await db.User.findOne({ where: { id: userId } });
+        const settings = await getSettings();
+        if(foundUser) {
+            return res.render('teacher/user-edit', {
+                docTitle: `Benutzer Bearbeiten: ${foundUser.name} | Node ICT`,
+                isLoggedIn: req.session.isLoggedIn,
+                isSuperAdmin: req.session.user.isSuperAdmin,
+                user: foundUser,
+                loggedUser: req.session.user,
+                settings: settings,
+            });
+        } else {
+            return res.render('teacher/error', {
+                'docTitle': "Error! | Node ICT",
+                'error': `Ein Benutzer mit der ID ${req.params.userId} existiert nicht!`,
+                backLink: "teacher/settings",
+            })
+        }
+
+    } catch (error) {
+        return res.render('error', { error: error })
+    }
+}
+
 
 exports.getSignup = (req, res, next) => {
     res.render('teacher/signup',
@@ -178,24 +211,26 @@ exports.postSignup = async (req, res, next) => {
             'docTitle': "Error! | Node ICT",
             'error': `Die eingebenen Passwörter stimmen nicht überein!`,
             backLink: "teacher/signup",
-        })   
+        })
     }
 
     try {
-        const foundUser = await db.User.findOne({where: {email: email}})
-        if(foundUser) {
+        const foundUser = await db.User.findOne({ where: { email: email } })
+        if (foundUser) {
             res.render('teacher/error', {
                 'docTitle': "Error! | Node ICT",
                 'error': `Ein Benutzer mit der E-Mail Addresse ${email} existiert bereits!`,
                 backLink: "teacher/signup",
-            })   
+            })
         } else {
             const cryptedPw = await bcrypt.hash(password, 12);
+            
             await db.User.create({
                 name: name,
                 email: email,
                 password: cryptedPw,
                 isSuperAdmin: false,
+                canLogIn: false,
             });
             res.redirect('/teacher/login');
         }
@@ -203,5 +238,5 @@ exports.postSignup = async (req, res, next) => {
     } catch (error) {
         res.render('error', { error: error })
     }
-    
+
 }
