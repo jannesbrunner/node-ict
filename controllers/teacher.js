@@ -1,8 +1,16 @@
+/**
+ * Teacher Controller
+ * @author Jannes Brunner
+ * @version 1.0
+ * @copyright 2019
+ */
+
+// Imports
 const db = require('../util/database');
 const dbSetup = require('../util/db_setup');
 const bcrypt = require('bcryptjs')
 
-
+// Helpers
 async function getSettings() {
     try {
         const settings = await db.Settings.findOne({ where: { id: 1 } });
@@ -13,19 +21,17 @@ async function getSettings() {
 }
 
 
+// GET => /teacher
 exports.getMain = (req, res, next) => {
-
-
-
     res.render('teacher/index',
         {
             docTitle: 'Teacher | Node ICT',
             isLoggedIn: req.session.isLoggedIn
 
         });
-
 };
 
+// GET => /teacher/login
 exports.getLogin = (req, res, next) => {
     if (req.session.isLoggedIn) {
         return res.redirect('/teacher');
@@ -37,20 +43,17 @@ exports.getLogin = (req, res, next) => {
         });
 };
 
+// POST => /teacher/login
 exports.postLogin = async (req, res, next) => {
     const email = req.body.mail;
     const password = req.body.password;
-    
     try {
-
         const user = await db.User.findOne({ where: { email: email } });
-
         if (!user) {
             return res.render('teacher/error', {
                 'docTitle': "Error! | Node ICT",
                 'error': "Dieser Nutzer existiert nicht!",
                 backLink: "teacher/login",
-
             })
         } else {
             if (!user.canLogIn) {
@@ -72,28 +75,25 @@ exports.postLogin = async (req, res, next) => {
                     'docTitle': "Error! | Node ICT",
                     'error': "Falsche Zugangsdaten!",
                     backLink: "teacher/login",
-
                 })
             }
         }
-
     } catch (error) {
         res.render('error', { error: error })
     }
-
-
 }
 
+// POST => /teacher/logout
 exports.postLogout = async (req, res, next) => {
     try {
         await req.session.destroy();
-        res.redirect('/teacher');
+        return res.redirect('/teacher');
     } catch (error) {
-        res.render('error', { error: error })
+        return res.render('error', { error: error })
     }
-
 }
 
+// GET => /teacher/settings
 exports.getSettings = async (req, res, next) => {
     try {
         let settings = await getSettings();
@@ -108,10 +108,11 @@ exports.getSettings = async (req, res, next) => {
 
             });
     } catch (error) {
-        res.render('error', { error: error })
+        return res.render('error', { error: error })
     }
 }
 
+// GET => /teacher/new
 exports.getNew = async (req, res, next) => {
     try {
         const settings = await getSettings();
@@ -128,21 +129,11 @@ exports.getNew = async (req, res, next) => {
     }
 }
 
-exports.postReset = async (req, res, next) => {
-    try {
-        await dbSetup.forceSync()
-        await req.session.destroy();
-        res.render('reset');
-    } catch (error) {
-        res.render('error', { error: error })
-    }
-}
-
+// POST => /teacher/new
 exports.postNew = async (req, res, next) => {
     const name = req.body.name;
     const email = req.body.email;
     const password = req.body.password;
-
     try {
         await db.Settings.create({
             isSetup: false,
@@ -156,14 +147,25 @@ exports.postNew = async (req, res, next) => {
             isSuperAdmin: true,
             canLogIn: true,
         });
-        res.redirect('/teacher/login');
+        return res.redirect('/teacher/login');
     } catch (error) {
-        console.err(error);
-        res.render('/error', { error: error })
+       return res.render('/error', { error: error })
     }
-
 }
 
+// POST => /teacher/reset
+exports.postReset = async (req, res, next) => {
+    try {
+        await dbSetup.forceSync()
+        await req.session.destroy();
+        res.render('reset');
+    } catch (error) {
+        res.render('error', { error: error })
+    }
+}
+
+
+// GET => /teacher/user-edit/:userId
 exports.getUserEdit = async (req, res, next) => {
     const userId = req.params.userId;
     try {
@@ -185,13 +187,12 @@ exports.getUserEdit = async (req, res, next) => {
                 backLink: "teacher/settings",
             })
         }
-
     } catch (error) {
         return res.render('error', { error: error })
     }
 }
 
-
+// GET => /teacher/signup
 exports.getSignup = (req, res, next) => {
     res.render('teacher/signup',
         {
@@ -200,6 +201,7 @@ exports.getSignup = (req, res, next) => {
         });
 }
 
+// POST => /teacher/signup
 exports.postSignup = async (req, res, next) => {
     const name = req.body.name;
     const email = req.body.mail;
@@ -213,7 +215,6 @@ exports.postSignup = async (req, res, next) => {
             backLink: "teacher/signup",
         })
     }
-
     try {
         const foundUser = await db.User.findOne({ where: { email: email } })
         if (foundUser) {
@@ -234,9 +235,7 @@ exports.postSignup = async (req, res, next) => {
             });
             res.redirect('/teacher/login');
         }
-
     } catch (error) {
         res.render('error', { error: error })
     }
-
 }

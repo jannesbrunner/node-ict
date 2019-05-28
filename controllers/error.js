@@ -1,10 +1,18 @@
+/**
+ * Error Controller
+ * @author Jannes Brunner
+ * @version 1.0
+ * @copyright 2019
+ */
 let error = "";
 
-exports.get404 = (req, res, next) => {
+// Render 404 Page on unknwon route
+exports.get404 = (req, res) => {
     res.status(404).render("404");
   };
 
-exports.getError = (req, res, next) => {
+// Render Error Page with given App error
+exports.getError = (req, res) => {
     res.status(500).render("error", 
     {error: error})
 }

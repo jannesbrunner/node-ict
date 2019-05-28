@@ -1,5 +1,13 @@
+/**
+ * Learn Session Controller
+ * @author Jannes Brunner
+ * @version 1.0
+ * @copyright 2019
+ */
+
 const db = require('../util/database');
 
+// GET => /teacher/sessions
 exports.getSessions = async (req, res, next) => {
     try {
         const eduSessions = await db.eduSession.findAll();
