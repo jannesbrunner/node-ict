@@ -5,49 +5,50 @@
  * @copyright 2019
  */
 
-// imports
-const Sequelize = require('sequelize');
-const sequelize = require('./../util/database');
+const db = require('../util/database');
 
-// the model
+// Model 
+exports.getSettings = async () => {
+    try {
+        const settings = await db.Settings.findOne({ where: { id: 1 } });
+        if (settings) {
+            return settings.dataValues;
+        } else {
+            throw new Error("DB Get Settings: There are no settings!")
+        }
+    } catch (error) {
+        return error;
+    }
+}
 
-class Settings extends Sequelize.Model {
-    get isSetup() {
-        return this.getDataValue('isSetup');
-    }
-    set isSetup(val) {
-        this.setDataValue('name', val);
-    }
-    get superAdmin() {
-        return this.getDataValue('superAdmin');
-    }
-    set superAdmin(val) {
-        this.setDataValue('superAdmin', val);
-    }
-    static init(sequelize, DataTypes) {
-      return super.init(
-        {
-          id: {
-            type: DataTypes.INTEGER,
-            autoIncrement: true,
-            allowNull: false,
-            primaryKey: true
-            },
-           isSetup: {  
-               type: DataTypes.BOOLEAN
-           },
-           superAdmin: {
-             type: DataTypes.STRING
-           } 
-        },
-        { sequelize }
-      );
-      
-    }
-  }
+exports.updateSettings = async (updatedSettings) => {
+    try {
+        // check if there are settings present
+        const currentSettings = await db.Settings.findByPk(1);
 
+        // no settings found? Then create them
+        if (!currentSettings) {
+            console.log("No settings found... create new.");
+            const settingsToCreate = await db.Settings.create(updatedSettings)
+            if (settingsToCreate) {
+                return true;
+            } else {
+                throw new Error("DB Create Settings: Error creating settings")
+            }
+        // found settings, update them
+        } else {
+            for (let prop in updatedSettings) {
+                currentSettings[prop] = updatedSettings[prop]
+            }
+            return await currentSettings.save();
+        }
 
-module.exports = Settings;
+    }
+    catch (error) {
+        return error;
+    }
+}
+
 
 
 

@@ -56,14 +56,14 @@ app.use('/teacher', teacherRoutes);
 app.use('/client', clientRoutes);
 app.use('/', mainRoutes);
 
-// dbSetup.forceSync.then( res => console.log(res)).catch( err => console.log(err));
+// dbSetup.forceSync();
 
 app.use(errorController.get404);
 
 async function init() {
   try {
-    await sessionStore.sync();
     await dbSetup.connect();
+    await sessionStore.sync();
     await dbSetup.sync();
 
   } catch (error) {
@@ -71,6 +71,7 @@ async function init() {
     server.close();
   }
 }
+
 
 
 process.on('uncaughtException', (err) => {
