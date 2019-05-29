@@ -26,7 +26,7 @@ exports.updatePw = async (id, newPw) => {
 
 exports.save = async (user) => {
   try {
-    console.log("GOT USER TO SAVE ID: " + user.id);
+    
     if (user.id) {
       const foundUser = await db.User.findByPk(user.id)
 

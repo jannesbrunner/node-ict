@@ -16,7 +16,7 @@ block content
         input.form-control(type='text' id='name' placeholder='Ihr Name' name='name' required value=`${user.name}`) 
       div.form-group
         label(for='mail') E-Mail
-        input.form-control(type='text' id='mail' placeholder='jemand@example.tld' name='mail' required value=`${user.email}`) 
+        input.form-control(type='text' id='email' placeholder='jemand@example.tld' name='email' required value=`${user.email}`) 
       div.form-group
       - let superAdmin = (settings.superAdmin == loggedUser.email) && user.isSuperAdmin 
         label(for='canLogIn') Freigeschaltet: 
