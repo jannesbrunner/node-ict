@@ -181,6 +181,39 @@ exports.getUserEdit = async (req, res, next) => {
     }
 }
 
+// POST => /teacher/user-edit 
+exports.postUserEdit = async (req, res, next) => {
+
+
+
+    const userToSave = { id: parseInt(req.params.userId) }
+    if (req.body.password != "" || req.body.passwordConfirm != "") {
+        if (req.body.password !== req.body.passwordConfirm) {
+            return res.render('teacher/error', {
+                'docTitle': "Error! | Node ICT",
+                'error': `Die eingebenen Passwörter stimmen nicht überein!`,
+                backLink: `teacher/user-edit/${req.params.userId}`,
+            })
+
+        } else {
+            userToSave.password = req.body.password;
+        }
+    }
+
+
+    req.body.name ? userToSave.name = req.body.name : console.log('No updated Name found');
+    req.body.mail ? userToSave.mail = req.body.mail : console.log('No updated Mail found');
+    req.body.canLogIn == 'true' ? userToSave.canLogIn = true : console.log('No updated canLogin permission found');
+    req.body.isSuperAdmin == 'true' ? userToSave.isSuperAdmin = true : console.log('No updated isSuperAdmin setting found');
+
+    console.log(userToSave);
+    await User.save(userToSave);
+
+
+
+    res.redirect(`/teacher/user-edit/${req.params.userId}`);
+}
+
 // GET => /teacher/signup
 exports.getSignup = (req, res, next) => {
     res.render('teacher/signup',
