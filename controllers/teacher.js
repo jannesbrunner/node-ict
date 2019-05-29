@@ -6,22 +6,9 @@
  */
 
 // Imports
-const db = require('../util/database');
 const User = require("../models/user");
-const Setting = require("../models/settings");
+const Settings = require("../models/settings");
 const dbSetup = require('../util/db_setup');
-const bcrypt = require('bcryptjs')
-
-// Helpers
-async function getSettings() {
-    try {
-        const settings = await db.Settings.findOne({ where: { id: 1 } });
-        return settings;
-    } catch (error) {
-        return error;
-    }
-}
-
 
 
 // GET => /teacher
@@ -82,7 +69,7 @@ exports.postLogin = async (req, res, next) => {
             }
         }
     } catch (error) {
-        res.render('error', { error: error})
+        res.render('error', { error: error })
     }
 }
 
@@ -99,12 +86,12 @@ exports.postLogout = async (req, res, next) => {
 // GET => /teacher/settings
 exports.getSettings = async (req, res, next) => {
     try {
-        let settings = await getSettings();
+        let settings = await Settings.getSettings();
         let users = await User.getUsers();
         return res.render('teacher/settings',
             {
                 'docTitle': 'Teacher > Settings | Node ICT',
-                'settings': settings.dataValues,
+                'settings': settings,
                 'isLoggedIn': req.session.isLoggedIn,
                 'loggedUser': req.session.user,
                 'users': users
@@ -118,7 +105,7 @@ exports.getSettings = async (req, res, next) => {
 // GET => /teacher/new
 exports.getNew = async (req, res, next) => {
     try {
-        const settings = await getSettings();
+        const settings = await Settings.getSettings();
         if (settings) {
             res.status(403).render('error', { error: 'Forbidden' });
         } else {
@@ -138,22 +125,20 @@ exports.postNew = async (req, res, next) => {
     const email = req.body.email;
     const password = req.body.password;
     try {
-        await db.Settings.create({
+        await Settings.updateSettings({
             isSetup: false,
             superAdmin: email
         });
-        let user = {
+        await User.save({
             name: name,
             email: email,
             password: password,
             isSuperAdmin: true,
             canLogIn: true,
-        }
-        
-        await User.saveUser(user);
+        });
         return res.redirect('/teacher/login');
     } catch (error) {
-       return res.render('error', { error: error })
+        return res.render('error', { error: error })
     }
 }
 
@@ -174,8 +159,8 @@ exports.getUserEdit = async (req, res, next) => {
     const userId = req.params.userId;
     try {
         const foundUser = await User.getUser({ id: userId })
-        const settings = await getSettings();
-        if(foundUser) {
+        const settings = await Settings.getSettings();
+        if (foundUser) {
             return res.render('teacher/user-edit', {
                 docTitle: `Benutzer Bearbeiten: ${foundUser.name} | Node ICT`,
                 isLoggedIn: req.session.isLoggedIn,
@@ -220,7 +205,7 @@ exports.postSignup = async (req, res, next) => {
         })
     }
     try {
-        const foundUser = await User.getUser({email: email})
+        const foundUser = await User.getUser({ email: email })
         if (foundUser) {
             res.render('teacher/error', {
                 'docTitle': "Error! | Node ICT",
@@ -228,8 +213,7 @@ exports.postSignup = async (req, res, next) => {
                 backLink: "teacher/signup",
             })
         } else {
-            let newUser = {name: name, email: email, password: password}
-            await newUser.save();
+            await User.save({ name: name, email: email, password: password });
             res.redirect('/teacher/login');
         }
     } catch (error) {
