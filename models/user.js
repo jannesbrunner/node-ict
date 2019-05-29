@@ -24,11 +24,11 @@ exports.updatePw = async (id, newPw) => {
   }
 };
 
-exports.saveUser = async (user) => {
+exports.save = async (user) => {
   try {
-
+    console.log("GOT USER TO SAVE ID: " + user.id);
     if (user.id) {
-      const foundUser = await db.user.findByPk(user.id)
+      const foundUser = await db.User.findByPk(user.id)
 
       if (user.password) {
         user.password = await bcrypt.hash(user.password, 12)
