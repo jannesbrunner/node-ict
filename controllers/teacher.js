@@ -184,6 +184,15 @@ exports.getUserEdit = async (req, res, next) => {
 // POST => /teacher/user-edit 
 exports.postUserEdit = async (req, res, next) => {
 
+    if(req.session.user.id != req.params.userId) {
+        if(!req.session.user.isSuperAdmin) {
+            return res.render('teacher/error', {
+                'docTitle': "Error! | Node ICT",
+                'error': `Sie sind nicht berechtigt diesen Benutzer zu ändern!`,
+                backLink: `teacher/user-edit/${req.params.userId}`,
+            })
+        }
+    }
 
 
     const userToSave = { id: parseInt(req.params.userId) }
@@ -202,9 +211,9 @@ exports.postUserEdit = async (req, res, next) => {
 
 
     req.body.name ? userToSave.name = req.body.name : console.log('No updated Name found');
-    req.body.mail ? userToSave.mail = req.body.mail : console.log('No updated Mail found');
-    req.body.canLogIn == 'true' ? userToSave.canLogIn = true : console.log('No updated canLogin permission found');
-    req.body.isSuperAdmin == 'true' ? userToSave.isSuperAdmin = true : console.log('No updated isSuperAdmin setting found');
+    req.body.email ? userToSave.email = req.body.email : console.log('No updated eMail found');
+    req.body.canLogIn == 'true' && req.session.user.isSuperAdmin ? userToSave.canLogIn = true : console.log('No updated canLogin permission found');
+    req.body.isSuperAdmin == 'true' && req.session.user.isSuperAdmin ? userToSave.isSuperAdmin = true : console.log('No updated isSuperAdmin setting found');
 
     console.log(userToSave);
     await User.save(userToSave);
