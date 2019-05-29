@@ -32,9 +32,9 @@ const sequelize = new Sequelize({
 
 const User = tables.user(sequelize, Sequelize);
 const Settings = tables.settings(sequelize, Sequelize);
-const eduSession = tables.eduSession(sequelize, Sequelize);
+const EduSession = tables.eduSession(sequelize, Sequelize);
 
-const db = { sequelize, User, Settings, eduSession }
+const db = { sequelize, User, Settings, EduSession }
 
 
 
