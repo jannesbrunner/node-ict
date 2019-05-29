@@ -10,7 +10,7 @@ block content
     div.card-header Benutzer bearbeiten: #{user.name}  
   div.card-body
   if user.id == loggedUser.id || loggedUser.isSuperAdmin
-    form(method='POST' action='/teacher/user-edit')
+    form(method='POST' action=`/teacher/user-edit/${user.id}`)
       div.form-group
         label(for='name') Name
         input.form-control(type='text' id='name' placeholder='Ihr Name' name='name' required value=`${user.name}`) 
@@ -20,16 +20,16 @@ block content
       div.form-group
       - let superAdmin = (settings.superAdmin == loggedUser.email) && user.isSuperAdmin 
         label(for='canLogIn') Freigeschaltet: 
-          input.form-controm(type='checkbox' id='canLogIn' name='canLogIn' value=`canLogIn` disabled=superAdmin checked=user.canLogIn )
+          input.form-controm(type='checkbox' id='canLogIn' name='canLogIn' value='true' disabled=superAdmin checked=user.canLogIn )
       div.form-group
         label(for='isSuperAdmin') Ist Administrator: 
-          input.form-controm(type='checkbox' id='isSuperAdmin' name='isSuperAdmin' value='isSuperAdmin' disabled=superAdmin checked=user.isSuperAdmin)
+          input.form-controm(type='checkbox' id='isSuperAdmin' name='isSuperAdmin' value='true' disabled=superAdmin checked=user.isSuperAdmin)
       div.form-group
         label(for='password') Neues Passwort
         input.form-control(type='password' id='password' placeholder='Passwort' name='password') 
       div.form-group
         label(for='passwordConfirm') Neues Passwort bestätigen
-        input.form-control(type='password' id='passwordConfirm' placeholder='Passwort' name='passwordConfirm') 
+        input.form-control(type='password' id='passwordConfirm' placeholder='Passwort' name='passwordConfirm')
       button.btn.btn-primary(type='submit') Speichern
   else
     p Sie sind nicht berechtigt diese Resource anzuzeigen!
