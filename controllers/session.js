@@ -10,7 +10,7 @@ const db = require('../util/database');
 // GET => /teacher/sessions
 exports.getSessions = async (req, res, next) => {
     try {
-        const eduSessions = await db.eduSession.findAll();
+        const eduSessions = await db.EduSession.findAll();
         console.log(eduSessions, "EDU_SESSIONS")
         res.render('teacher/sessions', 
         {
