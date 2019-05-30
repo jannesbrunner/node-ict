@@ -14,10 +14,10 @@ exports.getSettings = async () => {
         if (settings) {
             return settings.dataValues;
         } else {
-            throw new Error("DB Get Settings: There are no settings!")
+            return null;
         }
     } catch (error) {
-        return error;
+        return "DB Get Settings " + error;
     }
 }
 
