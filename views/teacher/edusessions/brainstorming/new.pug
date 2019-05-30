@@ -1,0 +1,28 @@
+extends ../../../layouts/teacher-layout.pug
+
+block styles
+  link(rel="stylesheet", href="/css/teacher.css")
+block content
+  h1 Lehreinheiten
+  ul.nav.nav-pills.nav-fill
+    li.nav-item
+      a.nav-link(href="/teacher/sessions") Alle Sessions
+    li.nav-item
+      a.nav-link.active(href="#") Neue Brainstorm Session anlegen
+    li.nav-item
+      a.nav-link(href="#") Neue Quiz Session anlegen
+  hr
+  div.card
+    div.card-header Brainstorm Session anlegen
+  div.card-body
+    form(method='POST' action=`/teacher/sessions/brainstorming/new`)
+      div.form-group
+        label(for='name') Name der Brainstorm Session
+        input.form-control(type='text' id='name' placeholder='z.B. Klasse 7A: Deutsch' name='name' required) 
+      div.form-group
+        label(for='topic') Thema der Brainstorm Session 
+        input.form-control(type='text' id='topic' placeholder='z.B. Werke von Goethe' name='topic' required) 
+      button.btn.btn-primary(type='submit') Speichern
+
+
+

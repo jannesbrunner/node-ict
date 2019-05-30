@@ -7,7 +7,7 @@
 const db = require('../util/database');
 
 // Model
-module.exports = class EduSession{}
+
 
 
 
