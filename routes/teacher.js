@@ -29,5 +29,6 @@ router.get('/settings',isAuth, teacherController.getSettings);
 router.post('/reset', isAuth, teacherController.postReset);
 router.get('/user-edit/:userId', isAuth, teacherController.getUserEdit);
 router.post('/user-edit/:userId', isAuth, teacherController.postUserEdit);
+router.post('/user-destroy/:userId', isAuth, teacherController.destroyUser);
 module.exports = router;
 

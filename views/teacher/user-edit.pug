@@ -31,6 +31,10 @@ block content
         label(for='passwordConfirm') Neues Passwort bestätigen
         input.form-control(type='password' id='passwordConfirm' placeholder='Passwort' name='passwordConfirm')
       button.btn.btn-primary(type='submit') Speichern
+    if user.id != loggedUser.id && loggedUser.isSuperAdmin
+      form(method='POST' action=`/teacher/user-destroy/${user.id}`)
+        button.btn.btn-danger(type='submit') Löschen
+
   else
     p Sie sind nicht berechtigt diese Resource anzuzeigen!
      

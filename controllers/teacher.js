@@ -222,6 +222,23 @@ exports.postUserEdit = async (req, res, next) => {
 
     res.redirect(`/teacher/user-edit/${req.params.userId}`);
 }
+// POST => /teacher/user-destroy/:userId
+exports.destroyUser = async (req, res, next) => {
+    if(req.session.user.id == req.params.userId || !req.session.user.isSuperAdmin) {
+            return res.render('teacher/error', {
+                'docTitle': "Error! | Node ICT",
+                'error': `Sie sind nicht berechtigt diesen Benutzer zu löschen!`,
+                backLink: `teacher/user-edit/${req.params.userId}`,
+            })
+    }
+    try {
+        await User.destroy(req.params.userId);
+        return res.redirect('/teacher/settings');
+    } catch (error) {
+        res.render('error', { error: error })
+    }
+    
+}
 
 // GET => /teacher/signup
 exports.getSignup = (req, res, next) => {
@@ -256,7 +273,7 @@ exports.postSignup = async (req, res, next) => {
             })
         } else {
             await User.save({ name: name, email: email, password: password });
-            res.redirect('/teacher/login');
+            res.redirect('/teacher/settings');
         }
     } catch (error) {
         res.render('error', { error: error })
