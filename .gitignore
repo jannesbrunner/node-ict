@@ -88,9 +88,6 @@ typings/
 # DynamoDB Local files
 .dynamodb/
 
-# SQLITE
-data/db.sqlite
-
 ### Vuejs ###
 # Recommended template: Node.gitignore
 
@@ -152,3 +149,6 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+# Database
+data/db.sqlite
