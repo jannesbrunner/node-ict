@@ -17,7 +17,7 @@ exports.getSettings = async () => {
             return null;
         }
     } catch (error) {
-        return "DB Get Settings " + error;
+        throw new Error("DB Get Settings " + error);
     }
 }
 

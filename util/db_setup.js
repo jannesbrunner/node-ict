@@ -18,7 +18,7 @@ async function syncDB( options = {} ) {
     // await db.User.sync();  
     // await db.Settings.sync();
   } catch (error) {
-    return error;
+    throw new Error(`DB Sync Error: ${error}`);
   }
 }
 exports.sync = () => syncDB();

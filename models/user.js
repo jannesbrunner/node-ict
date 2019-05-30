@@ -20,7 +20,7 @@ exports.updatePw = async (id, newPw) => {
     await user.save();
     return true;
   } catch (error) {
-    return error;
+    throw new Error(`DB Update User PW Error` + error);
   }
 };
 
@@ -51,7 +51,7 @@ exports.save = async (user) => {
 
   }
   catch (error) {
-    return error;
+    throw new Error(`DB User Save Error: ${error}`);
   }
 
 }

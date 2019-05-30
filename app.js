@@ -67,8 +67,8 @@ async function init() {
     await dbSetup.sync();
 
   } catch (error) {
-    console.log(err, "App init error");
     server.close();
+    throw new Error("App init error!");
   }
 }
 
