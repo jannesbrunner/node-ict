@@ -69,7 +69,7 @@ exports.postLogin = async (req, res, next) => {
             }
         }
     } catch (error) {
-        res.render('error', { error: error })
+        return res.render('error', { error: error })
     }
 }
 
@@ -115,7 +115,7 @@ exports.getNew = async (req, res, next) => {
                 });
         }
     } catch (error) {
-        res.render('error', { error: error })
+        return res.render('error', { error: error })
     }
 }
 
@@ -149,7 +149,7 @@ exports.postReset = async (req, res, next) => {
         await req.session.destroy();
         res.render('reset');
     } catch (error) {
-        res.render('error', { error: error })
+        return res.render('error', { error: error })
     }
 }
 
@@ -235,7 +235,7 @@ exports.destroyUser = async (req, res, next) => {
         await User.destroy(req.params.userId);
         return res.redirect('/teacher/settings');
     } catch (error) {
-        res.render('error', { error: error })
+        return res.render('error', { error: error })
     }
     
 }
@@ -276,6 +276,6 @@ exports.postSignup = async (req, res, next) => {
             res.redirect('/teacher/settings');
         }
     } catch (error) {
-        res.render('error', { error: error })
+        return res.render('error', { error: error })
     }
 }
