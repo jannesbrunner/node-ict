@@ -1,4 +1,4 @@
-extends ../layouts/teacher-layout.pug
+extends ../../layouts/teacher-layout.pug
 
 block styles
     link(rel="stylesheet", href="/css/teacher.css")
@@ -6,11 +6,11 @@ block content
     h1 Lehreinheiten
     ul.nav.nav-pills.nav-fill
       li.nav-item
-        a.nav-link.active(href="#") Alle Lehreinheiten
+        a.nav-link.active(href="#") Alle Sessions
       li.nav-item
-        a.nav-link(href="#") Neue Brainstorm Session anlegen
+        a.nav-link(href="/teacher/sessions/brainstorming/new") Neue Brainstorm Session anlegen
       li.nav-item
-        a.nav-link(href="#") Neue Quiz Session anlegen
+        a.nav-link(href="/teacher/sessions/quizzing/new") Neue Quiz Session anlegen
     hr
     if sessions.length == 0
       p Noch keine Lehreinheiten vorhanden

@@ -11,8 +11,7 @@ const db = require('../util/database');
 exports.getSessions = async (req, res, next) => {
     try {
         const eduSessions = await db.EduSession.findAll();
-        console.log(eduSessions, "EDU_SESSIONS")
-        res.render('teacher/sessions', 
+        res.render('teacher/edusessions/index', 
         {
             docTitle: "Sessions | Node ICT",
             isLoggedIn: req.session.isLoggedIn,
@@ -22,3 +21,5 @@ exports.getSessions = async (req, res, next) => {
         res.render('error', {error: error});
     }
 }
+
+
