@@ -51,6 +51,28 @@ exports.settings = (sequelize, Sequelize) => {
     )
   };
 
+  exports.student = (sequelize, Sequelize) => {
+    return sequelize.define('student', {
+  
+      id: {
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
+        allowNull: false,
+        primaryKey: true
+      },
+      name: {
+        type: Sequelize.STRING,
+        allowNull: false
+      },
+      clientJSON: {
+        type: Sequelize.JSON,
+        allowNull: true,
+        defaultValue: null,
+      }
+    })
+  };
+
+
   exports.eduSession = (sequelize, Sequelize) => {
     return sequelize.define('eduSession', {
   
@@ -77,6 +99,51 @@ exports.settings = (sequelize, Sequelize) => {
         }
       },
       sessionJSON: {
+        type: Sequelize.JSON,
+        allowNull: true,
+        defaultValue: null,
+      }
+    })
+  };
+
+  exports.brainstorming = (sequelize, Sequelize) => {
+    return sequelize.define('brainstorming', {
+  
+      id: {
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
+        allowNull: false,
+        primaryKey: true
+      },
+      topic: {
+        type: Sequelize.STRING,
+        allowNull: false
+      },
+      brainstormingJSON: {
+        type: Sequelize.JSON,
+        allowNull: true,
+        defaultValue: null,
+      }
+    })
+  };
+
+  exports.brainstorming_answer = (sequelize, Sequelize) => {
+    return sequelize.define('brainstorming_answer', {
+      id: {
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
+        allowNull: false,
+        primaryKey: true
+      },
+      answer: {
+        type: Sequelize.STRING,
+        allowNull: false
+      },
+      answerer: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      brainstorming_answerJSON: {
         type: Sequelize.JSON,
         allowNull: true,
         defaultValue: null,
