@@ -13,22 +13,33 @@ const router = express.Router();
 // App Imports
 const teacherController = require('../controllers/teacher');
 const sessionController = require('../controllers/session')
+const brainstormingController = require('../controllers/brainstorming');
 const isAuth = require('../middleware/is-auth');
 const hasSettings = require('../middleware/has-settings');
 
 router.get('/', hasSettings, isAuth, teacherController.getMain);
+// New App init
 router.get('/new', teacherController.getNew);
+router.post('/new', teacherController.postNew);
+router.post('/reset', isAuth, teacherController.postReset);
+// Create/Signup new user
 router.get('/signup', teacherController.getSignup);
 router.post('/signup', teacherController.postSignup);
-router.post('/new', teacherController.postNew);
+// login teacher
+router.get('/login', teacherController.getLogin);
 router.post('/login', hasSettings, teacherController.postLogin);
 router.post('/logout', teacherController.postLogout);
-router.get('/login', teacherController.getLogin);
-router.get('/sessions',isAuth,  sessionController.getSessions);
+// Settings
 router.get('/settings',isAuth, teacherController.getSettings);
-router.post('/reset', isAuth, teacherController.postReset);
+// User Model
 router.get('/user-edit/:userId', isAuth, teacherController.getUserEdit);
 router.post('/user-edit/:userId', isAuth, teacherController.postUserEdit);
 router.post('/user-destroy/:userId', isAuth, teacherController.destroyUser);
+// Sessions
+router.get('/sessions',isAuth,  sessionController.getSessions);
+// Brainstorming
+router.get('/sessions/brainstorming/new', isAuth, brainstormingController.getNew)
+router.post('/sessions/brainstorming/new', isAuth, brainstormingController.postNew)
+
 module.exports = router;
 
