@@ -31,10 +31,26 @@ const sequelize = new Sequelize({
 
 
 const User = tables.user(sequelize, Sequelize);
+const Student = tables.student(sequelize, Sequelize);
 const Settings = tables.settings(sequelize, Sequelize);
+// Edu Data
 const EduSession = tables.eduSession(sequelize, Sequelize);
+// Brainstorming
+const Brainstorming = tables.brainstorming(sequelize, Sequelize);
+const BrainstormingAnswer = tables.brainstorming_answer(sequelize, Sequelize);
 
-const db = { sequelize, User, Settings, EduSession }
+// Relationships App General
+User.hasMany(EduSession);
+EduSession.belongsTo(User);
+EduSession.hasMany(Student);
+Student.belongsTo(EduSession);
+
+// Relationship Brainstorming
+Brainstorming.belongsTo(EduSession);
+Brainstorming.hasMany(BrainstormingAnswer);
+BrainstormingAnswer.belongsTo(Brainstorming);
+
+const db = { sequelize, User, Student, Settings, EduSession, Brainstorming, BrainstormingAnswer }
 
 
 
