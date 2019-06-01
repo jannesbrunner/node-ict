@@ -25,6 +25,7 @@
     "express-session": "^1.16.1",
     "jquery": "^3.4.1",
     "mysql2": "^1.6.5",
+    "node-flags": "^0.1.9",
     "opn": "^6.0.0",
     "popper.js": "^1.15.0",
     "pug": "^2.0.3",
