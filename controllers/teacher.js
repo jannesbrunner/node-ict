@@ -11,12 +11,14 @@ const Settings = require("../models/settings");
 const dbSetup = require('../util/db_setup');
 
 
+
 // GET => /teacher
 exports.getMain = (req, res, next) => {
     res.render('teacher/index',
         {
             docTitle: 'Teacher | Node ICT',
-            isLoggedIn: req.session.isLoggedIn
+            isLoggedIn: req.session.isLoggedIn,
+            loggedUser: req.session.user
 
         });
 };
@@ -29,7 +31,8 @@ exports.getLogin = (req, res, next) => {
     return res.render('teacher/login',
         {
             docTitle: 'Login | Node ICT',
-            isLoggedIn: req.session.isLoggedIn
+            isLoggedIn: req.session.isLoggedIn,
+            loggedUser: req.session.user
         });
 };
 
