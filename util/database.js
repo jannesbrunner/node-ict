@@ -16,6 +16,10 @@ const tables = require('../data/tables')
 
 
 const dbPath = `${path}/data/db.sqlite`;
+const dbLog = (log) => {
+        console.log(` DB Action: ${log}`);
+}
+
 
 const sequelize = new Sequelize({
         dialect: 'sqlite',
@@ -25,8 +29,11 @@ const sequelize = new Sequelize({
                 min: 0,
                 acquire: 30000,
                 idle: 10000
-              }
+              },
+        logging: dbLog, // false
+
 })
+
 
 
 
@@ -40,14 +47,14 @@ const Brainstorming = tables.brainstorming(sequelize, Sequelize);
 const BrainstormingAnswer = tables.brainstorming_answer(sequelize, Sequelize);
 
 // Relationships App General
-User.hasMany(EduSession);
+User.hasMany(EduSession, { onDelete: 'cascade' });
 EduSession.belongsTo(User);
-EduSession.hasMany(Student);
+EduSession.hasMany(Student, { onDelete: 'cascade' });
 Student.belongsTo(EduSession);
 
 // Relationship Brainstorming
-Brainstorming.belongsTo(EduSession);
-Brainstorming.hasMany(BrainstormingAnswer);
+Brainstorming.belongsTo(EduSession, { onDelete: 'cascade' });
+Brainstorming.hasMany(BrainstormingAnswer, { onDelete: 'cascade' });
 BrainstormingAnswer.belongsTo(Brainstorming);
 
 const db = { sequelize, User, Student, Settings, EduSession, Brainstorming, BrainstormingAnswer }
