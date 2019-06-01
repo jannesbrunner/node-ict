@@ -40,6 +40,8 @@ router.get('/sessions',isAuth,  sessionController.getSessions);
 // Brainstorming
 router.get('/sessions/brainstorming/new', isAuth, brainstormingController.getNew)
 router.post('/sessions/brainstorming/new', isAuth, brainstormingController.postNew)
-
+router.get('/sessions/brainstorming-edit/:sessionId', isAuth, brainstormingController.getEdit)
+router.post('/sessions/brainstorming-edit/:sessionId', isAuth, brainstormingController.postEdit)
+router.post('/sessions/brainstorming-destroy/:sessionId', isAuth, brainstormingController.destroySession)
 module.exports = router;
 
