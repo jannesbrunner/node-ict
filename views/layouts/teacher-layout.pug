@@ -16,7 +16,9 @@ html(lang="en")
       header.row.bg-warning
         div.col-sm           
           h1 Node ICT
-          bold Lehrer Bereich
+          bold Lehrer Bereich 
+          if loggedUser
+            span von #{loggedUser.name}
         nav.navbar.navbar-dark.justify-content-center
           a.nav-link(href="/teacher/") Start
           if isLoggedIn
