@@ -13,9 +13,12 @@ const router = express.Router();
 // App Imports
 const clientController = require('../controllers/client');
 
+
+// Student 
 router.get('/', clientController.getMain);
 router.get('/new', clientController.getNew);
 router.post('/new', clientController.postNew);
+router.get('/student', clientController.getStudent);
 
 module.exports = router;
 
