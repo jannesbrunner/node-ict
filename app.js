@@ -24,6 +24,13 @@ const dbSetup = require('./util/db_setup');
 const app = express();
 
 const server = app.listen(3000);
+// set up socket.io for web sockets
+const io = require('socket.io')(server);
+io.on('connection', socket => {
+  console.log('Client connected: ' + socket.client);
+  socket.on('disconnect', function(){
+    console.log('user disconnected');
+})});
 // Set static content folder
 app.set('view engine', 'pug');
 app.set('views', 'views');
@@ -31,6 +38,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/js', express.static(__dirname + '/node_modules/bootstrap/dist/js')); // redirect bootstrap JS
 app.use('/js', express.static(__dirname + '/node_modules/jquery/dist')); // redirect JS jQuery
 app.use('/css', express.static(__dirname + '/node_modules/bootstrap/dist/css')); // redirect CSS bootstrap
+
+
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }))
 // parse application/json
@@ -54,6 +63,10 @@ app.use(session({
 app.get('/error', errorController.getError)
 app.use('/teacher', teacherRoutes);
 app.use('/client', clientRoutes);
+// Clients
+// app.get('/client/student', (req, res) => {
+//   res.sendFile(__dirname + '/public/client/student.html');
+// });
 app.use('/', mainRoutes);
 
 // dbSetup.forceSync();
