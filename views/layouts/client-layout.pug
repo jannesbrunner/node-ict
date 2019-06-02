@@ -8,9 +8,13 @@ html(lang="en")
         link(rel="stylesheet", href="/css/normalize.css")
         link(rel="stylesheet", href="/css/client.css")
         link(rel="stylesheet", href="/css/bootstrap.min.css")
+        block styles
         script(src="/js/jquery.min.js")
         script(src="/js/bootstrap.min.js")
-        block styles
+        script(src="/client/js/socket.io.js")
+        script var socket = io();
+        block scripts
+        
     body
         .app-container
             block content
