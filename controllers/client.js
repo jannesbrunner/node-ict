@@ -37,6 +37,13 @@ exports.postNew = (req, res, next) => {
     res.redirect('/client')
 };
 
+exports.getStudent = (req, res, next) => {
+    return res.render('client/brainstorm/student',
+        {
+            docTitle: 'Student | Node ICT'
+        });
+}
+
 
 // Helpers
 function userCookie(cookies) {
