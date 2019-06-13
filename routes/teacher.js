@@ -37,6 +37,8 @@ router.post('/user-edit/:userId', isAuth, teacherController.postUserEdit);
 router.post('/user-destroy/:userId', isAuth, teacherController.destroyUser);
 // Sessions
 router.get('/sessions',isAuth,  sessionController.getSessions);
+router.get('/sessions/start/', isAuth, sessionController.getStartSession);
+router.post('/sessions/start/:sessionId', isAuth, sessionController.postStartSession);
 // Brainstorming
 router.get('/sessions/brainstorming/new', isAuth, brainstormingController.getNew)
 router.post('/sessions/brainstorming/new', isAuth, brainstormingController.postNew)

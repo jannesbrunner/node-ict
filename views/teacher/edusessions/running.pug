@@ -1,0 +1,29 @@
+extends ../../layouts/teacher-layout.pug
+
+block styles
+    link(rel="stylesheet", href="/css/client.css")
+block scripts
+    script(src="/client/js/vue.js")
+    script(src="/client/js/socket.io.js")
+block content
+    div#teacher
+        div(v-if="sessionActive")
+            h1 Lehrkraft Monitor
+            strong Name: 
+            span {{ sessionName }} 
+            strong Typ: 
+            span {{ sessionType }} 
+            hr
+            p blabla
+            hr
+            button(@click="endSession") Session Beenden 
+        div(v-else)
+            h1 Die Session wurde beendet
+
+
+
+
+
+    - var socket = `var socket = io('${ipAdd}:3000/tclient');`
+    script #{socket}
+    script(src="/client/js/brainstorm_teacher.js")
