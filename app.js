@@ -12,6 +12,7 @@ const express = require('express');
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser');
 const opn = require('opn');
+const ip = require('ip');
 const session = require('express-session');
 // App Imports //
 const errorController = require('./controllers/error');
@@ -20,17 +21,18 @@ const teacherRoutes = require('./routes/teacher');
 const clientRoutes = require('./routes/client');
 const database = require('./util/database');
 const dbSetup = require('./util/db_setup');
+const isAuth = require('./middleware/is-auth');
 // ------------------------------------------------ //
 const app = express();
 
-const server = app.listen(3000);
+const server = app.listen(3000, ip.address(), function() {
+  console.log(`Hello! The Server is running on ${ip.address()}!`);
+});
 // set up socket.io for web sockets
-const io = require('socket.io')(server);
-io.on('connection', socket => {
-  console.log('Client connected: ' + socket.client);
-  socket.on('disconnect', function(){
-    console.log('user disconnected');
-})});
+require('./util/socket').init(server);
+const sessionIo = require('./controllers/sessionSocket');
+sessionIo();
+
 // Set static content folder
 app.set('view engine', 'pug');
 app.set('views', 'views');
@@ -63,6 +65,8 @@ app.use(session({
 app.get('/error', errorController.getError)
 app.use('/teacher', teacherRoutes);
 app.use('/client', clientRoutes);
+
+app.use('/tclient', isAuth);
 // Clients
 // app.get('/client/student', (req, res) => {
 //   res.sendFile(__dirname + '/public/client/student.html');
