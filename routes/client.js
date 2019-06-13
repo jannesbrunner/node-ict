@@ -12,13 +12,14 @@ const express = require('express');
 const router = express.Router();
 // App Imports
 const clientController = require('../controllers/client');
+const isAuth = require('../middleware/is-auth');
 
 
 // Student 
-router.get('/', clientController.getMain);
-router.get('/new', clientController.getNew);
-router.post('/new', clientController.postNew);
+router.get('/teacher', isAuth, clientController.getTeacher);
+router.get('/presenter', isAuth, clientController.getPresenter);
 router.get('/student', clientController.getStudent);
+router.get('/', clientController.getStudent);
 
 module.exports = router;
 

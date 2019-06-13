@@ -8,41 +8,34 @@
 // imports
 const db = require('../util/database');
 
-// GET => /client
-exports.getMain = (req, res, next) => {
-    let username = userCookie(req.cookies);
-    if (username != false) {
-        return res.render('client/index',
+// GET => /client/student
+exports.getStudent = (req, res, next) => {
+    
+        return res.render('client/student',
             {
                 docTitle: 'Student | Node ICT',
-                name: username
             });
-    } else {
-        return res.redirect('/client/new');
-    }
 };
 
-
-// GET => /client/new
-exports.getNew = (req, res, next) => {
-    return res.render('client/new',
+// GET => /client/presenter
+exports.getPresenter = (req, res, next) => {
+    return res.render('client/presenter', 
         {
-            docTitle: 'Student | Node ICT'
-        });
-};
-
-// POST => /client/new
-exports.postNew = (req, res, next) => {
-    res.setHeader('Set-cookie', `ict_username=${req.body.name}`)
-    res.redirect('/client')
-};
-
-exports.getStudent = (req, res, next) => {
-    return res.render('client/brainstorm/student',
-        {
-            docTitle: 'Student | Node ICT'
-        });
+            docTitle: 'Presenter | Node ICT'
+        }
+    );
 }
+
+// GET => /client/teacher
+exports.getTeacher = (req, res, next) => {
+    return res.render('client/teacher', 
+        {
+            docTitle: 'Teacher | Node ICT'
+        }
+    );
+}
+
+
 
 
 // Helpers

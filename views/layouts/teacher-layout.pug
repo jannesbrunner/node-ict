@@ -24,7 +24,7 @@ html(lang="en")
           if isLoggedIn
             a.nav-link(href="/teacher/settings") Einstellungen
             a.nav-link(href="/teacher/sessions") Lehreinheiten
-            a.nav-link(href="/client/") Zu Teilnehmer wechseln
+            a.nav-link(href="/client/student" target="_blank") Zu Teilnehmer wechseln
             form(method="POST" action="/teacher/logout")
               button(type="SUBMIT") Log Out
           unless isLoggedIn
