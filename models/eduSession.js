@@ -93,6 +93,48 @@ exports.destroyBrainstormsession = async (bsId) => {
     }
 }
 
+exports.getActiveSession = async () => {
+    try {
+        const activeSession = await db.EduSession.findOne({where: {isActive: true}});
+        return activeSession;
+    } catch (error) {
+        throw new Error("DB Find Active Session: " + error);
+    }
+}
+
+exports.setActiveSession = async (sessionId) => {
+    try {
+        const activeSession = await db.EduSession.findOne({where: {isActive: true}});
+        // Found no active session, so we can set one
+        if(!activeSession) {
+            const newActiveSession = await db.EduSession.findByPk(sessionId);
+            newActiveSession.isActive = true;
+            await newActiveSession.save();
+        } else { 
+            throw new Error("DB Set Active Session: There is already an active session!");
+        }
+    } catch (error) {
+        throw new Error("DB Set Active Session: " + error);
+    }
+}
+
+exports.unsetActiveSession = async () => {
+    try {
+        const activeSession = await db.EduSession.findOne({where: {isActive: true}});
+        // Found active session, so we can unset it
+        if(activeSession) {
+            
+            activeSession.isActive = false;
+            await activeSession.save();
+            return true
+        } else {  
+            throw new Error("DB Unset Active Session: There is no active session!");
+        }
+    } catch (error) {
+        throw new Error("DB Set Active Session: " + error);
+    }
+}
+
 // helpers
 
 async function constructSessions(foundSessions) {
