@@ -14,6 +14,8 @@ const cookieParser = require('cookie-parser');
 const opn = require('opn');
 const ip = require('ip');
 const session = require('express-session');
+const sharedsession = require("express-socket.io-session");
+const ios = require('socket.io-express-session');
 // App Imports //
 const errorController = require('./controllers/error');
 const mainRoutes = require('./routes/main');
@@ -22,16 +24,16 @@ const clientRoutes = require('./routes/client');
 const database = require('./util/database');
 const dbSetup = require('./util/db_setup');
 const isAuth = require('./middleware/is-auth');
+const io = require('./util/socket');
+const sessionIo = require('./controllers/sessionSocket');
 // ------------------------------------------------ //
 const app = express();
-
-const server = app.listen(3000, ip.address(), function() {
+// Set up Event Emitter 
+require('./util/eventEmitter').init();
+const server = app.listen(3000, ip.address(), function () {
   console.log(`Hello! The Server is running on ${ip.address()}!`);
 });
-// set up socket.io for web sockets
-require('./util/socket').init(server);
-const sessionIo = require('./controllers/sessionSocket');
-sessionIo();
+
 
 // Set static content folder
 app.set('view engine', 'pug');
@@ -48,24 +50,46 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 // parse cookies
 app.use(cookieParser())
+
+
+// set up socket.io for web sockets
+io.init(server);
+
+
 // configure sessions
 const SequelizeStore = require('connect-session-sequelize')(session.Store);
 const sessionStore = new SequelizeStore({
   db: database.sequelize
 })
 
-app.use(session({
+const sessionConfig = {
   secret: 'my secret',
   resave: false,
   store: sessionStore,
   saveUninitialized: false,
-  cookie: {maxAge:600000},
-}))
+  cookie: { maxAge: 600000 },
+}
+
+const expressSession = session(sessionConfig);
+app.use(expressSession)
+
+// Share session with socket IO
+io.getIO().use(
+  function (socket, next) {
+    expressSession(socket.request, socket.request.res, next);
+  }
+);
+
+
+// Start IO Script
+sessionIo();
+
+
 
 app.get('/error', errorController.getError)
 app.use('/teacher', teacherRoutes);
 app.use('/client', clientRoutes);
-
+// protecting teacher client
 app.use('/tclient', isAuth);
 // Clients
 // app.get('/client/student', (req, res) => {
@@ -99,3 +123,5 @@ process.on('uncaughtException', (err) => {
 })
 
 init();
+
+
