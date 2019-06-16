@@ -1,9 +1,14 @@
 extends ../layouts/client-layout.pug
 
 block styles
-    link(rel="stylesheet", href="/css/client.css")
+    link(rel="stylesheet", href="/css/presenter.css")
 block scripts
-    script(src="./js/brainstorm_presenter.js")
+   script(src="/client/js/vue.js")
+   script(src="/client/js/socket.io.js")
 block content
-    h1 Hallo Presenter
-    div#presenter 
+    div#presenter
+      h1 {{ sessionType }} 
+    - var socket = `var socket = io('${ipAdd}:3000/pclient');`
+    script #{socket}
+    em#presenterId(style="display: none") #{presenterId}
+    script(src="/client/js/brainstorm_presenter.js")

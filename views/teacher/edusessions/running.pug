@@ -13,8 +13,10 @@ block content
             span {{ sessionName }} 
             strong Typ: 
             span {{ sessionType }} 
+            a(v-bind:href="presenterUrl" target="_blank") Presenter öffnen
             hr
-            p blabla
+            div#eduContent
+                button(@click="sendTest") Test Message
             hr
             button(@click="endSession") Session Beenden 
         div(v-else)
