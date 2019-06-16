@@ -8,7 +8,10 @@
 // Imports
 const User = require("../models/user");
 const Settings = require("../models/settings");
+const EduSession = require("../models/eduSession");
 const dbSetup = require('../util/db_setup');
+const eventEmitter = require('../util/eventEmitter');
+
 
 
 
@@ -61,6 +64,7 @@ exports.postLogin = async (req, res, next) => {
                 req.session.isLoggedIn = true;
                 req.session.user = user;
                 await req.session.save();
+
                 return res.redirect('/teacher');
 
             } else {
@@ -79,6 +83,7 @@ exports.postLogin = async (req, res, next) => {
 // POST => /teacher/logout
 exports.postLogout = async (req, res, next) => {
     try {
+        eventEmitter.get().emit('session_end');
         await req.session.destroy();
         return res.redirect('/teacher');
     } catch (error) {
