@@ -16,7 +16,7 @@ const isAuth = require('../middleware/is-auth');
 
 
 // Presenter & Studen Clients
-router.get('/presenter', isAuth, clientController.getPresenter);
+router.get('/presenter/:sessionId', isAuth, clientController.getPresenter);
 router.get('/student', clientController.getStudent);
 router.get('/', clientController.getStudent);
 
