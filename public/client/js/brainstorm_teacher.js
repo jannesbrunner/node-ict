@@ -10,8 +10,12 @@ const vue = new Vue({
         sessionName: "",
         sessionType: "",
         sessionActive: true,
+        sessionId: "",
+        presenterUrl: "http://null"
+        
     }, 
     computed: {  
+        
     },
     watch: {
     },
@@ -21,6 +25,11 @@ const vue = new Vue({
             if(wantsToEnd) {
                 socket.emit("endSession", true);         
             }
+        },
+        sendTest: function() {
+            socket.emit("test", {
+                message: "Hello World!"
+            });
         }
     }
 });
@@ -31,6 +40,9 @@ socket.on('session', function(data) {
     console.log(data, "Session");
     vue.sessionName = data.name;
     vue.sessionType = data.type;
+    vue.sessionId = data.id;
+    vue.presenterUrl = `http://${socket.io.engine.hostname}:${socket.io.engine.port}/client/presenter/${data.id}`;
+    console.log(socket)
 })
 
 socket.on('endSession', function(data) {
@@ -38,4 +50,8 @@ socket.on('endSession', function(data) {
         vue.sessionActive = false;
     }
 })
+
+socket.on('test', (data) => {
+    console.log("Received data from Server: ", data.message)
+});
 
