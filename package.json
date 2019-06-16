@@ -35,6 +35,7 @@
     "session.socket.io": "^0.2.1",
     "socket.io": "^2.2.0",
     "socket.io-express-session": "^0.1.3",
-    "sqlite3": "^4.0.8"
+    "sqlite3": "^4.0.8",
+    "winston": "^3.2.1"
   }
 }
