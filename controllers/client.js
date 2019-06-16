@@ -7,6 +7,7 @@
 
 // imports
 const db = require('../util/database');
+const ip = require('ip');
 
 // GET => /client/student
 exports.getStudent = (req, res, next) => {
@@ -14,14 +15,17 @@ exports.getStudent = (req, res, next) => {
         return res.render('client/student',
             {
                 docTitle: 'Student | Node ICT',
+                ipAdd: ip.address(),
             });
 };
 
-// GET => /client/presenter
+// GET => /client/presenter/:sessionId
 exports.getPresenter = (req, res, next) => {
     return res.render('client/presenter', 
         {
-            docTitle: 'Presenter | Node ICT'
+            docTitle: 'Presenter | Node ICT',
+            presenterId: req.params.sessionId,
+            ipAdd: ip.address(),
         }
     );
 }
