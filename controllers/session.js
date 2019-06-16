@@ -6,13 +6,15 @@
  */
 
 const EduSession = require('../models/eduSession');
+const eventEmitter = require('../util/eventEmitter');
 const ip = require('ip');
+
 
 // GET => /teacher/sessions
 exports.getSessions = async (req, res, next) => {
 
     try {
-        const activeSession = await EduSession.getActiveSession();
+        const activeSession = await EduSession.getActiveSession(req.session.user.id);
         if (activeSession != null) {
             return res.redirect('/teacher/sessions/start');
         }
@@ -36,6 +38,7 @@ exports.getSessions = async (req, res, next) => {
 }
 // GET => /teacher/sessions/start/
 exports.getStartSession = async (req, res, next) => {
+    eventEmitter.get().emit('session_start', req.session.user);
     res.render('teacher/edusessions/running', {
         docTitle: "Laufende Session | Node ICT",
         isLoggedIn: req.session.isLoggedIn,
@@ -49,7 +52,7 @@ exports.getStartSession = async (req, res, next) => {
 // POST => /teacher/sessions/start/:sessionId
 exports.postStartSession = async (req, res, next) => {
     try {
-        await EduSession.setActiveSession(req.params.sessionId);
+        await EduSession.setActiveSession(req.params.sessionId, req.session.user.id);
         return res.redirect('/teacher/sessions/start');
     } catch (error) {
         res.render('error', {error: error});
