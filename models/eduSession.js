@@ -93,19 +93,22 @@ exports.destroyBrainstormsession = async (bsId) => {
     }
 }
 
-exports.getActiveSession = async () => {
+exports.getActiveSession = async (userId) => {
     try {
-        const activeSession = await db.EduSession.findOne({where: {isActive: true}});
-        return activeSession;
+        const activeSession = await db.EduSession.findOne({where: {isActive: true, userId: userId}});
+        if(activeSession) {
+            return constructSession(activeSession);
+        }
+            return null;
     } catch (error) {
         throw new Error("DB Find Active Session: " + error);
     }
 }
 
-exports.setActiveSession = async (sessionId) => {
+exports.setActiveSession = async (sessionId, userId) => {
     try {
-        const activeSession = await db.EduSession.findOne({where: {isActive: true}});
-        // Found no active session, so we can set one
+        const activeSession = await db.EduSession.findOne({where: {isActive: true, userId: userId}});
+        // Found no active session for this user, so we can set one
         if(!activeSession) {
             const newActiveSession = await db.EduSession.findByPk(sessionId);
             newActiveSession.isActive = true;
@@ -118,17 +121,18 @@ exports.setActiveSession = async (sessionId) => {
     }
 }
 
-exports.unsetActiveSession = async () => {
+exports.unsetActiveSession = async (userId) => {
     try {
-        const activeSession = await db.EduSession.findOne({where: {isActive: true}});
-        // Found active session, so we can unset it
+        const activeSession = await db.EduSession.findOne({where: {isActive: true, userId: userId}});
+        // Found active session for the user, so we can unset it
         if(activeSession) {
             
             activeSession.isActive = false;
             await activeSession.save();
             return true
         } else {  
-            throw new Error("DB Unset Active Session: There is no active session!");
+            console.log(`No active edu Session for user with ID ${userId} . Skip.`)
+            return true
         }
     } catch (error) {
         throw new Error("DB Set Active Session: " + error);
