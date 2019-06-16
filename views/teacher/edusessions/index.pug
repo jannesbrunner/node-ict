@@ -30,8 +30,11 @@ block content
             div
               a(href=`/teacher/sessions/${session.type}-edit/${session.id}`)
                 button Bearbeiten
-              form(method="POST" action=`/teacher/sessions/start/${session.id}`)
-                button(type="SUBMIT") Starten &#9658;
+              if loggedUser.id == session.userId
+                form(method="POST" action=`/teacher/sessions/start/${session.id}`)
+                  button(type="SUBMIT") Starten &#9658;
+              else
+                p Lehrinhalte können nur vom Eigentümer gestartet werden.
             
               
 
