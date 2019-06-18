@@ -23,9 +23,17 @@ const vue = new Vue({
 });
 
 
+
+
+// Listen for Events
+
+// Emit Events
+
 socket.on('connect', () => {
-   console.log("Connected to server!");
-   socket.emit("attachPresenter", document.getElementById("presenterId").innerHTML);
-});
+    console.log("Connected to server!");
+    socket.emit("attachPresenter", document.getElementById("presenterId").innerHTML);
+ });
+ 
+
 
 
