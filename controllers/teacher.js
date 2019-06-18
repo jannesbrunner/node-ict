@@ -83,7 +83,7 @@ exports.postLogin = async (req, res, next) => {
 // POST => /teacher/logout
 exports.postLogout = async (req, res, next) => {
     try {
-        eventEmitter.get().emit('session_end');
+        eventEmitter.get().emit('session_end', req.session.user.id);
         await req.session.destroy();
         return res.redirect('/teacher');
     } catch (error) {
