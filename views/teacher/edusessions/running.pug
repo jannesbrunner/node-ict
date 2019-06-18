@@ -14,6 +14,8 @@ block content
             strong Typ: 
             span {{ sessionType }} 
             a(v-bind:href="presenterUrl" target="_blank") Presenter öffnen
+            div(v-for="(student, i) in students") Lobby: 
+              span student
             hr
             div#eduContent
                 button(@click="sendTest") Test Message
@@ -21,6 +23,13 @@ block content
             button(@click="endSession") Session Beenden 
         div(v-else)
             h1 Die Session wurde beendet
+        template(v-if="error")
+            div.error-modal
+               div.error-modal-content
+                 span(@click="closeError").close &times;
+                 p {{ errorMsg }}
+
+
 
 
 
