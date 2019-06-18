@@ -7,6 +7,7 @@
 
  const BsSession = require('../models/brainstorming');
  const EduSession = require('../models/eduSession')
+const logger = require('winston');
 
  // GET => /teacher/sessions/brainstorming/new 
  exports.getNew = (req, res, next) => {
@@ -104,8 +105,8 @@ exports.postEdit = async (req, res, next) => {
     
 
 
-    req.body.name ? sessionToSave.name = req.body.name : console.log('No updated Name found');
-    req.body.topic ? sessionToSave.topic = req.body.topic : console.log('No updated topic found');
+    req.body.name ? sessionToSave.name = req.body.name : logger.log('debug', 'No updated Name found');
+    req.body.topic ? sessionToSave.topic = req.body.topic : logger.log('debug','No updated topic found');
 
     try {
         await EduSession.saveBrainstormsession(sessionToSave);
