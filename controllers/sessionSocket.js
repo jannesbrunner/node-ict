@@ -1,94 +1,141 @@
 const socket = require('../util/socket')
 const EduSession = require('../models/eduSession')
-const Brainstorming = require('../controllers/games/brainstorming');
+const BrainstormTeacher = require('../controllers/games/brainstorming');
 const eventEmitter = require('../util/eventEmitter')
+const logger = require('winston');
 
 module.exports = async () => {
 
 
-
     // Set up namespaces
-    const teacher = socket.getIO().of('/tclient');
-    const student = socket.getIO().of('/sclient');
-    const presenter = socket.getIO().of('/pclient');
+    const teacherIOs = socket.getIO().of('/tclient');
+    const studentIOs = socket.getIO().of('/sclient');
+    const presenterIOs = socket.getIO().of('/pclient');
 
-    // TEACHER
-    teacher.on('connection', (socket) => {
+    const connectedTeachers = new Map()
+
+    // TEACHER Connection Manager
+    teacherIOs.on('connection', (socket) => {
         const teacherUser = socket.request.session.user;
-        console.log(`Teacher connected: SID > ${socket.id}, Name > ${teacherUser.name}`);
-        // check if the connected teacher already has a running game
+  
+        // check if the teacher has a valid session, if not disconnect 
+        if (!teacherUser) {
+            socket.emit("appError", { errorMsg: "Ihre Session ist abgelaufe. Bitte melden Sie sich erneut an!", fatalError: true })
+            logger.log('info', `Teacher connected: SID > ${socket.id}, No valid session. Disconnecting.`);
+            // socket.disconnect();
+        } else {
+            logger.log('info', `Teacher connected: SID > ${socket.id}, Name > ${teacherUser.name}`);
 
-        EduSession.getActiveSession(teacherUser.id).then(
-            (activeSession) => {
-                if (activeSession) {
-                    switch (activeSession.type) {
-                        case "brainstorming":
-                            // TODO Wie geht es ab hier weiter? wirklich Klasse? Denk an DB!
-                            return new Brainstorming(socket, activeSession);
-                        case "quizzing":
-                            // TODO
-                            break;
-                        default:
-                            teacher.emit("error", "Unkwnown Session Type!");
-                            throw new Error("Unknown Session Type!");
+            EduSession.getActiveSession(teacherUser.id).then(
+                (activeSession) => {
+                    if (activeSession) {
+                        switch (activeSession.type) {
+                            case "brainstorming":
+                                connectedTeachers.set(teacherUser.id, 
+                                    new BrainstormTeacher([], activeSession, socket, teacherUser.id)
+                                )
+                              break
+
+                            case "quizzing":
+                                // TODO
+                               
+                                break;
+                            default:
+                                teacherIOs.emit("appError", { errorMsg: "Unkwnown Session Type!", fatalError: true });
+                                logger.log("error", "Unkwnown Session Type!");
+                                throw new Error("Unknown Session Type!");
+                        }
+                    } else {
+                        logger.log("error", "This Teacher has no active session!");
+                        return null;
                     }
-                } else {
-                    throw new Error("This Teacher has no active session!");
+
+
                 }
-            }
-        );
+            );
+            // check if the connected teacher already has a running game
+            // Teacher disconnects
+            socket.on("disconnect", function () {
+                logger.log('info', `Lost connection to teacher: SID > ${socket.id}, Name > ${teacherUser.name}`);
+                const sessionToEnd = connectedTeachers.get(teacherUser.id);
+                sessionToEnd.endSession();
+        
+            });
 
-        // Teacher disconnects
-        socket.on("disconnect", function () {
-            console.log("Lost connection to teacher >", socket.id)
-            // TODO Implement game pause     
-        });
+
+            // Teacher ends the session
+            socket.on("endSession", function (teacherUserId) {
+                if (teacherUserId) {
+                    logger.log("info", `Beginn Session End via Teacher Client (for user ${teacherUserId}) `)
+                    if(connectedTeachers.has(teacherUserId)) {
+                        let sessionToEnd =  connectedTeachers.get(teacherUserId) 
+                        sessionToEnd.endSession();
+                    } else {
+                        logger.log("warn", `Seems like the Teacher with id ${teacherUserId} has no active session to end!`);
+                    }
+                }
+            })
+            // Clean exit if teacher performs logout
+            eventEmitter.get().addListener('session_end', (teacherUserId) => {
+                logger.log("info", `Beginn Session End via Logout (for user ${teacherUserId} `)
+                if(connectedTeachers.has(teacherUserId)) {
+                    let sessionToEnd =  connectedTeachers.get(teacherUserId) 
+                    sessionToEnd.endSession();
+                } else {
+                    logger.log("warn", `Seems like the Teacher with id ${teacherUserId} has no active session to end!`);
+                }
+                               
+            });
+        }
+    });
+
+    
+    
+
+    
+    
 
 
-        // Teacher ends the session
-        socket.on("endSession", function (data) {
-            if (data) {
-                endSession(socket, teacherUser.id).then(() => {
-                    // TODO Save the game before deletion
-                    // eduGame.save();
-                }).catch(error => { console.log(error); })
 
-            }
 
+
+    // Presenter
+    presenterIOs.on('connection', (socket) => {
+        logger.log('info', `Presenter connected: SID > ${socket.id}`);
+
+
+        socket.on("attachPresenter", function () {
+            // TODO
         })
 
-        // Clean exit if teacher performs logout
-        eventEmitter.get().addListener('session_end', () => {
-            console.log("End Session via Logout");
-            endSession(socket, teacherUser.id).then(() => {
-                // TODO Save the game before deletion
-                // eduGame.save();
-            }).catch(error => { console.log(error); })
+        socket.on('disconnect', function () {
 
-
-        });
+        })
 
     });
 
-    // Presenter
-    presenter.on('connection', (socket) => {
-        console.log("Hello Presenter with ID > " + socket.id)
+    // Student
+    studentIOs.on('connection', (socket) => {
+        logger.log('info', `Student connected: SID > ${socket.id}`);
 
-        let sessionId;
 
-        socket.on("attachPresenter", function (recSessionId) {
-            sessionId = recSessionId;
-            if (runningGames.size == 0) {
-                console.error("Error, no running Games!");
-                socket.emit("error", "Error, no running Games!")
-            } else {
-                runningGames.forEach((value, key) => {
-                    if (value.session == sessionId) {
-                        value.addPresenter(socket);
-                    }
-                })
-            }
+        socket.on("getGames", function () {
+           
         })
+
+        socket.on("joinGame", function (data) {
+
+            if (data) {
+                // logger.log("info", `User ${data.clientName} wants to join a game from teacher with id ${data.teacherId}`);
+                // const sessionData = connectedTeachers.get(data.teacherId);
+                // currentStudents.players(push({});
+                // console.log(currentStudents);
+                // connectedTeachers.set(data.teacherId, currentStudents);
+                // teacherIOs.emit("updatePlayerlist", data.teacherId);
+            }
+
+
+        });
 
         socket.on('disconnect', function () {
 
@@ -98,21 +145,7 @@ module.exports = async () => {
 
 
 
-    async function endSession(socket, teacherId) {
-        try {
-            const answer = await EduSession.unsetActiveSession(teacherId);
-            if (answer) {
-                runningGames.delete(teacherId)
-                socket.emit("endSession", true);
-            }
-        } catch (error) {
-            socket.emit("error", "Error during disabling session!");
-            console.log(error);
-            // TODO Impement error hadnling
-        }
-
-
-    }
+  
 
 
 }
