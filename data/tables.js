@@ -91,6 +91,11 @@ exports.settings = (sequelize, Sequelize) => {
         allowNull: false,
         defaultValue: false,
       },
+      isRunning: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
       type: {
         type: Sequelize.STRING,
         allowNull: false,
