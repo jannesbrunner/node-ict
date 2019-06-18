@@ -8,6 +8,7 @@ const db = require('../util/database');
 const User = require('../models/user');
 const Student = require('../models/student');
 const Brainstorming = require('../models/brainstorming');
+const logger = require("winston");
 
 // Model
 exports.getSessionsById = async (currentUserId) => {
@@ -93,6 +94,18 @@ exports.destroyBrainstormsession = async (bsId) => {
     }
 }
 
+exports.getActiveSessions = async(running = false) =>{
+    try {
+        const activeSessions = await db.EduSession.findAll({where: {isActive: true, isRunning: running}});
+        if(activeSessions) {
+            return activeSessions
+        }
+            return null;
+    } catch (error) {
+        throw new Error("DB Find Active Sessions: " + error);
+    }
+}
+
 exports.getActiveSession = async (userId) => {
     try {
         const activeSession = await db.EduSession.findOne({where: {isActive: true, userId: userId}});
@@ -131,7 +144,7 @@ exports.unsetActiveSession = async (userId) => {
             await activeSession.save();
             return true
         } else {  
-            console.log(`No active edu Session for user with ID ${userId} . Skip.`)
+            logger.log("info", `No active edu Session for user with ID ${userId} . Skip.`)
             return true
         }
     } catch (error) {

@@ -6,6 +6,7 @@
  */
 
 const db = require('../util/database');
+const logger = require('winston');
 
 // Model 
 exports.getSettings = async () => {
@@ -28,11 +29,13 @@ exports.updateSettings = async (updatedSettings) => {
 
         // no settings found? Then create them
         if (!currentSettings) {
-            console.log("No settings found... create new.");
+        
+           
             const settingsToCreate = await db.Settings.create(updatedSettings)
             if (settingsToCreate) {
                 return true;
             } else {
+                logger.log("error", "DB Create Settings: Error creating settings")
                 throw new Error("DB Create Settings: Error creating settings")
             }
         // found settings, update them
