@@ -1,9 +1,29 @@
 extends ../layouts/client-layout.pug
 
 block styles
-    link(rel="stylesheet", href="/css/client.css")
+    link(rel="stylesheet", href="/css/student.css")
 block scripts
-    script(src="./js/brainstorm_student.js")
+    script(src="/client/js/vue.js")
+    script(src="/client/js/socket.io.js")
 block content
-    h1 Hallo Student
-    div#student
+    div.container
+      div#student
+        template(v-if="newUser")
+            div#signup
+                label Name
+                    input(type="text", v-model="username")
+                button(@click="signup").button Mitmachen!
+        template(v-else)
+          ul
+            li(v-for="(game, i) in games")
+              h5 {{ game.name }}
+              p {{ game.type }}
+              button(@click="joinGame(game.userId)") Beitreten
+      div#game
+      div#error
+    - var socket = `var socket = io('${ipAdd}:3000/sclient');`
+    script #{socket}
+    script(src="./js/brainstorm_student.js")
+        
+
+
