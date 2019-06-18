@@ -16,6 +16,9 @@ const ip = require('ip');
 const session = require('express-session');
 const sharedsession = require("express-socket.io-session");
 const ios = require('socket.io-express-session');
+
+
+
 // App Imports //
 const errorController = require('./controllers/error');
 const mainRoutes = require('./routes/main');
@@ -26,12 +29,17 @@ const dbSetup = require('./util/db_setup');
 const isAuth = require('./middleware/is-auth');
 const io = require('./util/socket');
 const sessionIo = require('./controllers/sessionSocket');
+const logger = require('./util/loggerSetup');
+
 // ------------------------------------------------ //
 const app = express();
+
+
+
 // Set up Event Emitter 
 require('./util/eventEmitter').init();
 const server = app.listen(3000, ip.address(), function () {
-  console.log(`Hello! The Server is running on ${ip.address()}!`);
+  logger.log({ level: 'info', message: `Hello! The Server is running on ${ip.address()}!`});
 });
 
 
@@ -67,7 +75,7 @@ const sessionConfig = {
   resave: false,
   store: sessionStore,
   saveUninitialized: false,
-  cookie: { maxAge: 600000 },
+  cookie: { maxAge: 7200000 }, // 2 hours in ms
 }
 
 const expressSession = session(sessionConfig);
@@ -109,6 +117,7 @@ async function init() {
 
   } catch (error) {
     server.close();
+    logger.log("error", "App init error!");
     throw new Error("App init error!");
   }
 }
@@ -116,7 +125,8 @@ async function init() {
 
 
 process.on('uncaughtException', (err) => {
-  console.log(err);
+ console.log(err);
+ logger.log('error', "Fatal App Error: " + err);
   //errorController.setError(err);
   // opn('http://localhost:3000/error');
   server.close();
