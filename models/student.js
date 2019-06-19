@@ -13,4 +13,19 @@ exports.getStudentsForSession = async (sessionId) => {
     }
 }
 
+exports.addStudentToSession = async (sessionId, name) => {
+    try {
+        const foundSession = await db.EduSession.findByPk(sessionId);
+        const newStudent = await db.Student.create({
+            name: name,
+        });
+
+        await newStudent.setEduSession(foundSession);
+
+        return newStudent;
+     } catch (error) {
+         throw new Error(error)
+     }
+}
+
 
