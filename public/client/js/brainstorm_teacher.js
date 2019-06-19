@@ -83,21 +83,15 @@ const vue = new Vue({
                 }
             })
 
-            socket.on("updatePlayerlist", function(teacherId) {
+            socket.on("updatePlayerList", function(playerList) {
                 console.log("Server wants us to update the player list!");
-                if(teacherId) {
-                    if(vue.teacherId == teacherId) {
-                        socket.emit("getPlayers")
-                    }
-                }
+                console.log(playerList);
+                vue.students = playerList;
+                console.log(vue.students);
+                
             })
 
-            socket.on("updatePlayers", function(data) {
-                if(data) {
-                    console.log("Got new Playerlist: " + data);
-                    vue.students = data;
-                }
-            })
+            
 
             socket.on('test', (data) => {
                 console.log("Received data from Server: ", data.message)

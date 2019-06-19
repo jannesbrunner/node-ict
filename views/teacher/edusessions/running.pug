@@ -14,8 +14,11 @@ block content
             strong Typ: 
             span {{ sessionType }} 
             a(v-bind:href="presenterUrl" target="_blank") Presenter öffnen
-            div(v-for="(student, i) in students") Lobby: 
-              span student
+            p
+              strong Lobby:
+              ul(v-for="(student, i) in students") 
+                li {{ student.name }}
+                  button Entfernen (TODO)
             hr
             div#eduContent
                 button(@click="sendTest") Test Message

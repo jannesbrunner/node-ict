@@ -3,16 +3,32 @@ const EduSession = require("../../models/eduSession");
 
 module.exports = class BrainstormTeacher {
     constructor(connectedStudents, session, socket, teacherId) {
-        this.connectedStudents = connectedStudents;
+        this.connectedStudents = new Set()
         this.session = session;
         this.socket = socket;
         this.teacherId = teacherId;
         this.isRunning = false;
         this.emitSession();
-       
+        this.emitPlayerList();
     }
     emitSession() {
         this.socket.emit("session", this.session);
+    }
+    emitPlayerList() {
+        const playerList = [];
+        this.connectedStudents.forEach(  
+            (player) => {
+                playerList.push({name: player.name});
+            })
+            this.socket.emit("updatePlayerList", playerList);
+    }
+    // TODO ALLES MIT INS SESSION OBJEKT?
+    addPlayer(player) {
+        logger.log("debug", `Add Player NAME ${player.name}, SOCKET: ${player.socket} 
+        to game ${this.session.id}, ${this.session.name}`);
+        this.connectedStudents.add({name: player.name, socket: player.socket});
+        this.emitPlayerList();
+        player.socket.emit("gameJoined", {type: "brainstorming", teacherId: this.teacherId});
     }
     async endSession() {
         try {
