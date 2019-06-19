@@ -34,6 +34,7 @@ module.exports = async () => {
                                 connectedTeachers.set(teacherUser.id, 
                                     new BrainstormTeacher([], activeSession, socket, teacherUser.id)
                                 )
+                                updateStudentsGameList()
                               break
 
                             case "quizzing":
@@ -57,9 +58,15 @@ module.exports = async () => {
             // Teacher disconnects
             socket.on("disconnect", function () {
                 logger.log('info', `Lost connection to teacher: SID > ${socket.id}, Name > ${teacherUser.name}`);
-                const sessionToEnd = connectedTeachers.get(teacherUser.id);
-                sessionToEnd.endSession();
-        
+                
+                // if(connectedTeachers.has(teacherUser.id)) {
+                //     const sessionToEnd = connectedTeachers.get(teacherUser.id);
+                //     sessionToEnd.endSession();
+                //     connectedTeachers.delete(teacherUser.id)
+                //     updateStudentsGameList();
+                // } else {
+                //     logger.log("warn", `Seems like the Teacher with id ${teacherUser.id} has no active session to end!`);
+                // }
             });
 
 
@@ -70,6 +77,8 @@ module.exports = async () => {
                     if(connectedTeachers.has(teacherUserId)) {
                         let sessionToEnd =  connectedTeachers.get(teacherUserId) 
                         sessionToEnd.endSession();
+                        connectedTeachers.delete(teacherUserId)
+                        updateStudentsGameList();
                     } else {
                         logger.log("warn", `Seems like the Teacher with id ${teacherUserId} has no active session to end!`);
                     }
@@ -81,6 +90,8 @@ module.exports = async () => {
                 if(connectedTeachers.has(teacherUserId)) {
                     let sessionToEnd =  connectedTeachers.get(teacherUserId) 
                     sessionToEnd.endSession();
+                    connectedTeachers.delete(teacherUserId)
+                    updateStudentsGameList();
                 } else {
                     logger.log("warn", `Seems like the Teacher with id ${teacherUserId} has no active session to end!`);
                 }
@@ -118,18 +129,32 @@ module.exports = async () => {
     studentIOs.on('connection', (socket) => {
         logger.log('info', `Student connected: SID > ${socket.id}`);
 
-
-        socket.on("getGames", function () {
-           
+        // The Student client requests the list of available games 
+        socket.on("reqGames", function () {
+           if(connectedTeachers.size == 0) {
+               socket.emit("updateGameList", {})
+           } else {
+               let gameList = []
+               connectedTeachers.forEach( 
+                   (teachers) => {
+                     gameList.push(teachers.session) 
+                   }
+               )
+               socket.emit("updateGameList", {value: gameList})
+           }
         })
+
 
         socket.on("joinGame", function (data) {
 
             if (data) {
-                // logger.log("info", `User ${data.clientName} wants to join a game from teacher with id ${data.teacherId}`);
-                // const sessionData = connectedTeachers.get(data.teacherId);
-                // currentStudents.players(push({});
-                // console.log(currentStudents);
+                logger.log("info", `User ${data.clientName} wants to join a game from teacher with id ${data.teacherId}`);
+                const game = connectedTeachers.get(data.teacherId);
+               
+                game.addPlayer({name: data.clientName, socket: socket});
+
+                
+
                 // connectedTeachers.set(data.teacherId, currentStudents);
                 // teacherIOs.emit("updatePlayerlist", data.teacherId);
             }
@@ -142,6 +167,16 @@ module.exports = async () => {
         })
 
     });
+
+    function updateStudentsGameList() {
+        let gameList = [];
+        connectedTeachers.forEach( 
+            (teachers) => {
+              gameList.push(teachers.session) 
+            });
+        
+            studentIOs.emit("updateGameList", {value: gameList})
+    }
 
 
 
