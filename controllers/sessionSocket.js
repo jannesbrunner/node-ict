@@ -12,43 +12,53 @@ module.exports = async () => {
     const studentIOs = socket.getIO().of('/sclient');
     const presenterIOs = socket.getIO().of('/pclient');
 
-    const connectedTeachers = new Map()
+    // Holds active games, key: teacher userId
+    const availableGames = new Map();
+
+
 
     // TEACHER Connection Manager
-    teacherIOs.on('connection', (socket) => {
-        const teacherUser = socket.request.session.user;
-  
+    teacherIOs.on('connection', (teacherS) => {
+        const teacherUser = teacherS.request.session.user;
+
+        let session;
+        let game;
+
         // check if the teacher has a valid session, if not disconnect 
         if (!teacherUser) {
-            socket.emit("appError", { errorMsg: "Ihre Session ist abgelaufe. Bitte melden Sie sich erneut an!", fatalError: true })
-            logger.log('info', `Teacher connected: SID > ${socket.id}, No valid session. Disconnecting.`);
+            teacherS.emit("appError", { errorMsg: "Ihre Session ist abgelaufe. Bitte melden Sie sich erneut an!", fatalError: true })
+            logger.log('info', `Teacher connected: SID > ${teacherS.id}, No valid session. Disconnecting.`);
             // socket.disconnect();
         } else {
-            logger.log('info', `Teacher connected: SID > ${socket.id}, Name > ${teacherUser.name}`);
+            logger.log('info', `Teacher connected: SID > ${teacherS.id}, Name > ${teacherUser.name}`);
 
             EduSession.getActiveSession(teacherUser.id).then(
                 (activeSession) => {
                     if (activeSession) {
-                        switch (activeSession.type) {
+
+                        session = activeSession;
+                        // old
+                        switch (session.type) {
                             case "brainstorming":
-                                connectedTeachers.set(teacherUser.id, 
-                                    new BrainstormTeacher([], activeSession, socket, teacherUser.id)
-                                )
+                                game = new BrainstormTeacher(session, teacherS);
+                                availableGames.set(teacherUser.id, game)
                                 updateStudentsGameList()
-                              break
+                                break
 
                             case "quizzing":
                                 // TODO
-                               
+                                updateStudentsGameList()
                                 break;
                             default:
                                 teacherIOs.emit("appError", { errorMsg: "Unkwnown Session Type!", fatalError: true });
                                 logger.log("error", "Unkwnown Session Type!");
+                                teacherS.disconnect;
                                 throw new Error("Unknown Session Type!");
                         }
                     } else {
                         logger.log("error", "This Teacher has no active session!");
-                        return null;
+                        teacherS.emit("appError", { errorMsg: "Keine gestartete Lernsession gefunden!", fatalError: true });
+                        teacherS.disconnect();
                     }
 
 
@@ -56,131 +66,143 @@ module.exports = async () => {
             );
             // check if the connected teacher already has a running game
             // Teacher disconnects
-            socket.on("disconnect", function () {
-                logger.log('info', `Lost connection to teacher: SID > ${socket.id}, Name > ${teacherUser.name}`);
-                
-                // if(connectedTeachers.has(teacherUser.id)) {
-                //     const sessionToEnd = connectedTeachers.get(teacherUser.id);
-                //     sessionToEnd.endSession();
-                //     connectedTeachers.delete(teacherUser.id)
-                //     updateStudentsGameList();
-                // } else {
-                //     logger.log("warn", `Seems like the Teacher with id ${teacherUser.id} has no active session to end!`);
-                // }
+            teacherS.on("disconnect", function () {
+                logger.log('info', `Lost connection to teacher: SID > ${teacherS.id}, Name > ${teacherUser.name}`);
+                if (game) {
+                    endSession(game, teacherUser.id)
+
+                }
+
             });
 
 
             // Teacher ends the session
-            socket.on("endSession", function (teacherUserId) {
+            teacherS.on("endSession", function (teacherUserId) {
                 if (teacherUserId) {
-                    logger.log("info", `Beginn Session End via Teacher Client (for user ${teacherUserId}) `)
-                    if(connectedTeachers.has(teacherUserId)) {
-                        let sessionToEnd =  connectedTeachers.get(teacherUserId) 
-                        sessionToEnd.endSession();
-                        connectedTeachers.delete(teacherUserId)
-                        updateStudentsGameList();
-                    } else {
-                        logger.log("warn", `Seems like the Teacher with id ${teacherUserId} has no active session to end!`);
-                    }
+                    endSession(game, teacherUserId);
+
                 }
             })
             // Clean exit if teacher performs logout
             eventEmitter.get().addListener('session_end', (teacherUserId) => {
                 logger.log("info", `Beginn Session End via Logout (for user ${teacherUserId} `)
-                if(connectedTeachers.has(teacherUserId)) {
-                    let sessionToEnd =  connectedTeachers.get(teacherUserId) 
-                    sessionToEnd.endSession();
-                    connectedTeachers.delete(teacherUserId)
-                    updateStudentsGameList();
-                } else {
-                    logger.log("warn", `Seems like the Teacher with id ${teacherUserId} has no active session to end!`);
+                if (game) {
+                    endSession(game, teacherUserId);
+
                 }
-                               
+
             });
         }
     });
 
-    
-    
+    // Teacher Helpers
+    function endSession(game, teacherUserId) {
+        game.endSession().then(
+            () => {
+                logger.log("verbose", `Successfully ended session for teacher with id ${teacherUserId}`)
+                availableGames.delete(teacherUserId)
+                updateStudentsGameList();
+            }
+        ).catch(
+            (error) => {
+                logger.log("error", `Unable to end session for teacher with id ${teacherUserId}: ${error}`);
+                throw new Error(error);
+            }
+        )
+    }
 
-    
-    
+
+
+
+
+
 
 
 
 
 
     // Presenter
-    presenterIOs.on('connection', (socket) => {
-        logger.log('info', `Presenter connected: SID > ${socket.id}`);
+    presenterIOs.on('connection', (presenterS) => {
+        logger.log('info', `Presenter connected: SID > ${presenterS.id}`);
 
 
-        socket.on("attachPresenter", function () {
+        presenterS.on("attachPresenter", function () {
             // TODO
         })
 
-        socket.on('disconnect', function () {
+        presenterS.on('disconnect', function () {
 
         })
 
     });
 
     // Student
-    studentIOs.on('connection', (socket) => {
-        logger.log('info', `Student connected: SID > ${socket.id}`);
+    studentIOs.on('connection', (studentS) => {
+        logger.log('info', `Student connected: SID > ${studentS.id}`);
 
-        // The Student client requests the list of available games 
-        socket.on("reqGames", function () {
-           if(connectedTeachers.size == 0) {
-               socket.emit("updateGameList", {})
-           } else {
-               let gameList = []
-               connectedTeachers.forEach( 
-                   (teachers) => {
-                     gameList.push(teachers.session) 
-                   }
-               )
-               socket.emit("updateGameList", {value: gameList})
-           }
+        // The Student client requests the list of available games
+        // We check for data integrity Database vs memory map 
+        studentS.on("reqGames", function () {
+                updateStudentsGameList(studentS);
         })
 
 
-        socket.on("joinGame", function (data) {
+        studentS.on("joinGame", function (data) {
 
             if (data) {
                 logger.log("info", `User ${data.clientName} wants to join a game from teacher with id ${data.teacherId}`);
-                const game = connectedTeachers.get(data.teacherId);
-               
-                game.addPlayer({name: data.clientName, socket: socket});
-
-                
-
-                // connectedTeachers.set(data.teacherId, currentStudents);
-                // teacherIOs.emit("updatePlayerlist", data.teacherId);
+                EduSession.getActiveSession(data.teacherId).then(
+                    (game) => {
+                        if (availableGames.has(game.userId)) {
+                            const session = availableGames.get(game.userId);
+                            console.log(session);
+                            session.addPlayer({ name: data.clientName, socket: studentS });
+                            teacherIOs.emit("updatePlayerlist", data.teacherId);
+                        } 
+                    }
+                ).catch(
+                    (error) => {
+                        logger.log("error", `Unable to add new player to the game of teacher ${data.teacherId} (id): ${error}`);
+                        throw new Error(error);
+                    }
+                )
             }
-
-
         });
 
-        socket.on('disconnect', function () {
+        studentS.on('disconnect', function () {
 
         })
 
     });
 
-    function updateStudentsGameList() {
-        let gameList = [];
-        connectedTeachers.forEach( 
-            (teachers) => {
-              gameList.push(teachers.session) 
-            });
-        
-            studentIOs.emit("updateGameList", {value: gameList})
+    // Students Helpers
+
+    // Broadcast updated game list to all student sockets if 
+    // no specific student socket ist given (studentS = null)
+    function updateStudentsGameList(studentS = null) {
+
+        let gameList = []
+        EduSession.getActiveSessions(false).then(
+            (games) => {
+                if (games.length === 0) {
+                    studentS == null ? studentIOs.emit("updateGameList", {}) : studentS.emit("updateGameList", {value: gameList})
+                } else {
+                    games.forEach((game) => {
+                        if (availableGames.has(game.userId)) {
+                            gameList.push(game);
+                        }
+                    })
+                    studentS == null ? studentIOs.emit("updateGameList", {}) : studentS.emit("updateGameList", {value: gameList})
+                }
+
+            }
+        )
+
     }
 
 
 
-  
+
 
 
 }
