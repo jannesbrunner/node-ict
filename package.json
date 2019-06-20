@@ -8,7 +8,11 @@
   "license": "MIT",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon app.js"
+    "start": "nodemon app.js",
+    "buildPresenterClient": "browserify ./public/client/js/presenter/dev.js > ./public/client/js/presenter/index.js",
+    "buildTeacherClient" : "browserify ./public/client/js/teacher/dev.js > ./public/client/js/teacher/index.js",
+    "buildStudentClient" : "browserify ./public/client/js/student/dev.js > ./public/client/js/student/index.js",
+    "buildClients": "yarn run buildPresenterClient && yarn run buildTeacherClient && yarn run buildStudentClient"
   },
   "devDependencies": {
     "eslint": "^5.16.0",
@@ -36,6 +40,8 @@
     "socket.io": "^2.2.0",
     "socket.io-express-session": "^0.1.3",
     "sqlite3": "^4.0.8",
+    "vue-d3-cloud": "^0.2.0",
+    "vuewordcloud": "^18.7.11",
     "winston": "^3.2.1"
   }
 }

@@ -28,11 +28,6 @@ block content
             button(@click="endSession") Session Beenden 
         div(v-else)
             h1 Die Session wurde beendet
-        template(v-if="error")
-            div.error-modal
-               div.error-modal-content
-                 span(@click="closeError").close &times;
-                 p {{ errorMsg }}
 
 
 
@@ -42,4 +37,4 @@ block content
 
     - var socket = `var socket = io('${ipAdd}:3000/tclient');`
     script #{socket}
-    script(src="/client/js/brainstorm_teacher.js")
+    script(src="/client/js/teacher/index.js")

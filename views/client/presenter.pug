@@ -1,14 +1,31 @@
 extends ../layouts/client-layout.pug
 
 block styles
-    link(rel="stylesheet", href="/css/presenter.css")
+  link(rel="stylesheet", href="/css/presenter.css")
 block scripts
-   script(src="/client/js/vue.js")
-   script(src="/client/js/socket.io.js")
+  script(src="/client/js/vue.js")
+  script(src="/client/js/socket.io.js")
+
 block content
-    div#presenter
-      h1 {{ sessionType }} 
-    - var socket = `var socket = io('${ipAdd}:3000/pclient');`
-    script #{socket}
-    em#presenterId(style="display: none") #{presenterId}
-    script(src="/client/js/brainstorm_presenter.js")
+  div#presenter
+    vue-word-cloud(
+        :animation-duration="1000"
+        :animation-easing="'ease'"
+        :animation-overlap="0"
+        :color="'black'"
+        :enter-animation="'animated bounceIn'"
+        :font-family="'serif'"
+        :font-size-ratio="5"
+        :leave-animation="'animated hinge'"
+        :rotation="0"
+        :spacing="1"
+        :words="words"
+        )
+    div#cloud
+      h1 Hello!
+      
+  - var socket = `var socket = io('${ipAdd}:3000/pclient');`
+  script #{socket}
+  em#presenterId(style="display: none") #{presenterId}
+  script(src="/client/js/presenter/index.js")
+ 
