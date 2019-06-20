@@ -51,6 +51,7 @@ module.exports = class BrainstormTeacher {
         Student.addStudentToSession(this.session.id, player.name).then( (
             (result) => {
                 if(result) {
+                    player.socket.studentId = result.id;
                     this.studentSockets.push(player.socket);
                     player.socket.emit("gameJoined", {type: "brainstorming", teacherId: this.teacherId, studentId: result.id});
                     this.studentSockets.push(player.socket);
@@ -76,6 +77,7 @@ module.exports = class BrainstormTeacher {
         Student.removeStudentFromSession(this.session.id, playerId).then(
             (result) => {
                 if(result) {
+                    this.cleanUpStudentS();
                     this.emitPlayerList();
                 }
             }
@@ -93,14 +95,30 @@ module.exports = class BrainstormTeacher {
                 (result) => {
                     if(result) {
                         for( let studentS of this.studentSockets) {
+                            if( studentS.studentId == playerId) {
+                                this.cleanUpStudent(playerId);
+                            }
                             studentS.emit("kicked", playerId);
                         }
+                        this.cleanUpStudentS();
                         this.emitPlayerList();
                     }
                 }
             )
         
         
+    }
+    // remove all disconnected student sockets
+    cleanUpStudentS() {
+        this.studentSockets = this.studentSockets.filter( (studentS) => {
+            studentS.disconnected == true;
+        })
+    }
+
+    cleanUpStudent(studentId) {
+       let toRemove = this.studentSockets.findIndex( (studentS) => studentS.studentId == studentId);
+       this.studentSockets = this.studentSockets.splice(toRemove, 1);
+
     }
 
     async endSession() {
