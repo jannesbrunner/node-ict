@@ -22,7 +22,7 @@ exports.getSessions = async (req, res, next) => {
         if(req.session.user.isSuperAdmin) {
             eduSessions = await EduSession.getAllSessions();
         } else {
-            eduSessions = await EduSession.getSessionsById(req.session.user.id);
+            eduSessions = await EduSession.getSessionsByUserId(req.session.user.id);
         }
         
         res.render('teacher/edusessions/index', 
