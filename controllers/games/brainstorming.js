@@ -12,9 +12,18 @@ module.exports = class BrainstormTeacher {
         this.isRunning = session.isRunning;
         
         this.studentSockets = [];
-
+        this.ioEvents();
         this.emitSession();
         this.emitPlayerList();
+    }
+    ioEvents() {
+        // Teacher Client wants to kick a player
+        this.socket.on("kickPlayer", (data) => {
+            logger.log("info", `Teacher wants to kick player with id ${data.playerId}`)
+            if(data.sessionId == this.session.id) {
+                this.removePlayer(data.playerId);
+            }
+        })
     }
     emitSession() {
         this.socket.emit("session", this.session);
@@ -43,7 +52,7 @@ module.exports = class BrainstormTeacher {
             (result) => {
                 if(result) {
                     this.studentSockets.push(player.socket);
-                    player.socket.emit("gameJoined", {type: "brainstorming", teacherId: this.teacherId});
+                    player.socket.emit("gameJoined", {type: "brainstorming", teacherId: this.teacherId, studentId: result.id});
                     this.studentSockets.push(player.socket);
                     this.emitPlayerList();
                 }
@@ -60,11 +69,38 @@ module.exports = class BrainstormTeacher {
         
     }
 
-    removePlayer(player) {
-        logger.log("debug", `Remove Player NAME ${player.name}, SOCKET: ${player.socket} 
+    playerLeft(studendS, playerId) {
+        if(studendS, playerId) {
+            logger.log("debug", `Remove Player with ID ${playerId}, 
+        from game ${this.session.id}, ${this.session.name}`);
+        Student.removeStudentFromSession(this.session.id, playerId).then(
+            (result) => {
+                if(result) {
+                    this.emitPlayerList();
+                }
+            }
+        )
+
+        }
+    }
+
+    removePlayer(playerId) {
+        logger.log("debug", `Remove Player with ID ${playerId}, 
         from game ${this.session.id}, ${this.session.name}`);
 
-      
+        
+            Student.removeStudentFromSession(this.session.id, playerId).then(
+                (result) => {
+                    if(result) {
+                        for( let studentS of this.studentSockets) {
+                            studentS.emit("kicked", playerId);
+                        }
+                        this.emitPlayerList();
+                    }
+                }
+            )
+        
+        
     }
 
     async endSession() {

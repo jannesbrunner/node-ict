@@ -10,18 +10,20 @@ block content
         div(v-if="sessionActive")
             h1 Lehrkraft Monitor
             strong Name: 
-            span {{ sessionName }} 
+            span {{ session.name }} 
             strong Typ: 
-            span {{ sessionType }} 
+            span {{ session.type }} 
             a(v-bind:href="presenterUrl" target="_blank") Presenter öffnen
             p
               strong Lobby:
               ul(v-for="(student, i) in students") 
                 li {{ student.name }}
-                  button Entfernen (TODO)
+                  button(@click="kickPlayer(student.id)") Entfernen
             hr
-            div#eduContent
-                button(@click="sendTest") Test Message
+            div#eduBrainstorm(v-if="brainstorming")
+                button(@click="sendTest") Test Brainstorm
+            div#eduQuiz(v-if="quizzing")
+                button Test Quiz
             hr
             button(@click="endSession") Session Beenden 
         div(v-else)

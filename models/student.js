@@ -1,4 +1,5 @@
 const db = require('../util/database');
+const logger = require("winston");
 
 exports.getStudentsForSession = async (sessionId) => {
     try {
@@ -27,5 +28,26 @@ exports.addStudentToSession = async (sessionId, name) => {
          throw new Error(error)
      }
 }
+
+exports.removeStudentFromSession = async (sessionId, playerId) => {
+    try {
+        if(sessionId && playerId) {
+            logger.log("info", `DB: Try to delete student ${playerId} (ID) from session ${sessionId} (ID)`);
+            const student = await db.Student.findOne({where: {id: playerId, eduSessionId: sessionId}});
+            if(student) {
+                await student.destroy({force: true});
+            }
+            else {
+                throw new Error(`Found no user to delete!`);
+            }
+           
+        }
+        return true;
+     } catch (error) {
+         throw new Error(error)
+     }
+}
+
+
 
 

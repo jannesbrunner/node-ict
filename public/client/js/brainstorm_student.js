@@ -11,6 +11,7 @@ const vue = new Vue({
         socket: null,
         games: null,
         game: null,
+        gameStarted: false,
     }, 
     mounted() {
         if(localStorage.username) {
@@ -60,20 +61,42 @@ const vue = new Vue({
                 this.socket = socket;
              });
 
+             socket.on('disconnect', () => {
+                alert("Verbindung verloren!");
+             });
+
              socket.on('updateGameList', function(games) {
-                 console.log("Got new Game list");
+                 console.log(games);
                  vue.games = games.value;
+             })
+
+             socket.on('kicked', function(studentId) {
+                 if(vue.game.studentId == studentId) {
+                     vue.game = null;
+                     vue.gameBrowser = true;
+                     alert("Sie wurden aus der Sitzung geworfen!");
+                 }
              })
              
              socket.on('gameJoined', function(game) {
                 if(game) {
-                    vue.game = {type: game.type, teacherId: game.teacherId};
+                    vue.game = {type: game.type, teacherId: game.teacherId, studentId: game.studentId};
+                    window.addEventListener('beforeunload', function (e) {
+                        //Cancel the event
+                        e.preventDefault();
+                        // Chrome requires returnValue to be set
+                        e.returnValue = 'HALLO';
+                        
+                      });
+
+                    window.onunload = (e) => {
+                        socket.emit("gameLeft", {clientName: vue.username, teacherId: game.teacherId, studentId: game.studentId});
+                    }
                     
                     // START THE GAME
                     switch (vue.game.type) {
                         case "brainstorming":
                             vue.gameBrowser = false;
-                            brainstorming.$mount('#game');
                             break;
                         case "quizzing":
                             vue.gameBrowser = false;
@@ -91,25 +114,7 @@ const vue = new Vue({
 
 
 
-const brainstorming = new Vue({
-    template: `<h1>Hello Brainstorming</h1>`,
-    data: {
-        socket: null,
-    },
-    computed: {},
-    watch: {},
-    methods: {},
-})
 
-const quizzing = new Vue({
-    template: `<h1>Hello Quizzing</h1>`,
-    data: {
-        socket: null,
-    },
-    computed: {},
-    watch: {},
-    methods: {},
-})
 
 
 

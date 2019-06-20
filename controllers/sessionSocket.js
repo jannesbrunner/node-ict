@@ -143,7 +143,7 @@ module.exports = async () => {
         // The Student client requests the list of available games
         // We check for data integrity Database vs memory map 
         studentS.on("reqGames", function () {
-                updateStudentsGameList(studentS);
+            updateStudentsGameList(studentS);
         })
 
 
@@ -155,10 +155,9 @@ module.exports = async () => {
                     (game) => {
                         if (availableGames.has(game.userId)) {
                             const session = availableGames.get(game.userId);
-                            console.log(session);
                             session.addPlayer({ name: data.clientName, socket: studentS });
                             teacherIOs.emit("updatePlayerlist", data.teacherId);
-                        } 
+                        }
                     }
                 ).catch(
                     (error) => {
@@ -169,11 +168,28 @@ module.exports = async () => {
             }
         });
 
-        studentS.on('disconnect', function () {
+        studentS.on('gameLeft', function (data) {
+            if (data) {
+                logger.log("info", `User ${data.clientName} (ID ${data.studentId}) left the game of teacher with id ${data.teacherId}`);
+                EduSession.getActiveSession(data.teacherId).then(
+                    (game) => {
+                        if (availableGames.has(game.userId)) {
+                            const session = availableGames.get(game.userId);
+                            session.playerLeft(studentS, data.studentId);
+                            teacherIOs.emit("updatePlayerlist", data.teacherId);
+                        }
+                    }
+                ).catch(
+                    (error) => {
+                        logger.log("error", `Unable remove player (reason: left) of teacher ${data.teacherId} (id) game: ${error}`);
+                        throw new Error(error);
+                    }
+                )
+            }
 
-        })
+        });
 
-    });
+    })
 
     // Students Helpers
 
@@ -185,14 +201,14 @@ module.exports = async () => {
         EduSession.getActiveSessions(false).then(
             (games) => {
                 if (games.length === 0) {
-                    studentS == null ? studentIOs.emit("updateGameList", {}) : studentS.emit("updateGameList", {value: gameList})
+                    studentS == null ? studentIOs.emit("updateGameList", {}) : studentS.emit("updateGameList", { value: gameList })
                 } else {
                     games.forEach((game) => {
                         if (availableGames.has(game.userId)) {
                             gameList.push(game);
                         }
                     })
-                    studentS == null ? studentIOs.emit("updateGameList", {}) : studentS.emit("updateGameList", {value: gameList})
+                    studentS == null ? studentIOs.emit("updateGameList", {}) : studentS.emit("updateGameList", { value: gameList })
                 }
 
             }
@@ -201,10 +217,4 @@ module.exports = async () => {
     }
 
 
-
-
-
-
 }
-
-

@@ -10,35 +10,39 @@ const vue = new Vue({
         socket: null,
         session: null,
         teacherId: null,
-        sessionType: "",
         presenterUrl: "",
         sessionActive: true,
-        sessionName: "",
         students: [],
         error: false,
         errorMsg: "",
+        quizzing: false,
+        brainstorming: false,
 
     },
     mounted() {
         this.socketIO();
+        window.addEventListener('beforeunload', function (e) {
+            // Cancel the event
+            e.preventDefault();
+            // Chrome requires returnValue to be set
+            e.returnValue = '';
+
+            confirm("Wollen Sie wirklich beenden?");
+          });
     },
     computed: {
     },
     watch: {
         session: function () {
             this.presenterUrl = `http://${socket.io.engine.hostname}:${socket.io.engine.port}/client/presenter/${this.session.id}`;
-            this.sessionName = this.session.name;
-            this.sessionType = this.session.type;
             this.sessionId = this.session.id;
             this.teacherId = this.session.userId;
         }
     },
     methods: {
         connect: function () {
-            socket.on('connect', () => {
+            socket.on('connect', (socket) => {
                 console.log("Connected to server!");
-                console.log(document.cookie)
-                socket.emit("sessionTime", )
                 this.socket = socket;
             });
         },
@@ -52,6 +56,14 @@ const vue = new Vue({
             socket.emit("test", {
                 message: "Hello World!"
             });
+        },
+        kickPlayer: function(playerId) {
+
+            reallyKick = confirm("Wollen Sie den Spieler wirklich entfernen?");
+            if(reallyKick) {
+                console.log(`Kicking Player with ID: ${playerId}`);
+                socket.emit("kickPlayer", {sessionId: this.session.id, playerId: playerId})
+            }
         },
         closeError: function() {
             this.error = false;
