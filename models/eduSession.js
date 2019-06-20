@@ -11,7 +11,19 @@ const Brainstorming = require('../models/brainstorming');
 const logger = require("winston");
 
 // Model
-exports.getSessionsById = async (currentUserId) => {
+exports.getSessionById = async (sessionId) => {
+    try {
+        const session = await db.EduSession.findByPk(sessionId);
+
+        return constructSession(session);
+
+    } catch (error) {
+        throw new Error(`DB get Session by Id error: ${error}`);
+    }
+}
+
+
+exports.getSessionsByUserId = async (currentUserId) => {
     const userSessions = await db.EduSession.findAll({where: { userId: currentUserId }});
 
     return constructSessions(userSessions);

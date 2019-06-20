@@ -12,11 +12,13 @@ module.exports = class BrainstormTeacher {
         this.isRunning = session.isRunning;
         
         this.studentSockets = [];
+        this.presenterSockets = [];
         this.ioEvents();
-        this.emitSession();
+        this.emitSessionToTeacher();
         this.emitPlayerList();
     }
     ioEvents() {
+        // TEACHER ::::::::
         // Teacher Client wants to kick a player
         this.socket.on("kickPlayer", (data) => {
             logger.log("info", `Teacher wants to kick player with id ${data.playerId}`)
@@ -24,10 +26,17 @@ module.exports = class BrainstormTeacher {
                 this.removePlayer(data.playerId);
             }
         })
+
     }
-    emitSession() {
+    emitSessionToTeacher() {
         this.socket.emit("session", this.session);
     }
+    // PRESENTER :::::: 
+    attachPresenter(presenterS) {
+        this.presenterSockets.push(presenterS);
+        presenterS.emit("game", {id: this.session.id, type: this.session.type, teacherId: this.session.userId, isRunning: this.isRunning});
+    }
+    // STUDENTS :::::::
     emitPlayerList() {
         Student.getStudentsForSession(this.session.id).then(
             (players) => {
@@ -42,7 +51,6 @@ module.exports = class BrainstormTeacher {
             }
         )
     }
-    // TODO ALLES MIT INS SESSION OBJEKT?
     addPlayer(player) {
         
         logger.log("debug", `Add Player NAME ${player.name}, SOCKET: ${player.socket} 

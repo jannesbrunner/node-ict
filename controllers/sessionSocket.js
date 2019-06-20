@@ -126,13 +126,31 @@ module.exports = async () => {
         logger.log('info', `Presenter connected: SID > ${presenterS.id}`);
 
 
-        presenterS.on("attachPresenter", function () {
-            // TODO
+        presenterS.on("attachPresenter", function (sessionId) {
+            logger.log("Info", `New Presenter connected for session with id ${sessionId}`);
+            EduSession.getSessionById(sessionId).then(
+                (session) => {
+                    if(availableGames.has(session.userId)) {
+                        const game = availableGames.get(session.userId);
+                        game.attachPresenter(presenterS);
+                    } else {
+                        throw new Error(`No game available with id ${sessionId}!`);
+                    }
+                }
+            ).catch(
+                (error) => {
+                    logger.log("warn", `Attach Presenter: ${error}`);
+                }
+            )
         })
 
         presenterS.on('disconnect', function () {
 
         })
+
+        presenterS.on("presenterLeft", function() {
+
+        });
 
     });
 
