@@ -3,26 +3,17 @@ extends ../layouts/client-layout.pug
 block styles
   link(rel="stylesheet", href="/css/presenter.css")
 block scripts
-  script(src="/client/js/vue.js")
   script(src="/client/js/socket.io.js")
 
 block content
   div#presenter
-    vue-word-cloud(
-        :animation-duration="1000"
-        :animation-easing="'ease'"
-        :animation-overlap="0"
-        :color="'black'"
-        :enter-animation="'animated bounceIn'"
-        :font-family="'serif'"
-        :font-size-ratio="5"
-        :leave-animation="'animated hinge'"
-        :rotation="0"
-        :spacing="1"
-        :words="words"
-        )
-    div#cloud
-      h1 Hello!
+    template
+    div(v-if="renderBS")#cloud
+      h1 {{ session.type | capitalize }}
+      h2 Thema: {{ session.lecture.topic }}
+    div(v-if="renderQZ")#quiz
+      
+
       
   - var socket = `var socket = io('${ipAdd}:3000/pclient');`
   script #{socket}

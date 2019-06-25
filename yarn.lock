@@ -861,13 +861,6 @@ d3-chord@1:
     d3-array "1"
     d3-path "1"
 
-d3-cloud@^1.2.5:
-  version "1.2.5"
-  resolved "https://registry.yarnpkg.com/d3-cloud/-/d3-cloud-1.2.5.tgz#3e91564f2d27fba47fcc7d812eb5081ea24c603d"
-  integrity sha512-4s2hXZgvs0CoUIw31oBAGrHt9Kt/7P9Ik5HIVzISFiWkD0Ga2VLAuO/emO/z1tYIpE7KG2smB4PhMPfFMJpahw==
-  dependencies:
-    d3-dispatch "^1.0.3"
-
 d3-collection@1:
   version "1.0.7"
   resolved "https://registry.yarnpkg.com/d3-collection/-/d3-collection-1.0.7.tgz#349bd2aa9977db071091c13144d5e4f16b5b310e"
@@ -885,7 +878,7 @@ d3-contour@1:
   dependencies:
     d3-array "^1.1.1"
 
-d3-dispatch@1, d3-dispatch@^1.0.3:
+d3-dispatch@1:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/d3-dispatch/-/d3-dispatch-1.0.5.tgz#e25c10a186517cd6c82dd19ea018f07e01e39015"
   integrity sha512-vwKx+lAqB1UuCeklr6Jh1bvC4SZgbSqbkGBLClItFBIYH4vqDJCA7qfoy14lXmJdnBOdxndAMxjCbImJYW7e6g==
@@ -1050,7 +1043,7 @@ d3-zoom@1:
     d3-selection "1"
     d3-transition "1"
 
-d3@^5.7.0:
+d3@^5.9.2:
   version "5.9.2"
   resolved "https://registry.yarnpkg.com/d3/-/d3-5.9.2.tgz#64e8a7e9c3d96d9e6e4999d2c8a2c829767e67f5"
   integrity sha512-ydrPot6Lm3nTWH+gJ/Cxf3FcwuvesYQ5uk+j/kXEH/xbuYWYWTMAHTJQkyeuG8Y5WM5RSEYB41EctUrXQQytRQ==
@@ -4092,15 +4085,6 @@ void-elements@^2.0.1:
   resolved "https://registry.yarnpkg.com/void-elements/-/void-elements-2.0.1.tgz#c066afb582bb1cb4128d60ea92392e94d5e9dbec"
   integrity sha1-wGavtYK7HLQSjWDqkjkulNXp2+w=
 
-vue-d3-cloud@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/vue-d3-cloud/-/vue-d3-cloud-0.2.0.tgz#8afbb67409b6681c72f44b7c78dd9d759e7d8a55"
-  integrity sha512-ALLN5RXXfb31J9w0CySZOcg8B57fkvHWFVg6ZlHXe6O3xKq+qsUNZkMYIe4LpsAy5BRgz+bG7NtAjQFydAhIfQ==
-  dependencies:
-    d3 "^5.7.0"
-    d3-cloud "^1.2.5"
-    vue "^2.5.17"
-
 vue-eslint-parser@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/vue-eslint-parser/-/vue-eslint-parser-5.0.0.tgz#00f4e4da94ec974b821a26ff0ed0f7a78402b8a1"
@@ -4113,7 +4097,7 @@ vue-eslint-parser@^5.0.0:
     esquery "^1.0.1"
     lodash "^4.17.11"
 
-vue@^2.5.16, vue@^2.5.17:
+vue@^2.5.16, vue@^2.6.10:
   version "2.6.10"
   resolved "https://registry.yarnpkg.com/vue/-/vue-2.6.10.tgz#a72b1a42a4d82a721ea438d1b6bf55e66195c637"
   integrity sha512-ImThpeNU9HbdZL3utgMCq0oiMzAkt1mcgy3/E6zWC/G6AaQoeuFdsl9nDhTDU3X1R6FK7nsIUuRACVcjI+A2GQ==
@@ -4189,6 +4173,11 @@ wkx@^0.4.6:
   dependencies:
     "@types/node" "*"
 
+wordcloud@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/wordcloud/-/wordcloud-1.1.0.tgz#3a1c52f7d088d43ee5ee855d4f86280de57f0758"
+  integrity sha512-2PHPdgYYt6jxu7EIQIY3YAs1/3ONZpVn4hwgpWISdypbwqTByJAE7r9bsRDFG0WKL82i0Y28xRZ0wF00lqZzWg==
+
 wordwrap@0.0.2:
   version "0.0.2"
   resolved "https://registry.yarnpkg.com/wordwrap/-/wordwrap-0.0.2.tgz#b79669bb42ecb409f83d583cad52ca17eaa1643f"
@@ -4261,3 +4250,8 @@ yeast@0.1.2:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/yeast/-/yeast-0.1.2.tgz#008e06d8094320c372dbc2f8ed76a0ca6c8ac419"
   integrity sha1-AI4G2AlDIMNy28L47XagymyKxBk=
+
+zingchart@^2.8.6:
+  version "2.8.6"
+  resolved "https://registry.yarnpkg.com/zingchart/-/zingchart-2.8.6.tgz#043928784fe8327341c77114121cce94ddeb539d"
+  integrity sha512-vETpBvV4mgVAx/tBNb/spuLY4W5y54urL7rbq3KxHqBQcXlnOeIIDi+QgezRpDGqP0zQDxhLPj14hvyTHaenwA==
