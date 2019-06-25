@@ -18,7 +18,8 @@ block content
               strong Lobby:
               ul(v-for="(student, i) in students") 
                 li {{ student.name }}
-                  button(@click="kickPlayer(student.id)") Entfernen
+                  button(v-if="!sessionRunning" @click="kickPlayer(student.id)") Entfernen
+            button(v-if="!sessionRunning" @click="startSession()") Session Starten
             hr
             div#eduBrainstorm(v-if="brainstorming")
                 button(@click="sendTest") Test Brainstorm
