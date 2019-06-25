@@ -12,6 +12,7 @@ const vue = new Vue({
         teacherId: null,
         presenterUrl: "",
         sessionActive: true,
+        sessionRunning: false,
         students: [],
         quizzing: false,
         brainstorming: false,
@@ -55,6 +56,21 @@ const vue = new Vue({
                     'Ihre Lehrsession wurde beendet!',
                     'success'
                   )
+                }
+              })
+        },
+        startSession: function() {
+            Swal.fire({
+                title: 'Starten?',
+                text: "Möchten Sie die Lehrsession starten? Weitere Schülerinnen und Schüler können nicht mehr beitreten!",
+                type: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ja, starten!'
+              }).then((result) => {
+                if (result.value) {
+                    socket.emit("startSession", this.teacherId);
                 }
               })
         },
@@ -117,6 +133,12 @@ const vue = new Vue({
                    vue.sessionActive = false;
                 }
             })
+
+            socket.on('startSession', function(data) {
+                if(data) {
+                    vue.sessionRunning = true;
+                }
+            });
 
             socket.on('appError', function(error) {
 
