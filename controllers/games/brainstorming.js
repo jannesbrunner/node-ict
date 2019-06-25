@@ -34,8 +34,10 @@ module.exports = class BrainstormTeacher {
     // PRESENTER :::::: 
     attachPresenter(presenterS) {
         this.presenterSockets.push(presenterS);
-        presenterS.emit("game", {id: this.session.id, type: this.session.type, teacherId: this.session.userId, isRunning: this.isRunning});
+        presenterS.emit("game", {session: this.session});
     }
+
+    
     // STUDENTS :::::::
     emitPlayerList() {
         Student.getStudentsForSession(this.session.id).then(
