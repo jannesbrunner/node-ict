@@ -11,20 +11,29 @@ block content
         div(v-if="gameBrowser")
           template(v-if="newUser")
             div#signup
-                label Name
-                    input(type="text", v-model="username")
+              label Name
+                input(type="text", v-model="username")
                 button(@click="signup").button Mitmachen!
           template(v-else)
-            ul
-              li(v-for="(game, i) in games")
-                h5 {{ game.name }}
-                p {{ game.type }}
-                button(@click="joinGame(game.userId)") Beitreten
-      div#game
-      div#error
+           ul
+            li(v-for="(game, i) in games")
+              h5 {{ game.name }}
+              p {{ game.type }}
+              button(@click="joinGame(game.userId)") Beitreten
+        template(v-if="game")
+          div#brainstorming(v-if="game.type === 'brainstorming'")
+            h1 Brainstorm Session
+            div(v-if="gameIsRunning")
+              p blubiblub das game läuft
+            div(v-else)
+              p Der Lehrende hat diese Session noch nicht gestartet.
+              button(@click="leaveGame()") Spiel verlassen!
+          div#quiz(v-if="game.type === 'quizzing'")
+            h1 Quiz Session!
+      div(v-else)#error
     - var socket = `var socket = io('${ipAdd}:3000/sclient');`
     script #{socket}
-    script(src="./client/js/student/index.js")
+    script(src="/client/js/student/index.js")
         
 
 
