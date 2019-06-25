@@ -11,7 +11,8 @@ const vue = new Vue({
         socket: null,
         games: null,
         game: null,
-        gameStarted: false,
+        gameIsRunning: false,
+        fatalAppError: false,
     }, 
     mounted() {
         if(localStorage.username) {
@@ -57,6 +58,29 @@ const vue = new Vue({
         joinGame: function(teacherId) {
             console.log("Try to join game of teacher id: " + teacherId);
             socket.emit('joinGame', {clientName: this.username, teacherId: teacherId})
+        },
+
+        leaveGame: function() {
+            Swal.fire({
+                title: 'Wirklich verlassen?',
+                text: "Du bist dann kein Teilnehmer dieser Lehreinheit mehr.",
+                type: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ja, verlassen'
+              }).then((result) => {
+                if (result.value) {
+                    socket.emit("gameLeft", {clientName: this.username, teacherId: this.game.teacherId, studentId: this.game.studentId});
+                    this.game = null,
+                    this.gameBrowser = true;
+                    Swal.fire(
+                    'Erfolg',
+                    'Du hast die Lehreinheit verlassen!',
+                    'success'
+                  )
+                }
+              })
         },
         socketIO: () => {
             socket.on('connect', () => {
@@ -110,9 +134,11 @@ const vue = new Vue({
                     switch (vue.game.type) {
                         case "brainstorming":
                             vue.gameBrowser = false;
+                           
                             break;
                         case "quizzing":
                             vue.gameBrowser = false;
+            
                             break;
                         default:
                             // ERROR ?
