@@ -2,12 +2,9 @@ extends ../../layouts/teacher-layout.pug
 
 block styles
     link(rel="stylesheet", href="/css/client.css")
-block scripts
-    script(src="/client/js/vue.js")
-    script(src="/client/js/socket.io.js")
 block content
     div#teacher
-        div(v-if="sessionActive")
+        div(v-if="session")
             h1 Lehrkraft Monitor
             strong Name: 
             span {{ session.name }} 
@@ -18,7 +15,7 @@ block content
               strong Lobby:
               ul(v-for="(student, i) in students") 
                 li {{ student.name }}
-                  button(v-if="!sessionRunning" @click="kickPlayer(student.id)") Entfernen
+                  button(v-if="!sessionRunning" @click="kickStudent(student.id)") Entfernen
             button(v-if="!sessionRunning" @click="startSession()") Session Starten
             hr
             div#eduBrainstorm(v-if="brainstorming")
@@ -36,6 +33,4 @@ block content
 
 
 
-    - var socket = `var socket = io('${ipAdd}:3000/tclient');`
-    script #{socket}
     script(src="/client/js/teacher/index.js")

@@ -1,17 +1,16 @@
 //var cloud = require("vue-d3-cloud");
 const Vue = require('vue');
 const zingchart = require('zingchart');
-/* eslint-disable no-undef */
-
-// Vue.component('vue-word-cloud', VueWordCloud);
-
+const socketIO = require('socket.io-client');
+const socket = socketIO('/pclient');
+const Swal = require('sweetalert2');
 
 const vue = new Vue({
     el: '#presenter',
     data: {
         session: null,
-        renderBS: false,
-        renderQZ: false,
+        active: true,
+        fatalError: false,
         cloudWords: [],
     },
     mounted() {
@@ -25,10 +24,27 @@ const vue = new Vue({
     computed: {
         cloudText: function () {
             return this.cloudWords.join(" ");
-        }
+        },
+
     },
     watch: {
-    },
+        fatalError: (newVal) => {
+            if(newVal == true) {
+                this.session = null;
+            }
+        },
+        active: (newValue) => {
+            if(newValue == false) {
+                this.session = null;
+                Swal.fire({
+                    type: 'warn',
+                    title: 'Session Beendet',
+                    text: 'Der Lehrende hat diese Session beendet',
+                    footer: 'Vielen Dank für das Nutzen von Node ICT!'
+                })
+            }
+        }
+     },
     methods: {
         sendTest: function () {
             socket.emit("test", {
@@ -64,7 +80,7 @@ const vue = new Vue({
                 });
             });
 
-            socket.on("game", function (data) {
+            socket.on("newSession", function (data) {
                 console.log(data);
                 vue.session = data.session;
                 switch (vue.session.type) {
@@ -89,6 +105,13 @@ const vue = new Vue({
                 })
             });
 
+            socket.on('endSession', function(data) {
+                if(data) {
+                    console.log("Teacher has ended the session!");
+                    vue.active = false;
+                }
+            });
+
             socket.on('appError', function (error) {
 
                 Swal.fire({
@@ -99,7 +122,7 @@ const vue = new Vue({
                 })
 
                 if (error.fatalError) {
-                    //  vue.sessionActive = false;
+                    vue.fatalError = true;
                 }
 
             })

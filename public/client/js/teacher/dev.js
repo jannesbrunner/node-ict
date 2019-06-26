@@ -1,7 +1,7 @@
-/* eslint-disable no-undef */
-socket.on('connect', () => {
-
-});
+const socketIO = require('socket.io-client');
+const Vue = require("vue");
+const Swal = require('sweetalert2');
+const socket = socketIO('/tclient');
 
 
 const vue = new Vue({
@@ -9,14 +9,13 @@ const vue = new Vue({
     data: {
         socket: null,
         session: null,
-        teacherId: null,
-        presenterUrl: "",
-        sessionActive: true,
-        sessionRunning: false,
         students: [],
+        // VUE DOM
+        presenterUrl: "",
+        sessionActive: false,
+        sessionRunning: false,
         quizzing: false,
         brainstorming: false,
-
     },
     mounted() {
         this.socketIO();
@@ -33,9 +32,10 @@ const vue = new Vue({
     },
     watch: {
         session: function () {
-            this.presenterUrl = `http://${socket.io.engine.hostname}:${socket.io.engine.port}/client/presenter/${this.session.id}`;
-            this.sessionId = this.session.id;
-            this.teacherId = this.session.userId;
+            if(this.session) {
+                this.presenterUrl = `http://${socket.io.engine.hostname}:${socket.io.engine.port}/client/presenter/${this.session.id}`;
+            }
+           
         }
     },
     methods: {
@@ -50,7 +50,8 @@ const vue = new Vue({
                 confirmButtonText: 'Ja, beenden'
               }).then((result) => {
                 if (result.value) {
-                    socket.emit("endSession", this.teacherId);
+                    socket.emit("endSession", this.session.userId);
+                    vue.session = null;
                     Swal.fire(
                     'Beendet',
                     'Ihre Lehrsession wurde beendet!',
@@ -70,7 +71,7 @@ const vue = new Vue({
                 confirmButtonText: 'Ja, starten!'
               }).then((result) => {
                 if (result.value) {
-                    socket.emit("startSession", this.teacherId);
+                    socket.emit("startSession", this.session.userId);
                 }
               })
         },
@@ -79,7 +80,7 @@ const vue = new Vue({
                 message: "Hello World!"
             });
         },
-        kickPlayer: function(playerId) {
+        kickStudent: function(studentId) {
             Swal.fire({
                 title: 'Spieler rauswerfen?',
                 text: "Der Spieler wird aus der Session entfernt.",
@@ -90,8 +91,8 @@ const vue = new Vue({
                 confirmButtonText: 'Ja, entfernen!'
               }).then((result) => {
                 if (result.value) {
-                    console.log(`Kicking Player with ID: ${playerId}`);
-                    socket.emit("kickPlayer", {sessionId: this.session.id, playerId: playerId})
+                    console.log(`Kicking Student with ID: ${studentId}`);
+                    socket.emit("kickStudent", {sessionId: this.session.id, studentId: studentId})
                   Swal.fire(
                     'Spieler rausgeworfen!',
                     'Der Spieler ist nicht mehr Teil der Lehrsession.',
@@ -121,25 +122,20 @@ const vue = new Vue({
              });
 
             
-            socket.on('session', function (data) {
-                console.log(data, "Got Session");
+            socket.on('newSession', function (data) {
+                console.log(data, "Got the Session");
                 vue.session = data
 
             });
 
-            
-            socket.on('endSession', function (data) {
-                if (data) {
-                   vue.sessionActive = false;
+            // NEW STUFF //TODO
+            // Sever tells client to update the session object
+            socket.on("updateSession", function(newSession) {
+                if(newSession && newSession.id == vue.session.id) {
+                    vue.session = newSession;
                 }
-            })
-
-            socket.on('startSession', function(data) {
-                if(data) {
-                    vue.sessionRunning = true;
-                }
-            });
-
+             });
+            // 
             socket.on('appError', function(error) {
 
                 Swal.fire({
@@ -154,15 +150,15 @@ const vue = new Vue({
                    
                     vue.errorMsg = error.errorMsg;
                     if(error.fatalError) {
-                        vue.sessionActive = false;
+                        vue.session = null;
                     }
                 
             })
 
-            socket.on("updatePlayerList", function(playerList) {
-                console.log("Server wants us to update the player list!");
-                console.log(playerList);
-                vue.students = playerList;
+            socket.on("updateStudentList", function(studentList) {
+                console.log("Server wants us to update the student list!");
+                console.log(studentList);
+                vue.students = studentList;
                 console.log(vue.students);
                 
             })

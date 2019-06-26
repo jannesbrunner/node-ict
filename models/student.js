@@ -29,11 +29,11 @@ exports.addStudentToSession = async (sessionId, name) => {
      }
 }
 
-exports.removeStudentFromSession = async (sessionId, playerId) => {
+exports.removeStudentFromSession = async (sessionId, studentId) => {
     try {
-        if(sessionId && playerId) {
-            logger.log("info", `DB: Try to delete student ${playerId} (ID) from session ${sessionId} (ID)`);
-            const student = await db.Student.findOne({where: {id: playerId, eduSessionId: sessionId}});
+        if(sessionId && studentId) {
+            logger.log("info", `DB: Try to delete student ${studentId} (ID) from session ${sessionId} (ID)`);
+            const student = await db.Student.findOne({where: {id: studentId, eduSessionId: sessionId}});
             if(student) {
                 await student.destroy({force: true});
             }

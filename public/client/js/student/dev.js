@@ -1,16 +1,20 @@
-// eslint-disable-next-line no-undef
 
+const socketIO = require('socket.io-client');
+const socket = socketIO('/sclient');
+const Vue = require("vue");
+const Swal = require('sweetalert2');
 
 /* eslint-disable no-undef */
 const vue = new Vue({
     el: '#student',
     data: {
         newUser: true,
-        gameBrowser: true,
+        sessionBrowser: true,
         username: "",
         socket: null,
-        games: null,
-        game: null,
+        sessions: null,
+        session: null,
+        studentId: null,
         gameIsRunning: false,
         fatalAppError: false,
     }, 
@@ -24,8 +28,8 @@ const vue = new Vue({
         
     },
     watch: {
-        games: (oldV, newV) => {
-            this.games = newV;
+        sessions: (oldV, newV) => {
+            this.sessions = newV;
         }
     },
     methods: { 
@@ -39,9 +43,9 @@ const vue = new Vue({
                 }
                 this.newUser = false;
                 if(!localStorage.sessionToken) {
-                    this.reqRunningGames()
+                    this.reqRunningSessions()
                 } else {
-                    this.getGameForUser() 
+                    this.getSessionForUser() 
                 }
             } else {
                 wal.fire(
@@ -51,16 +55,16 @@ const vue = new Vue({
                   )
             }
         },
-        reqRunningGames: function() {
-            socket.emit("reqGames", {} )
+        reqRunningSessions: function() {
+            socket.emit("getSessions", {} )
         },
         
-        joinGame: function(teacherId) {
-            console.log("Try to join game of teacher id: " + teacherId);
-            socket.emit('joinGame', {clientName: this.username, teacherId: teacherId})
+        joinSession: function(teacherId) {
+            console.log("Try to join session of teacher id: " + teacherId);
+            socket.emit('joinSession', {clientName: this.username, teacherId: teacherId})
         },
 
-        leaveGame: function() {
+        leaveSession: function() {
             Swal.fire({
                 title: 'Wirklich verlassen?',
                 text: "Du bist dann kein Teilnehmer dieser Lehreinheit mehr.",
@@ -71,9 +75,10 @@ const vue = new Vue({
                 confirmButtonText: 'Ja, verlassen'
               }).then((result) => {
                 if (result.value) {
-                    socket.emit("gameLeft", {clientName: this.username, teacherId: this.game.teacherId, studentId: this.game.studentId});
-                    this.game = null,
-                    this.gameBrowser = true;
+                    socket.emit("sessionLeft", {clientName: this.username, teacherId: this.session.userId, studentId: this.studentId});
+                    this.session = null;
+                    this.studentId = null;
+                    this.sessionBrowser = true;
                     Swal.fire(
                     'Erfolg',
                     'Du hast die Lehreinheit verlassen!',
@@ -82,6 +87,7 @@ const vue = new Vue({
                 }
               })
         },
+
         socketIO: () => {
             socket.on('connect', () => {
                 console.log("Connected to server!");
@@ -98,15 +104,16 @@ const vue = new Vue({
                   })
              });
 
-             socket.on('updateGameList', function(games) {
-                 console.log(games);
-                 vue.games = games.value;
+             socket.on('updateSessionsList', function(sessions) {
+                 console.log(sessions);
+                 vue.sessions = sessions;
              })
 
              socket.on('kicked', function(studentId) {
-                 if(vue.game.studentId == studentId) {
-                     vue.game = null;
-                     vue.gameBrowser = true;
+                 if(vue.studentId == studentId) {
+                     vue.session = null;
+                     vue.studentId = null;
+                     vue.sessionBrowser = true;
                      Swal.fire(
                         'Achtung!',
                         'Sie wurden aus der Sitzung geworfen!',
@@ -115,9 +122,10 @@ const vue = new Vue({
                  }
              })
              
-             socket.on('gameJoined', function(game) {
-                if(game) {
-                    vue.game = {type: game.type, teacherId: game.teacherId, studentId: game.studentId};
+             socket.on('sessionJoined', function(data) {
+                if(data) {
+                    vue.session = data.session;
+                    vue.studentId = data.studentId;
                     window.addEventListener('beforeunload', function (e) {
                         //Cancel the event
                         e.preventDefault();
@@ -127,23 +135,44 @@ const vue = new Vue({
                       });
 
                     window.onunload = (e) => {
-                        socket.emit("gameLeft", {clientName: vue.username, teacherId: game.teacherId, studentId: game.studentId});
+                        socket.emit("sessionLeft", {clientName: vue.username, teacherId: session.teacherId, studentId: vue.studentId});
                     }
                     
                     // START THE GAME
-                    switch (vue.game.type) {
+                    switch (vue.session.type) {
                         case "brainstorming":
-                            vue.gameBrowser = false;
+                            vue.sessionBrowser = false;
                            
                             break;
                         case "quizzing":
-                            vue.gameBrowser = false;
+                            vue.sessionBrowser = false;
             
                             break;
                         default:
                             // ERROR ?
                             break;
                     }
+                }
+             });
+            // Sever tells client to update the session object
+             socket.on("updateSession", function(newSession) {
+                if(newSession && newSession.id == vue.session.id) {
+                    vue.session = newSession;
+                }
+             });
+             // teacher ends session
+             socket.on("endSession", function(data) {
+                if(data == true) {
+                    vue.session = null;
+                    vue.studentId = null;
+                    vue.sessionBrowser = true;
+                    Swal.fire({
+                        type: 'warn',
+                        title: 'Ende',
+                        text: "Der Lehrende hat die Lehreinheit beendet!",
+                        footer: 'Danke für das Nutzen von Node ICT!'
+                      })
+    
                 }
              });
 

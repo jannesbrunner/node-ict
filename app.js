@@ -34,13 +34,16 @@ const logger = require('./util/loggerSetup');
 // ------------------------------------------------ //
 const app = express();
 
+const server_ip = "127.0.0.1" // ip.address();
 
 
 // Set up Event Emitter 
 require('./util/eventEmitter').init();
-const server = app.listen(3000, ip.address(), function () {
-  logger.log({ level: 'info', message: `Hello! The Server is running on ${ip.address()}!`});
+const server = app.listen(3000, server_ip, function () {
+  logger.log({ level: 'info', message: `Hello! The Server is running on ${server_ip}!`});
 });
+
+
 
 
 // Set static content folder
