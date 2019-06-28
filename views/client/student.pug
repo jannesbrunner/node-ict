@@ -13,11 +13,13 @@ block content
                   input(type="text", v-model="username")
                   button(@click="signup").button Mitmachen!
             template(v-else)
-            ul
-              li(v-for="(session, i) in sessions")
-                h5 {{ session.name }}
-                p {{ session.type }}
-                button(@click="joinSession(session.userId)") Beitreten
+              h3 Verfügbare Spiele
+              p(v-if="sessions.length == 0") Keine Spiele gefunden.
+              ul
+                li(v-for="(session, i) in sessions")
+                  h5 {{ session.name }}
+                  p {{ session.type }}
+                  button(@click="joinSession(session.userId)") Beitreten
           template(v-if="session")
             div#brainstorming(v-if="session.type === 'brainstorming'")
               h1 Brainstorm Session

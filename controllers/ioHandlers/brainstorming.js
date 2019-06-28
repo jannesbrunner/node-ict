@@ -59,6 +59,12 @@ module.exports = class BrainstormTeacher {
                 })
             }
         });
+
+        this.socketT.on("updateBrainstorming", (brainstorming) => {
+            this.brainstorming = brainstorming;
+            this.emitToPresenters("updateBrainstorming", this.brainstorming);
+
+        });
     }
     ioEventsSC(socketS) {
         // ioEvents emitted by student clients
@@ -94,9 +100,9 @@ module.exports = class BrainstormTeacher {
             if (data) {
                 this.brainstorming.answers.push(data);
                 
-                this.emitToPresenters("updateBrainstorm", this.brainstorming);
-                this.emitToStudents("updateBrainstorm", this.brainstorming);
-                this.socketT.emit("updateBrainstorm", this.brainstorming);
+                this.emitToPresenters("updateBrainstorming", this.brainstorming);
+                this.emitToStudents("updateBrainstorming", this.brainstorming);
+                this.socketT.emit("updateBrainstorming", this.brainstorming);
 
             }
         })
@@ -165,7 +171,7 @@ module.exports = class BrainstormTeacher {
         this.presenterSockets.push(presenterS);
         presenterS.emit("newSession", { session: this.session, isRunning: this.isRunning });
         if(this.isRunning) {
-            this.emitToPresenters("updateBrainstorm", this.brainstorming);
+            this.emitToPresenters("updateBrainstorming", this.brainstorming);
         }
         this.emitStudentList();
         this.ioEventsPC(presenterS);
@@ -284,13 +290,22 @@ module.exports = class BrainstormTeacher {
 
     async endSession() {
         try {
-            const answer = await EduSession.unsetActiveSession(this.teacherId);
-            if (answer) {
-
-                if(this.session.type == "brainstorming") {
+            if(this.session.type == "brainstorming") {
+                logger.log("info", `Saving BS... ID:${this.session.id}`);
+                if(this.brainstorming && this.session) {
                     this.session.lecture.brainstormingJSON = JSON.stringify(this.brainstorming);
-                    await EduSession.saveActiveSession(this.session);
+                    const save = await EduSession.saveActiveSession(this.session);
+            
+                    if(save == false) {
+                        throw new Error("Error saving BSS!");
+                    }
                 }
+            }
+            const deleteUsers = await Student.removeStudentsFromSession(this.session.id);
+            const answer = await EduSession.unsetActiveSession(this.teacherId);
+            if (answer && deleteUsers) {
+
+                
 
                 this.socketT.emit("endSession", true);
                 this.emitToStudents("endSession", true);
@@ -299,7 +314,7 @@ module.exports = class BrainstormTeacher {
             }
         } catch (error) {
             this.socketT.emit("AppError", { errorMsg: "Error during disabling session!", fatalError: false });
-            logger.log("Error during disabling session! ID: " + this.session.id)
+            logger.log("error", `Error during disabling session! ID: ${this.session.id}: ${error}` );
             // TODO Impement error hadnling
         }
 

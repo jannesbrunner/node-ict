@@ -81,6 +81,7 @@ const vue = new Vue({
                 );
             renderCloud();
         },
+        
      },
     
     methods: {
@@ -257,7 +258,7 @@ function socketListen () {
 
 
     /// -------- BRAINSTORMING --------- ///
-    socket.on("updateBrainstorm", (data) => {
+    socket.on("updateBrainstorming", (data) => {
         vue.brainstorming = data;
     });
 

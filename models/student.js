@@ -48,6 +48,30 @@ exports.removeStudentFromSession = async (sessionId, studentId) => {
      }
 }
 
+exports.removeStudentsFromSession = async (sessionId) => {
+    try {
+        if(sessionId) {
+            const foundStudents = await db.Student.findAll({where:{eduSessionId: sessionId}});
+            if(foundStudents) {
+                foundStudents.forEach( (student) => {
+                    student.destroy({force: true}).then((result) => {
+                        logger.log('info', `User destroyed: ${result}`)
+                    }).catch((err) => {
+                        throw new Error("unable to destroy user: " + err);
+                    });
+                })
+                return true;
+            } else {
+                throw new Error("Could not find users for session id " + sessionId);
+            }
+        } else {
+            throw new Error(`Session Id is not valid: ${sessionId}`)
+        }
+    } catch (error) {
+        throw new Error(`Error removing students from session: ${error}`);
+    }
+}
+
 
 
 
