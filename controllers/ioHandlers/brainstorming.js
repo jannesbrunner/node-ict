@@ -11,23 +11,30 @@ module.exports = class BrainstormTeacher {
         this.teacherId = session.userId;
         this.isRunning = false;
 
+        // Brainstorming
+        if(this.session.lecture.brainstormingJSON) {
+            this.brainstorming = JSON.parse(this.session.lecture.brainstormingJSON);
+        } else {
+            this.brainstorming = {
+                answers: []
+            }
+        }
+         
+
         this.studentSockets = new Map();
         this.presenterSockets = [];
         this.ioEventsTC();
         // Send Teacher client init session
         this.socketT.emit("newSession", this.session);
         this.emitStudentList();
-        // Brainstorming
-        this.brainstorming = {
-                answers: []
-            }
-        console.log(JSON.parse(this.session.lecture.brainstormingJSON));       
+        
+         
 
         
     }
     ioEventsTC() {
         // ioEvents emitted by teacher
-
+       
         // TEACHER ::::::::
         // Teacher Client wants to kick a student
         this.socketT.on("kickStudent", (data) => {
@@ -48,21 +55,28 @@ module.exports = class BrainstormTeacher {
                     if (saved) {
                         EduSession.getActiveSession(this.userId).then((sessionFromDB) => {
                             this.session = sessionFromDB;
-                            this.socket.emit("updateSession", this.session);
+                            this.socketT.emit("updateSession", this.session);
                         }).catch((error) => {
-                            this.socket.emit("appError", { errorMsg: `Error while saving: ${error}!`, fatalError: true })
+                            this.socketT.emit("appError", { errorMsg: `Error while saving: ${error}!`, fatalError: true })
                         })
                     }
                 }).catch((error) => {
-                    this.socket.emit("appError", { errorMsg: `Error while saving: ${error}!`, fatalError: true })
+                    this.socketT.emit("appError", { errorMsg: `Error while saving: ${error}!`, fatalError: true })
                 })
             }
         });
 
         this.socketT.on("updateBrainstorming", (brainstorming) => {
-            this.brainstorming = brainstorming;
-            this.emitToPresenters("updateBrainstorming", this.brainstorming);
+            if(brainstorming) {
+                this.brainstorming = brainstorming;
+                this.emitToPresenters("updateBrainstorming", this.brainstorming);
+            }
+           
 
+        });
+
+        this.socketT.on("getBrainstorming", (answer) => {
+            this.socketT.emit("updateBrainstorming", this.brainstorming);
         });
     }
     ioEventsSC(socketS) {
@@ -98,8 +112,8 @@ module.exports = class BrainstormTeacher {
             logger.log("info", "Got new BS Answer!");
             if (data) {
                 console.log(this.brainstorming.answers, "NEW BSS");
-            
-               this.brainstorming.answers.push(data);
+                
+                this.brainstorming.answers.push(data);
                 
                 this.emitToPresenters("updateBrainstorming", this.brainstorming);
                 this.emitToStudents("updateBrainstorming", this.brainstorming);

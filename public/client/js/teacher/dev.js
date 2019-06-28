@@ -186,7 +186,7 @@ function socketListen() {
         if (data) {
             vue.isRunning = true;
             if(vue.session.type == "brainstorming") {
-                socket.emit("updateBrainstorming");
+                socket.emit("getBrainstorming");
             } else if (vue.session.type == "quizzing") {
                 // TODO
             }
