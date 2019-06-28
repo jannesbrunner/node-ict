@@ -13,7 +13,7 @@ module.exports = async () => {
     const presenterIOs = socket.getIO().of('/pclient');
 
     // Holds active games, key: teacher userId
-    const availableSessions = new Map();
+    const availableSessionHandlers = new Map();
 
 
 
@@ -32,7 +32,7 @@ module.exports = async () => {
         } else {
             logger.log('info', `Teacher connected: SID > ${teacherS.id}, Name > ${teacherUser.name}`);
 
-            if (availableSessions.has(teacherUser.id)) {
+            if (availableSessionHandlers.has(teacherUser.id)) {
                 teacherS.emit("appError", { errorMsg: "Sie können nur eine Lehrerkonsole gleichzeitig starten!", fatalError: true })
             } else {
                 EduSession.getActiveSession(teacherUser.id).then(
@@ -44,7 +44,7 @@ module.exports = async () => {
                             switch (sessionT.type) {
                                 case "brainstorming":
                                     sessionHandler = new BrainstormTeacher(sessionT, teacherS);
-                                    availableSessions.set(teacherUser.id, sessionHandler)
+                                    availableSessionHandlers.set(teacherUser.id, sessionHandler)
                                     updateStudentsSessionsList()
                                     break
 
@@ -87,6 +87,14 @@ module.exports = async () => {
 
         }
     })
+
+    // Teacher starts the session 
+    teacherS.on("startSession", function(teacherUserId) {
+        if(teacherUserId) {
+            startSession(sessionHandler, teacherUserId);
+        }
+    })
+
     // Clean exit if teacher performs logout
     eventEmitter.get().addListener('session_end', (teacherUserId) => {
         logger.log("info", `Beginn Session End via Logout (for user ${teacherUserId} `)
@@ -100,11 +108,13 @@ module.exports = async () => {
     });
 
 // Teacher Helpers
-function endSession(session, teacherUserId) {
-    session.endSession().then(
+function endSession(sessionHandler, teacherUserId) {
+    sessionHandler.endSession().then(
         () => {
             logger.log("verbose", `Successfully ended session for teacher with id ${teacherUserId}`)
-            availableSessions.delete(teacherUserId)
+            if(availableSessionHandlers.has(teacherUserId)) {
+                availableSessionHandlers.delete(teacherUserId)
+            }
             updateStudentsSessionsList();
         }
     ).catch(
@@ -114,16 +124,18 @@ function endSession(session, teacherUserId) {
         }
     )
 }
+function startSession(sessionHandler, teacherUserId) {
+    sessionHandler.startSession(sessionHandler, teacherUserId);
+    logger.log("info", `Successfully started session for teacher with id ${teacherUserId}`);
+    if(availableSessionHandlers.has(teacherUserId)) {
+              let handlerToRun = availableSessionHandlers.get(teacherUserId);
+              handlerToRun.isRunning = true;
+              availableSessionHandlers.set(teacherUserId, handlerToRun);
 
-
-
-
-
-
-
-
-
-
+    }
+            updateStudentsSessionsList();
+   
+}
 
 // Presenter
 presenterIOs.on('connection', (presenterS) => {
@@ -134,8 +146,8 @@ presenterIOs.on('connection', (presenterS) => {
         logger.log("info", `New Presenter connected to session with id ${sessionId}`);
         EduSession.getSessionById(sessionId).then(
             (session) => {
-                if (availableSessions.has(session.userId)) {
-                    const activeSession = availableSessions.get(session.userId);
+                if (availableSessionHandlers.has(session.userId)) {
+                    const activeSession = availableSessionHandlers.get(session.userId);
                     activeSession.attachPresenter(presenterS);
                 } else {
                     throw new Error(`No session available with id ${sessionId}!`);
@@ -178,10 +190,15 @@ studentIOs.on('connection', (studentS) => {
             logger.log("info", `User ${data.clientName} wants to join a session of teacher with id ${data.teacherId}`);
             EduSession.getActiveSession(data.teacherId).then(
                 (activeSession) => {
-                    if (availableSessions.has(activeSession.userId) && activeSession) {
-                        const sessionHandler = availableSessions.get(activeSession.userId);
-                        sessionHandler.addStudent({ name: data.clientName, socket: studentS });
-                        teacherIOs.emit("updateStudentlist", data.teacherId);
+                    if (availableSessionHandlers.has(activeSession.userId) && activeSession) {
+                        const sessionHandler = availableSessionHandlers.get(activeSession.userId);
+                        if(!sessionHandler.isRunning) {
+                            sessionHandler.addStudent({ name: data.clientName, socket: studentS });
+                            teacherIOs.emit("updateStudentlist", data.teacherId);
+                        } else {
+                            throw Error("This sessionHandler is already running! Cannot add Student!");
+                        }
+                       
                     }
                 }
             ).catch(
@@ -198,8 +215,8 @@ studentIOs.on('connection', (studentS) => {
             logger.log("info", `User ${data.clientName} (ID ${data.studentId}) left the session of teacher with id ${data.teacherId}`);
             EduSession.getActiveSession(data.teacherId).then(
                 (activeSession) => {
-                    if (availableSessions.has(activeSession.userId) && activeSession) {
-                        const sessionHandler = availableSessions.get(activeSession.userId);
+                    if (availableSessionHandlers.has(activeSession.userId) && activeSession) {
+                        const sessionHandler = availableSessionHandlers.get(activeSession.userId);
                         sessionHandler.studentLeft(studentS, data.studentId);
                         teacherIOs.emit("updateStudentlist", data.teacherId);
                     }
@@ -229,8 +246,12 @@ function updateStudentsSessionsList(studentS = null) {
                 studentS == null ? studentIOs.emit("updateSessionsList", {}) : studentS.emit("updateSessionsList", {})
             } else {
                 sessions.forEach((session) => {
-                    if (availableSessions.has(session.userId)) {
-                        sessionsList.push(session);
+                    if (availableSessionHandlers.has(session.userId)) {
+                        const sessionHandler = availableSessionHandlers.get(session.userId);
+                        if(!sessionHandler.isRunning) {
+                            sessionsList.push(session);
+                        }
+                       
                     }
                 })
                 studentS == null ? studentIOs.emit("updateSessionsList", sessionsList) : studentS.emit("updateSessionsList", sessionsList)

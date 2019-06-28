@@ -5,34 +5,37 @@ block styles
 block content
     div.container
       div#student
-        div(v-if="sessionBrowser")
-          template(v-if="newUser")
-            div#signup
-              label Name
-                input(type="text", v-model="username")
-                button(@click="signup").button Mitmachen!
-          template(v-else)
-           ul
-            li(v-for="(session, i) in sessions")
-              h5 {{ session.name }}
-              p {{ session.type }}
-              button(@click="joinSession(session.userId)") Beitreten
-        template(v-if="session")
-          div#brainstorming(v-if="session.type === 'brainstorming'")
-            h1 Brainstorm Session
-            div(v-if="session.isRunning")
-              p blubiblub das brainstorm game läuft
-            div(v-else)
-              p Der Lehrende hat diese Session noch nicht gestartet.
-              button(@click="leaveSession()") Spiel verlassen!
-          div#quiz(v-if="session.type === 'quizzing'")
-            h1 Quiz Session!
-            div(v-if="session.isRunning")
-              p blubiblub das quiz game läuft
-            div(v-else)
-              p Der Lehrende hat diese Session noch nicht gestartet.
-              button(@click="leaveSession()") Spiel verlassen!
-      div(v-else)#error
+        div(v-if="!isError")
+          div(v-if="sessionBrowser")
+            template(v-if="newUser")
+              div#signup
+                label Name
+                  input(type="text", v-model="username")
+                  button(@click="signup").button Mitmachen!
+            template(v-else)
+            ul
+              li(v-for="(session, i) in sessions")
+                h5 {{ session.name }}
+                p {{ session.type }}
+                button(@click="joinSession(session.userId)") Beitreten
+          template(v-if="session")
+            div#brainstorming(v-if="session.type === 'brainstorming'")
+              h1 Brainstorm Session
+              div(v-if="isRunning")
+                h3 Thema: {{ session.lecture.topic }}
+                input(type="text", v-model="bsAnswer")
+                button(@click="studentAnswer()") Antwort abgeben!
+              div(v-else)
+                p Der Lehrende hat diese Session noch nicht gestartet.
+                button(@click="leaveSession()") Spiel verlassen!
+            div#quiz(v-if="session.type === 'quizzing'")
+              h1 Quiz Session!
+              div(v-if="isRunning")
+                p blubiblub das quiz game läuft
+              div(v-else)
+                p Der Lehrende hat diese Session noch nicht gestartet.
+                button(@click="leaveSession()") Spiel verlassen!
+        div(v-else)#error {{ errorText }}
     script(src="/client/js/student/index.js")
         
 

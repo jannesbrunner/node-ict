@@ -4,6 +4,7 @@ block styles
     link(rel="stylesheet", href="/css/client.css")
 block content
     div#teacher
+      div(v-if="!isError")
         div(v-if="session")
             h1 Lehrkraft Monitor
             strong Name: 
@@ -15,8 +16,8 @@ block content
               strong Lobby:
               ul(v-for="(student, i) in students") 
                 li {{ student.name }}
-                  button(v-if="!sessionRunning" @click="kickStudent(student.id)") Entfernen
-            button(v-if="!sessionRunning" @click="startSession()") Session Starten
+                  button(v-if="!isRunning" @click="kickStudent(student.id)") Entfernen
+            button(v-if="!isRunning && students.length > 0" @click="startSession()") Session Starten
             hr
             div#eduBrainstorm(v-if="brainstorming")
                 button(@click="sendTest") Test Brainstorm
@@ -26,6 +27,7 @@ block content
             button(@click="endSession") Session Beenden 
         div(v-else)
             h1 Die Session wurde beendet
+      div(v-else) {{ errorText }}
 
 
 

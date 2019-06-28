@@ -6,16 +6,18 @@ block styles
 block content
   div#container
     div#presenter
-      template(v-if="session != null")
-        div(v-if="session.type == 'brainstorming'")
-          h3 {{ session.type | capitalize }}
-          h1 {{ session.lecture.topic }}
-          div(v-if="session.type == 'brainstorming' && session.isRunning")
+      div(v-if="!isError")
+        template(v-if="session != null")
+          div(v-if="session.type == 'brainstorming'")
+            h3 {{ session.type | capitalize }}
+            h1 {{ session.lecture.topic }}
             div#cloud
-        div(v-if="session.type == 'quizzing'")#quiz
-      p(v-if="!session.isRunning") Der Lehrende hat die Session noch nicht gestartet!
-      template(v-else) 
-        h1 Der Lehrende hat diese Session beendet.  
+          div(v-if="session.type == 'quizzing'")#quiz
+        p(v-if="!isRunning") Der Lehrende hat die Session noch nicht gestartet!
+        template(v-if="!isRunning && session == null") 
+          h1 Der Lehrende hat diese Session beendet.  
+      div(v-else)
+        p {{ errorText }}
         
 
   em#presenterId(style="display: none") #{presenterId}

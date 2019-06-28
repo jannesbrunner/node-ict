@@ -2,134 +2,82 @@
 const Vue = require('vue');
 const zingchart = require('zingchart');
 const socketIO = require('socket.io-client');
-const socket = socketIO('/pclient');
 const Swal = require('sweetalert2');
+
+// connect to presenter namespace
+const socket = socketIO('/pclient');
 
 const vue = new Vue({
     el: '#presenter',
     data: {
         session: null,
-        active: true,
-        fatalError: false,
+        isRunning: false,
+        isActive: true,
+        isError: false,
+        errorText: "",
+        // Brainstorming 
         cloudWords: [],
     },
     mounted() {
-        this.socketIO();
-        // Clean exit on closed window
-        window.addEventListener('unload', function (event) {
-            event.preventDefault();
-            socket.emit("presenterLeft", true);
-        })
+        socketListen();
     },
     computed: {
-        cloudText: function () {
+        cloudText: () => {
             return this.cloudWords.join(" ");
         },
 
     },
     watch: {
-        fatalError: (newVal) => {
+        isActive: (newVal) => {
             if(newVal == true) {
                 this.session = null;
+                this.isRunning = false;
+
             }
         },
-        active: (newValue) => {
+        isRunning: (newValue) => {
             if(newValue == false) {
                 this.session = null;
                 Swal.fire({
-                    type: 'warn',
+                    type: 'warning',
                     title: 'Session Beendet',
                     text: 'Der Lehrende hat diese Session beendet',
                     footer: 'Vielen Dank für das Nutzen von Node ICT!'
+                })
+            } else {
+                Swal.fire({
+                    type: 'info',
+                    title: 'Gestartet!',
+                    text: 'Der Lehrende hat die Session gestartet!',
+                    timer: 2000
                 })
             }
         }
      },
     methods: {
-        sendTest: function () {
+        sendTest: () => {
             socket.emit("test", {
                 message: "Hello World!"
             });
         },
-        renderCloud: function () {
+        
+        renderCloud: () => {
             zingchart.render({
                 id: 'cloud',
                 data: {
                     type: 'wordcloud',
                     options: {
-                        text: vue.cloudText,
+                        text: this.cloudText,
                     }
                 },
                 height: 400,
                 width: '100%'
-
+        
             });
-        },
-        socketIO: function () {
-            socket.on('connect', () => {
-                console.log("Connected to server!");
-                vue.sessionId = document.getElementById("presenterId").innerHTML;
-                console.log(`Attach myself as Presenter for Session with id ${vue.sessionId}`)
-                socket.emit("attachPresenter", vue.sessionId);
-                window.addEventListener('beforeunload', function (e) {
-                    //Cancel the event
-                    e.preventDefault();
-                    // Chrome requires returnValue to be set
-                    e.returnValue = 'HALLO';
-
-                });
-            });
-
-            socket.on("newSession", function (data) {
-                console.log(data);
-                vue.session = data.session;
-                switch (vue.session.type) {
-                    case "brainstorming":
-                        vue.renderBS = true;
-                        break;
-                    case "quizzing":
-                        
-                        break;
-                
-                    default:
-                        break;
-                }
-            });
-
-            socket.on('disconnect', () => {
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'Verbindung verloren!',
-                    type: 'error',
-                    confirmButtonText: 'OK'
-                })
-            });
-
-            socket.on('endSession', function(data) {
-                if(data) {
-                    console.log("Teacher has ended the session!");
-                    vue.active = false;
-                }
-            });
-
-            socket.on('appError', function (error) {
-
-                Swal.fire({
-                    type: 'error',
-                    title: 'Oops...',
-                    text: error.errorMsg,
-                    footer: 'Bitte an den Support wenden!'
-                })
-
-                if (error.fatalError) {
-                    vue.fatalError = true;
-                }
-
-            })
         }
     },
     filters: {
-        capitalize: function (value) {
+        capitalize: (value) => {
           if (!value) return ''
           value = value.toString()
           return value.charAt(0).toUpperCase() + value.slice(1)
@@ -138,6 +86,132 @@ const vue = new Vue({
 });
 
 
+function socketListen () {
+    // Socket connected to server
+    socket.on('connect', () => {
+        console.log("Connected to server!");
+        let sessionId = document.getElementById("presenterId").innerHTML;
+        console.log(`Attach myself as Presenter for Session with id ${sessionId}`)
+        socket.emit("attachPresenter", sessionId);
+        // window.addEventListener('beforeunload', function (e) {
+        //     //Cancel the event
+        //     e.preventDefault();
+        //     // Chrome requires returnValue to be set
+        //     e.returnValue = 'HALLO';
+
+        // });
+
+        // Clean exit on closed window
+        window.addEventListener('unload', function (event) {
+            event.preventDefault();
+            socket.emit("presenterLeft", true);
+        })
+    });
+
+    // Server sends init session data
+    socket.on("newSession", (data) => {
+        console.log(data);
+        vue.session = data.session;
+        vue.isRunning = data.isRunning;
+        switch (vue.session.type) {
+            case "brainstorming":
+                
+                break;
+            case "quizzing":
+                
+                break;
+        
+            default:
+                break;
+        }
+    });
+
+    // Server tells the presenter client that the session was started
+    socket.on("startSession", (data) => {
+        if(data) {
+            vue.isRunning = true;
+            switch (vue.session.type) {
+                case "brainstorming":
+
+                    break;
+                case "quizzing":
+                    
+                    break;
+            
+                default:
+                    break;
+            }
+
+        }
+    })
+
+
+    // Sever tells client to update the session object
+    socket.on("updateSession", (newSession) => {
+        console.log("getting fresh session from server...")
+        if(newSession && newSession.id == vue.session.id) {
+            vue.session = newSession;
+        }
+        switch (vue.session.type) {
+            case "brainstorming":
+                    vue.cloudWords = [];
+                for(let answer in JSON.parse(vue.session.lecture.brainstormingJSON)) {
+                    vue.cloudWords.push(answer.answer);
+                }
+                break;
+            case "quizzing":
+                
+                break;
+        
+            default:
+                break;
+        }
+     });
+
+    socket.on('disconnect', () => {
+        Swal.fire({
+            title: 'Error!',
+            text: 'Verbindung verloren!',
+            type: 'error',
+            confirmButtonText: 'OK'
+        })
+    });
+
+    socket.on('endSession',(data) => {
+        if(data) {
+            console.log("Teacher has ended the session!");
+            vue.isRunning = false;
+            vue.errorText = "Diese Session wurde vom Dozierenden beendet.";
+            vue.isError = true;
+        }
+    });
+
+    socket.on('appError', (error) => {
+
+        Swal.fire({
+            type: 'error',
+            title: 'Oops...',
+            text: error.errorMsg,
+            footer: 'Bitte an den Support wenden!'
+        })
+
+            if(error.fatalError) {
+                vue.session = null;
+                vue.errorText = error.errorMsg;
+                vue.isError = true;
+                
+            }
+        
+
+    })
+}
+
+
+
+// Brainstorming
+function renderCloud() {
+    
+}
 
 
 

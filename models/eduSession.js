@@ -171,10 +171,10 @@ exports.saveActiveSession = async (updatedSession) => {
         if(activeSession) {
             activeSession.isActive = updatedSession.isActive;
             activeSession.isRunning = updatedSession.isRunning;
-            activeSession.JSON = updatedSession.JSON;
+            activeSession.sessionJSON = updatedSession.sessionJSON;
             if( activeSession.type == "brainstorming") {
-                const associatedLecture = await Brainstorming.get({eduSessionId: activeSession.id});
-                associatedLecture.JSON = updatedSession.lecture.brainstormingJSON;
+                const associatedLecture = await db.Brainstorming.findOne({where: {eduSessionId: activeSession.id}});
+                associatedLecture.brainstormingJSON = updatedSession.lecture.brainstormingJSON;
                 await associatedLecture.save();
             }
             // TODO if type = quiz;
@@ -184,7 +184,7 @@ exports.saveActiveSession = async (updatedSession) => {
             return true;
         }
     } catch (error) {
-        logger.log("error", `Error while trying to save active session with id ${updatedSession.id}!`);
+        logger.log("error", `Error while trying to save active session with id ${updatedSession.id}! > ${error}`);
         return false;
     }
 }

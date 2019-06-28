@@ -1,35 +1,59 @@
 
 const socketIO = require('socket.io-client');
-const socket = socketIO('/sclient');
 const Vue = require("vue");
 const Swal = require('sweetalert2');
+
+// connect to student client namespace
+const socket = socketIO('/sclient');
 
 /* eslint-disable no-undef */
 const vue = new Vue({
     el: '#student',
     data: {
+        session: null,
+        isRunning: false,
+        isActive: true,
+        isError: false,
+        errorText: "",
+        // Student Client
         newUser: true,
         sessionBrowser: true,
-        username: "",
-        socket: null,
         sessions: null,
-        session: null,
         studentId: null,
-        gameIsRunning: false,
-        fatalAppError: false,
+        username: "",
+        // Brainstorming
+        bsAnswer: ""
     }, 
     mounted() {
         if(localStorage.username) {
             this.username = localStorage.username;
         } 
-       this.socketIO();
+       socketListen();
     },
     computed: {  
         
     },
     watch: {
-        sessions: (oldV, newV) => {
+        sessions: (newV) => {
             this.sessions = newV;
+        },
+        isRunning: (newV) => {
+            if(newV == false) {
+                this.session = null;
+                Swal.fire({
+                    type: 'warning',
+                    title: 'Session Beendet',
+                    text: 'Der Lehrende hat diese Session beendet',
+                    footer: 'Vielen Dank für das Nutzen von Node ICT!'
+                })
+            } else {
+                Swal.fire({
+                    type: 'info',
+                    title: 'Gestartet!',
+                    text: 'Der Lehrende hat die Session gestartet!',
+                    timer: 2000
+                })
+            }
         }
     },
     methods: { 
@@ -48,11 +72,11 @@ const vue = new Vue({
                     this.getSessionForUser() 
                 }
             } else {
-                wal.fire(
-                    'Spieler Name',
-                    'Bitte einen gültigen Spieler Name eingeben',
-                    'warning'
-                  )
+                Swal.fire({
+                    title: 'Spieler Name',
+                    text: 'Bitte einen gültigen Spieler Name eingeben',
+                    type: 'warning'
+                })
             }
         },
         reqRunningSessions: function() {
@@ -86,117 +110,175 @@ const vue = new Vue({
                   )
                 }
               })
+              window.removeEventListener('beforeunload', beforeUnload);
         },
 
-        socketIO: () => {
-            socket.on('connect', () => {
-                console.log("Connected to server!");
-
-                this.socket = socket;
-             });
-
-             socket.on('disconnect', () => {
+        // Brainstorming 
+        studentAnswer: function() {
+            if(this.bsAnswer.length > 0) {
+                socket.emit("newBSAnswer", {answer: this.bsAnswer, id: this.studentId, clientName: this.username});
+                this.bsAnswer = "";
+                let timerInterval;
                 Swal.fire({
-                    title: 'Error!',
-                    text: 'Verbindung verloren!',
-                    type: 'error',
-                    confirmButtonText: 'OK'
+                    title: 'Deine Antwort wurde übermittelt!',
+                    timer: 2000,
+                    onBeforeOpen: () => {
+                      Swal.showLoading()
+                      timerInterval = setInterval(() => {
+                        Swal.getContent().querySelector('strong')
+                          .textContent = Swal.getTimerLeft()
+                      }, 100)
+                    },
+                    onClose: () => {
+                      clearInterval(timerInterval)
+                    }
+                  }).then((result) => {
+                    if (
+                      // Read more about handling dismissals
+                      result.dismiss === Swal.DismissReason.timer
+                    ) {
+                      console.log('Dialog closed by timer')
+                    }
                   })
-             });
+            }
+        },
 
-             socket.on('updateSessionsList', function(sessions) {
-                 console.log(sessions);
-                 vue.sessions = sessions;
-             })
-
-             socket.on('kicked', function(studentId) {
-                 if(vue.studentId == studentId) {
-                     vue.session = null;
-                     vue.studentId = null;
-                     vue.sessionBrowser = true;
-                     Swal.fire(
-                        'Achtung!',
-                        'Sie wurden aus der Sitzung geworfen!',
-                        'warning'
-                      )
-                 }
-             })
-             
-             socket.on('sessionJoined', function(data) {
-                if(data) {
-                    vue.session = data.session;
-                    vue.studentId = data.studentId;
-                    window.addEventListener('beforeunload', function (e) {
-                        //Cancel the event
-                        e.preventDefault();
-                        // Chrome requires returnValue to be set
-                        e.returnValue = 'HALLO';
-                        
-                      });
-
-                    window.onunload = (e) => {
-                        socket.emit("sessionLeft", {clientName: vue.username, teacherId: session.teacherId, studentId: vue.studentId});
-                    }
-                    
-                    // START THE GAME
-                    switch (vue.session.type) {
-                        case "brainstorming":
-                            vue.sessionBrowser = false;
-                           
-                            break;
-                        case "quizzing":
-                            vue.sessionBrowser = false;
-            
-                            break;
-                        default:
-                            // ERROR ?
-                            break;
-                    }
-                }
-             });
-            // Sever tells client to update the session object
-             socket.on("updateSession", function(newSession) {
-                if(newSession && newSession.id == vue.session.id) {
-                    vue.session = newSession;
-                }
-             });
-             // teacher ends session
-             socket.on("endSession", function(data) {
-                if(data == true) {
-                    vue.session = null;
-                    vue.studentId = null;
-                    vue.sessionBrowser = true;
-                    Swal.fire({
-                        type: 'warn',
-                        title: 'Ende',
-                        text: "Der Lehrende hat die Lehreinheit beendet!",
-                        footer: 'Danke für das Nutzen von Node ICT!'
-                      })
-    
-                }
-             });
-
-             socket.on('appError', function(error) {
-
-                Swal.fire({
-                    type: 'error',
-                    title: 'Oops...',
-                    text: error.errorMsg,
-                    footer: 'Bitte an den Support wenden!'
-                  })
-
-
-                
-                
-                    if(error.fatalError) {
-                       //  vue.sessionActive = false;
-                    }
-                
-            })
-        }
-    },
+    }
     
 });
+
+
+function socketListen () {
+    socket.on('connect', () => {
+        console.log("Connected to server!");
+     });
+
+     socket.on('disconnect', () => {
+        Swal.fire({
+            title: 'Error!',
+            text: 'Verbindung verloren!',
+            type: 'error',
+            confirmButtonText: 'OK'
+          })
+     });
+
+     socket.on('updateSessionsList', function(sessions) {
+         console.log(sessions);
+         vue.sessions = sessions;
+     })
+
+     socket.on('kicked', function(studentId) {
+         if(vue.studentId == studentId) {
+             vue.session = null;
+             vue.studentId = null;
+             vue.sessionBrowser = true;
+             vue.isRunning = false;
+             Swal.fire(
+                'Achtung!',
+                'Sie wurden aus der Sitzung geworfen!',
+                'warning'
+              )
+              window.removeEventListener('beforeunload', beforeUnload);
+         }
+
+     })
+     
+     socket.on('sessionJoined', function(data) {
+        if(data) {
+            vue.session = data.session;
+            vue.studentId = data.studentId;
+            window.addEventListener('beforeunload', beforeUnload);
+
+            window.onunload = (e) => {
+                socket.emit("sessionLeft", {clientName: vue.username, teacherId: session.teacherId, studentId: vue.studentId});
+            }
+            
+            // START THE GAME
+            switch (vue.session.type) {
+                case "brainstorming":
+                    vue.sessionBrowser = false;
+                   
+                    break;
+                case "quizzing":
+                    vue.sessionBrowser = false;
+    
+                    break;
+                default:
+                    // ERROR ?
+                    break;
+            }
+        }
+     });
+    // Sever tells client to update the session object
+     socket.on("updateSession", function(newSession) {
+        console.log("getting fresh session from server...", newSession)
+        if(newSession && newSession.id == vue.session.id) {
+            vue.session = newSession;
+        }
+     });
+     // teacher ends session
+     socket.on("endSession", function(data) {
+        if(data == true) {
+            vue.session = null;
+            vue.studentId = null;
+            vue.sessionBrowser = true;
+            vue.isRunning = false;
+            Swal.fire({
+                type: 'warning',
+                title: 'Ende',
+                text: "Der Lehrende hat die Lehreinheit beendet!",
+                footer: 'Danke für das Nutzen von Node ICT!'
+              })
+              window.removeEventListener('beforeunload', beforeUnload);
+
+        }
+     });
+
+     // Server tells the student client that the session was started
+    socket.on("startSession", function(data) {
+        if(data) {
+            vue.isRunning = true;
+        }
+    })
+
+     socket.on('appError', function(error) {
+
+        Swal.fire({
+            type: 'error',
+            title: 'Oops...',
+            text: error.errorMsg,
+            footer: 'Bitte an den Support wenden!'
+          })
+        
+          if(error.fatalError) {
+            vue.session = null;
+            vue.studentId = null;
+            vue.sessionBrowser = false;
+            vue.errorText = error.errorMsg;
+            vue.isError = true;
+            window.removeEventListener('beforeunload', beforeUnload);
+            
+        }
+    
+        
+    })
+}
+
+// Prevent user from accidently closing the browser window
+function beforeUnload(e) {
+    // Cancel the event
+    e.preventDefault();
+    // Chrome requires returnValue to be set
+    e.returnValue = '';
+
+    Swal.fire({
+        type: 'warning',
+        title: 'Ende?',
+        text: "Wenn sie das Fenster schließen, gehen möglicherweise Daten verloren!",
+        footer: 'Bitte warten bis der Dozierende die Session beendet hat.'
+      })
+
+}
 
 
 

@@ -1,41 +1,58 @@
 const socketIO = require('socket.io-client');
 const Vue = require("vue");
 const Swal = require('sweetalert2');
+
+// Join the teacher namespace
 const socket = socketIO('/tclient');
 
 
 const vue = new Vue({
     el: '#teacher',
     data: {
-        socket: null,
         session: null,
+        isRunning: false,
+        isActive: true,
+        isError: false,
+        errorText: "",
+
         students: [],
         // VUE DOM
         presenterUrl: "",
-        sessionActive: false,
-        sessionRunning: false,
+
         quizzing: false,
         brainstorming: false,
     },
     mounted() {
-        this.socketIO();
-        window.addEventListener('beforeunload', function (e) {
-            // Cancel the event
-            e.preventDefault();
-            // Chrome requires returnValue to be set
-            e.returnValue = '';
-
-            confirm("Wollen Sie wirklich beenden?");
-          });
+        socketListen();
+        window.addEventListener('beforeunload', beforeUnload);
     },
     computed: {
     },
     watch: {
-        session: function () {
-            if(this.session) {
+        session: function (newSession) {
+            if(newSession) {
+                this.session = newSession;
                 this.presenterUrl = `http://${socket.io.engine.hostname}:${socket.io.engine.port}/client/presenter/${this.session.id}`;
             }
            
+        },
+        isRunning: (newV) => {
+            if(newV == false) {
+                this.session = null;
+                Swal.fire({
+                    type: 'warning',
+                    title: 'Session Beendet',
+                    text: 'Der Lehrende hat diese Session beendet',
+                    footer: 'Vielen Dank für das Nutzen von Node ICT!'
+                })
+            } else {
+                Swal.fire({
+                    type: 'info',
+                    title: 'Gestartet!',
+                    text: 'Der Lehrende hat die Session gestartet!',
+                    timer: 2000
+                })
+            }
         }
     },
     methods: {
@@ -59,6 +76,7 @@ const vue = new Vue({
                   )
                 }
               })
+              window.removeEventListener('beforeunload', beforeUnload);
         },
         startSession: function() {
             Swal.fire({
@@ -101,78 +119,114 @@ const vue = new Vue({
                 }
               })
         },
-        socketIO: () => {
-            socket.on("connect", () => {
-                this.socket = socket;
-                console.log("(re)connected to server!");
-            });
-            
-
-            // register events
-            
-            socket.on('disconnect', () => {
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'Verbindung verloren!',
-                    type: 'error',
-                    confirmButtonText: 'OK',
-                    showCloseButton: false,
-                    allowOutsideClick: false,
-                  })
-             });
-
-            
-            socket.on('newSession', function (data) {
-                console.log(data, "Got the Session");
-                vue.session = data
-
-            });
-
-            // NEW STUFF //TODO
-            // Sever tells client to update the session object
-            socket.on("updateSession", function(newSession) {
-                if(newSession && newSession.id == vue.session.id) {
-                    vue.session = newSession;
-                }
-             });
-            // 
-            socket.on('appError', function(error) {
-
-                Swal.fire({
-                    type: 'error',
-                    title: 'Oops...',
-                    text: error.errorMsg,
-                    footer: 'Bitte an den Support wenden!'
-                  })
-
-
-                
-                   
-                    vue.errorMsg = error.errorMsg;
-                    if(error.fatalError) {
-                        vue.session = null;
-                    }
-                
-            })
-
-            socket.on("updateStudentList", function(studentList) {
-                console.log("Server wants us to update the student list!");
-                console.log(studentList);
-                vue.students = studentList;
-                console.log(vue.students);
-                
-            })
-
-            
-
-            socket.on('test', (data) => {
-                console.log("Received data from Server: ", data.message)
-            });
-
-
-        }
+        
     }
 });
+
+
+
+function socketListen () {
+    
+    socket.on("connect", () => {
+        console.log("(re)connected to server!");
+    });
+    
+
+    socket.on('disconnect', () => {
+        Swal.fire({
+            title: 'Error!',
+            text: 'Verbindung verloren!',
+            type: 'error',
+            confirmButtonText: 'OK',
+            showCloseButton: false,
+            allowOutsideClick: false,
+          })
+     });
+
+    
+    socket.on('newSession', function (data) {
+        console.log(data, "Got the Session");
+        vue.session = data
+    });
+
+    // Sever tells client to update the session object
+    socket.on("updateSession", function(newSession) {
+        console.log("getting fresh session from server...", newSession)
+        if(newSession && newSession.id == vue.session.id) {
+            vue.session = newSession;
+        }
+     });
+    // Server tells the teacher client that the session was started
+    socket.on("startSession", function(data) {
+        if(data) {
+            vue.isRunning = true;
+        }
+    })
+    socket.on('appError', function(error) {
+
+        Swal.fire({
+            type: 'error',
+            title: 'Oops...',
+            text: error.errorMsg,
+            footer: 'Bitte an den Support wenden!'
+          })
+
+
+
+            if(error.fatalError) {
+                vue.session = null;
+                vue.errorText = error.errorMsg;
+                vue.isError = true;
+                window.removeEventListener('beforeunload', beforeUnload);
+                
+            }
+        
+    })
+
+    socket.on("updateStudentList", function(studentList) {
+        console.log("Server wants us to update the student list!");
+        console.log(studentList);
+        vue.students = studentList;
+        console.log(vue.students);
+        
+    })
+
+    
+
+    socket.on('test', (data) => {
+        console.log("Received data from Server: ", data.message)
+    });
+
+    // BRAINSTORMING
+    socket.on('newBSAnswer', (data) => {
+        console.log("Got new BS Answer!");
+        if(vue.isRunning) {
+            Swal.fire({
+                type: 'info',
+                title: 'test',
+                text: `Got new answer!`,
+                footer: `By ${data.clientName} (id ${data.id} ) Answer: ${data.answer}`
+              })
+        }
+    });
+}
+  
+// Prevent user from accidently closing the browser window
+function beforeUnload(e) {
+     // Cancel the event
+     e.preventDefault();
+     // Chrome requires returnValue to be set
+     e.returnValue = '';
+
+     Swal.fire({
+        type: 'warning',
+        title: 'Ende?',
+        text: "Wenn sie das Fenster schließen, gehen möglicherweise Daten verloren!",
+        footer: 'Bitte beenden Sie die Session vorher.'
+      })
+
+}
+
 
 
 
