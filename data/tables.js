@@ -64,11 +64,6 @@ exports.settings = (sequelize, Sequelize) => {
         type: Sequelize.STRING,
         allowNull: false
       },
-      clientJSON: {
-        type: Sequelize.JSON,
-        allowNull: true,
-        defaultValue: null,
-      }
     })
   };
 
@@ -103,11 +98,6 @@ exports.settings = (sequelize, Sequelize) => {
           isIn: [['brainstorming', 'quizzing']]
         }
       },
-      sessionJSON: {
-        type: Sequelize.JSON,
-        allowNull: true,
-        defaultValue: null,
-      }
     })
   };
 
@@ -132,26 +122,25 @@ exports.settings = (sequelize, Sequelize) => {
     })
   };
 
-  exports.brainstorming_answer = (sequelize, Sequelize) => {
-    return sequelize.define('brainstorming_answer', {
+  exports.quizzing = (sequelize, Sequelize) => {
+    return sequelize.define('quizzing', {
+  
       id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
         allowNull: false,
         primaryKey: true
       },
-      answer: {
+      topic: {
         type: Sequelize.STRING,
         allowNull: false
       },
-      answerer: {
-        type: Sequelize.STRING,
-        allowNull: true
-      },
-      brainstorming_answerJSON: {
+      quizzingJSON: {
         type: Sequelize.JSON,
         allowNull: true,
         defaultValue: null,
       }
     })
   };
+
+  

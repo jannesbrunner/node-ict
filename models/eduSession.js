@@ -7,7 +7,6 @@
 const db = require('../util/database');
 const User = require('../models/user');
 const Student = require('../models/student');
-const Brainstorming = require('../models/brainstorming');
 const logger = require("winston");
 
 // Model
@@ -208,7 +207,8 @@ async function constructSession(session) {
         const owner = await User.getUser({id: session.dataValues.userId})
         let lecture
             if (session.type == "brainstorming") {
-            lecture = await Brainstorming.get({eduSessionId: session.dataValues.id})
+            lecture = await db.Brainstorming.get({where: {eduSessionId: session.dataValues.id}});
+            lecture = lecture.dataValues;
             }
             if (session.type == "quizzing") {
                 // TODO: implement get quiz

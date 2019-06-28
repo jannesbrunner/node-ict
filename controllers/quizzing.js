@@ -8,21 +8,21 @@
 const EduSession = require('../models/eduSession')
 const logger = require('winston');
 
- // GET => /teacher/sessions/brainstorming/new 
+ // GET => /teacher/sessions/quizzing/new 
  exports.getNew = (req, res, next) => {
    
-        res.render('teacher/edusessions/brainstorming/new', 
+        res.render('teacher/edusessions/quizzing/new', 
         {
-            docTitle: "Neue Brainstromsession | Node ICT",
+            docTitle: "Neue Quizsession | Node ICT",
             isLoggedIn: req.session.isLoggedIn,
             loggedUser: req.session.user,
         });
 }
 
-// POST => /teacher/sessions/brainstorming/new
+// POST => /teacher/sessions/quizzing/new
 exports.postNew = async (req, res) => {
     try {
-        const session = await EduSession.saveBrainstormsession({
+        await EduSession.saveBrainstormsession({
             name: req.body.name,
             topic: req.body.topic,
             ownerId: req.session.user.id
@@ -37,7 +37,7 @@ exports.postNew = async (req, res) => {
    
 }
 
-// GET => /teacher/sessions/brainstorming-edit/:id
+// GET => /teacher/sessions/quizzing-edit/:id
 exports.getEdit = async (req, res) => {
     // permissions
     try {

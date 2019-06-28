@@ -14,6 +14,7 @@ const router = express.Router();
 const teacherController = require('../controllers/teacher');
 const sessionController = require('../controllers/session')
 const brainstormingController = require('../controllers/brainstorming');
+const quizzingController = require('../controllers/quizzing');
 const isAuth = require('../middleware/is-auth');
 const hasSettings = require('../middleware/has-settings');
 
@@ -45,5 +46,11 @@ router.post('/sessions/brainstorming/new', isAuth, brainstormingController.postN
 router.get('/sessions/brainstorming-edit/:sessionId', isAuth, brainstormingController.getEdit)
 router.post('/sessions/brainstorming-edit/:sessionId', isAuth, brainstormingController.postEdit)
 router.post('/sessions/brainstorming-destroy/:sessionId', isAuth, brainstormingController.destroySession)
+// Quizzing
+router.get('/sessions/quizzing/new', isAuth, quizzingController.getNew)
+router.post('/sessions/quizzing/new', isAuth, quizzingController.postNew)
+router.get('/sessions/quizzing-edit/:sessionId', isAuth, quizzingController.getEdit)
+router.post('/sessions/quizzing-edit/:sessionId', isAuth, quizzingController.postEdit)
+router.post('/sessions/quizzing-destroy/:sessionId', isAuth, quizzingController.destroySession)
 module.exports = router;
 
