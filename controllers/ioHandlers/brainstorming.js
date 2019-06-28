@@ -17,14 +17,13 @@ module.exports = class BrainstormTeacher {
         // Send Teacher client init session
         this.socketT.emit("newSession", this.session);
         this.emitStudentList();
-
-        if (session.type == "brainstorming") {
-            // Brainstorming
-            this.brainstorming = {
+        // Brainstorming
+        this.brainstorming = {
                 answers: []
             }
-        }
+        console.log(JSON.parse(this.session.lecture.brainstormingJSON));       
 
+        
     }
     ioEventsTC() {
         // ioEvents emitted by teacher
@@ -98,7 +97,9 @@ module.exports = class BrainstormTeacher {
         socketS.on("newBSAnswer", (data) => {
             logger.log("info", "Got new BS Answer!");
             if (data) {
-                this.brainstorming.answers.push(data);
+                console.log(this.brainstorming.answers, "NEW BSS");
+            
+               this.brainstorming.answers.push(data);
                 
                 this.emitToPresenters("updateBrainstorming", this.brainstorming);
                 this.emitToStudents("updateBrainstorming", this.brainstorming);
@@ -281,6 +282,7 @@ module.exports = class BrainstormTeacher {
 
     }
 
+    // start the session
     startSession() {
         this.isRunning = true;
         this.socketT.emit("startSession", true);

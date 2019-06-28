@@ -129,10 +129,16 @@ const vue = new Vue({
         removeAnswer: function (answer, clientId) {
             console.log(`Removing answer '${answer}' by sId ${clientId}`);
             socket.emit("removeAnswer", {answer, clientId});
-            
-            this.brainstorming.answers = this.brainstorming.answers.filter( (answer, index) => {
-                return answer.answer != answer && answer.id != clientId;
-            })
+
+
+            for (let index = 0; index < this.brainstorming.answers.length; index++) {
+                const element = this.brainstorming.answers[index];
+                if(element.answer == answer && element.id == clientId) {
+                   this.brainstorming.answers.splice(index, 1);
+                   break;
+                }
+                
+            }
             
             socket.emit('updateBrainstorming', this.brainstorming);
             
@@ -179,6 +185,12 @@ function socketListen() {
     socket.on("startSession", function (data) {
         if (data) {
             vue.isRunning = true;
+            if(vue.session.type == "brainstorming") {
+                socket.emit("updateBrainstorming");
+            } else if (vue.session.type == "quizzing") {
+                // TODO
+            }
+           
         }
     })
     socket.on('appError', function (error) {

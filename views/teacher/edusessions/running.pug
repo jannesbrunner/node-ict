@@ -23,7 +23,7 @@ block content
                 h3 Bisherige Antworten:
                 ul(v-for="(answer) in brainstorming.answers")
                   li {{ answer.answer}} (hinzugefügt von {{ answer.clientName }}) 
-                    button(@click="removeAnswer(answer.answer, answer.id)") Entfernen
+                  button(@click="removeAnswer(answer.answer, answer.id)") Entfernen
             div#eduQuiz(v-if="session.type == 'quizzing' && isRunning")
                 button Test Quiz
             hr
