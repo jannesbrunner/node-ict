@@ -15,16 +15,26 @@ const vue = new Vue({
         isActive: true,
         isError: false,
         errorText: "",
+        studentList: [],
         // Brainstorming 
+        brainstorming: {},
+        cloudWordWeight: 200,
         cloudWords: [],
     },
     mounted() {
         socketListen();
     },
     computed: {
-        cloudText: () => {
+        cloudText: function() {
             return this.cloudWords.join(" ");
         },
+        students: function() {
+            if (this.studentList.length > 0) {
+                return this.studentList;
+            } else {
+                return [{name: "Noch keine Spieler verbunden!"}];
+            }
+        }
 
     },
     watch: {
@@ -52,29 +62,34 @@ const vue = new Vue({
                     timer: 2000
                 })
             }
-        }
+        },
+        studentList: (newValue) => {
+            console.log("got new studentList", newValue);
+            if(newValue.length > 0) {
+                this.studentList = newValue;
+            } else {
+                this.studentList = [];
+            }
+        },
+        brainstorming: (newValue) => {
+            console.log("Brainstorm data updated!", newValue);
+            vue.cloudWords = [{"text": vue.session.lecture.topic, "count": 400, "name": "Das heutige Thema!"}];
+            newValue.answers.forEach( 
+                (answer) => {
+                    vue.cloudWords.push({"text": answer.answer, "count": vue.cloudWordWeight, "name": answer.clientName});
+                    }
+                );
+            renderCloud();
+        },
      },
+    
     methods: {
-        sendTest: () => {
+        sendTest: function() {
             socket.emit("test", {
                 message: "Hello World!"
             });
         },
         
-        renderCloud: () => {
-            zingchart.render({
-                id: 'cloud',
-                data: {
-                    type: 'wordcloud',
-                    options: {
-                        text: this.cloudText,
-                    }
-                },
-                height: 400,
-                width: '100%'
-        
-            });
-        }
     },
     filters: {
         capitalize: (value) => {
@@ -82,8 +97,39 @@ const vue = new Vue({
           value = value.toString()
           return value.charAt(0).toUpperCase() + value.slice(1)
         }
-      }
+      },
 });
+
+// Brainstorming render Cloud
+function renderCloud() {
+    zingchart.render({
+        id: 'cloud',
+        data: {
+            type: 'wordcloud',
+            options: {
+                words: vue.cloudWords,
+                aspect: "spiral",
+                minFontSize: 30,
+                maxFontSize: 60,
+                tooltip: {
+                    text: '%text: %name',
+                    visible: true,
+                    
+                    alpha: 0.9,
+                    backgroundColor: '#1976D2',
+                    borderRadius: 2,
+                    borderColor: 'none',
+                    fontColor: 'white',
+                    fontFamily: 'Georgia',
+                    textAlpha: 1
+                  }
+            }
+        },
+        height: 700,
+        width: 700,
+
+    });
+}
 
 
 function socketListen () {
@@ -168,6 +214,10 @@ function socketListen () {
         }
      });
 
+     socket.on("updateStudentList", (newList) => {
+        vue.studentList = newList;
+     });
+
     socket.on('disconnect', () => {
         Swal.fire({
             title: 'Error!',
@@ -204,14 +254,16 @@ function socketListen () {
         
 
     })
+
+
+    /// -------- BRAINSTORMING --------- ///
+    socket.on("updateBrainstorm", (data) => {
+        vue.brainstorming = data;
+    });
+
+
 }
 
-
-
-// Brainstorming
-function renderCloud() {
-    
-}
 
 
 

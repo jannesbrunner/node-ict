@@ -11,7 +11,11 @@ block content
           div(v-if="session.type == 'brainstorming'")
             h3 {{ session.type | capitalize }}
             h1 {{ session.lecture.topic }}
+
             div#cloud
+            h3 Spieler: 
+              p(v-for="student in students")
+                span {{ student.name }} &nbsp;
           div(v-if="session.type == 'quizzing'")#quiz
         p(v-if="!isRunning") Der Lehrende hat die Session noch nicht gestartet!
         template(v-if="!isRunning && session == null") 

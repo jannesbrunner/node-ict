@@ -93,23 +93,10 @@ module.exports = class BrainstormTeacher {
             logger.log("info", "Got new BS Answer!");
             if (data) {
                 this.brainstorming.answers.push(data);
-                this.session.lecture.brainstormingJSON = JSON.stringify(this.brainstorming.answers);
-                this.updateSessionDB().then(
-                    (result) => {
-                        if (result) {
-                            logger.log("info", 'saving success!');
-                            this.updateMemorySession().then( () => {
-                                console.log("emitting new sessions to clients");
-                                this.emitToStudents("updateSession", this.session);
-                                this.emitToPresenters("updateSession", this.session);
-                                this.updateSessionT();
-                            })
-                            
-                        }
-                    }
-                ).catch(
-                    (error) => { logger.log("error", error); }
-                )
+                
+                this.emitToPresenters("updateBrainstorm", this.brainstorming);
+                this.emitToStudents("updateBrainstorm", this.brainstorming);
+                this.socketT.emit("updateBrainstorm", this.brainstorming);
 
             }
         })
@@ -162,6 +149,7 @@ module.exports = class BrainstormTeacher {
             (students) => {
                 if (students) {
                     this.socketT.emit("updateStudentList", students.students);
+                    this.emitToPresenters("updateStudentList", students.students);
                 }
             }
         ).catch(
@@ -176,6 +164,10 @@ module.exports = class BrainstormTeacher {
     attachPresenter(presenterS) {
         this.presenterSockets.push(presenterS);
         presenterS.emit("newSession", { session: this.session, isRunning: this.isRunning });
+        if(this.isRunning) {
+            this.emitToPresenters("updateBrainstorm", this.brainstorming);
+        }
+        this.emitStudentList();
         this.ioEventsPC(presenterS);
     }
 
@@ -294,6 +286,12 @@ module.exports = class BrainstormTeacher {
         try {
             const answer = await EduSession.unsetActiveSession(this.teacherId);
             if (answer) {
+
+                if(this.session.type == "brainstorming") {
+                    this.session.lecture.brainstormingJSON = JSON.stringify(this.brainstorming);
+                    await EduSession.saveActiveSession(this.session);
+                }
+
                 this.socketT.emit("endSession", true);
                 this.emitToStudents("endSession", true);
                 this.emitToPresenters("endSession", true);
