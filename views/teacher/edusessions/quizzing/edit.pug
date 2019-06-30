@@ -8,7 +8,7 @@ block content
     li.nav-item
       a.nav-link(href="/teacher/sessions") Zurück
     li.nav-item
-      a.nav-link.(href="/brainstorming/new") Neue Brainstorm Session anlegen
+      a.nav-link(href="/teacher/sessions/brainstorming/new") Neue Brainstorm Session anlegen
     li.nav-item
       a.nav-link.active(href="#") Quiz Session bearbeiten  
   hr
@@ -23,9 +23,21 @@ block content
         label(for='topic') Thema der Quiz Session 
         input.form-control(type='text' id='topic' placeholder='z.B. Werke von Goethe' name='topic' value=`${session.lecture.topic}` required) 
       button.btn.btn-primary(type='submit') Speichern
+      
+      h5 Fragen
+      if questions.length == 0
+        p Noch keine Fragen vorhanden!
+      else 
+        ul.list-unstyled
+        each question in questions
+          li #{question.question} > 
+            a(href=`/teacher/sessions/quizzing-editquestion/${session.id}/${question.id}`) Frage bearbeiten
+
+      a(href=`/teacher/sessions/quizzing-addquestion/${session.id}`) Frage Hinzufügen
   if session.userId == loggedUser.id || loggedUser.isSuperAdmin
   form(method='POST' action=`/teacher/sessions/quizzing-destroy/${session.id}`)
     button.btn.btn-danger(type='submit') Löschen
+
 
 
 

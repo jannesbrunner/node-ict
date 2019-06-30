@@ -1,0 +1,53 @@
+extends ../../../layouts/teacher-layout.pug
+
+block styles
+  link(rel="stylesheet", href="/css/teacher.css")
+block content
+  h1 Lehreinheiten
+  ul.nav.nav-pills.nav-fill
+    li.nav-item
+      a.nav-link(href=`/teacher/sessions/quizzing-edit/${session.id}`) Zurück (Ohne Speichern)
+    li.nav-item
+      
+  hr
+  div.card
+    div.card-header Quiz Session Frage Hinzufügen
+  div.card-body
+    p Eine Frage muss vier mögliche Antworten besitzen. 
+    form(method='POST' action=`/teacher/sessions/quizzing-addquestion/${session.id}`)
+      div.form-group
+        label(for='question') Frage
+        input.form-control(type='text' id='question' placeholder='z.B. Wer war Friedrich Schiller?' name='question' required) 
+      div.form-group
+        label(for='answer1') Antwort 1
+        input.form-control(type='text' id='answer1' placeholder='Ein Architekt' name='answer1' required) 
+      div.form-group
+        label(for='answer2') Antwort 2
+        input.form-control(type='text' id='answer2' placeholder='Ein Schriftsteller' name='answer2' required) 
+      div.form-group
+        label(for='answer3') Antwort 3
+        input.form-control(type='text' id='answer3' placeholder='Ein Kriegsherr' name='answer3' required)
+      div.form-group
+        label(for='answer4') Antwort 4
+        input.form-control(type='text' id='answer4' placeholder='Ein Sportler' name='answer4' required)  
+      div.form-group
+        p Markieren Sie die richtige Antwort:
+        fieldset.form-check
+          
+          input.form-check-input(type="radio" id="vanswer1" name="validAnswer" value="1" required)
+          label.form-check-label(for="vanswer1") Antwort 1 
+          br
+          input.form-check-input(type="radio" id="vanswer2" name="validAnswer" value="2")
+          label.form-check-label(for="vanswer2") Antwort 2
+          br
+          input.form-check-input(type="radio" id="vanswer3" name="validAnswer" value="3")
+          label.form-check-label(for="vanswer3") Antwort 3
+          br
+          input.form-check-input(type="radio" id="vanswer4" name="validAnswer" value="4")
+          label.form-check-label(for="vanswer4") Antwort 4
+      button.btn.btn-primary(type='submit') Frage Speichern
+  
+
+
+
+
