@@ -1,6 +1,6 @@
 const socket = require('../util/socket')
 const EduSession = require('../models/eduSession')
-const BrainstormTeacher = require('./ioHandlers/brainstorming');
+const BrainstormTeacher = require('./ioGameHandler');
 const eventEmitter = require('../util/eventEmitter')
 const logger = require('winston');
 

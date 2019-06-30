@@ -28,7 +28,7 @@ const database = require('./util/database');
 const dbSetup = require('./util/db_setup');
 const isAuth = require('./middleware/is-auth');
 const io = require('./util/socket');
-const sessionIo = require('./controllers/sessionSocket');
+const ioSocketHandler = require('./controllers/ioSocketHandler');
 const logger = require('./util/loggerSetup');
 
 // ------------------------------------------------ //
@@ -92,8 +92,8 @@ io.getIO().use(
 );
 
 
-// Start IO Script
-sessionIo();
+// Start IO SocketHandler (handles incoming socket io connections)
+ioSocketHandler();
 
 
 

@@ -1,6 +1,6 @@
 const logger = require("winston");
-const EduSession = require("../../models/eduSession");
-const Student = require("../../models/student");
+const EduSession = require("../models/eduSession");
+const Student = require("../models/student");
 
 
 module.exports = class BrainstormTeacher {
