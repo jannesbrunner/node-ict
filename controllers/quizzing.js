@@ -22,12 +22,11 @@ const logger = require('winston');
 // POST => /teacher/sessions/quizzing/new
 exports.postNew = async (req, res) => {
     try {
-        await EduSession.saveBrainstormsession({
+        await EduSession.saveQuizzingsession({
             name: req.body.name,
             topic: req.body.topic,
             ownerId: req.session.user.id
         });
-        
         
        
     } catch (error) {
@@ -41,7 +40,7 @@ exports.postNew = async (req, res) => {
 exports.getEdit = async (req, res) => {
     // permissions
     try {
-        const currentSession = await EduSession.getBrainstormsession(req.params.sessionId)
+        const currentSession = await EduSession.getQuizzingsession(req.params.sessionId)
         const sessionsUserId = currentSession.userId
         if(req.session.user.id != sessionsUserId) {
             if(!req.session.user.isSuperAdmin) {
@@ -50,7 +49,7 @@ exports.getEdit = async (req, res) => {
                     isLoggedIn: req.session.isLoggedIn,
                     loggedUser: req.session.user,
                     'error': `Sie sind nicht berechtigt diese Session anzuzeigen!`,
-                    backLink: `teacher/sessions/brainstorming-edit/${req.params.sessionId}`,
+                    backLink: `teacher/sessions/quizzing-edit/${req.params.sessionId}`,
                 })
             }
         }
@@ -60,13 +59,15 @@ exports.getEdit = async (req, res) => {
     
     
     try {
-        const sessionToEdit = await EduSession.getBrainstormsession(req.params.sessionId);
-        return res.render('teacher/edusessions/brainstorming/edit', 
+        const sessionToEdit = await EduSession.getQuizzingsession(req.params.sessionId);
+        const questions = await EduSession.getQuizzingQuestionsForQuizzing(req.params.sessionId);
+        return res.render('teacher/edusessions/quizzing/edit', 
         {
-            docTitle: "Brainstormsession Bearbeiten | Node ICT",
+            docTitle: "Quiz Session Bearbeiten | Node ICT",
             isLoggedIn: req.session.isLoggedIn,
             loggedUser: req.session.user,
-            session: sessionToEdit
+            session: sessionToEdit,
+            questions: questions,
         });
         
         
@@ -77,12 +78,12 @@ exports.getEdit = async (req, res) => {
    
 }
 
-// POST => /teacher/sessions/brainstorming-edit/:id
+// POST => /teacher/sessions/quizzing-edit/:id
 exports.postEdit = async (req, res, next) => {
 
     // permissions
     try {
-        const currentSession = await EduSession.getBrainstormsession(req.params.sessionId)
+        const currentSession = await EduSession.getQuizzingsession(req.params.sessionId)
         const sessionsUserId = currentSession.userId
         if(req.session.user.id != sessionsUserId) {
             if(!req.session.user.isSuperAdmin) {
@@ -91,7 +92,7 @@ exports.postEdit = async (req, res, next) => {
                     'error': `Sie sind nicht berechtigt diese Session zu ändern!`,
                     isLoggedIn: req.session.isLoggedIn,
                     loggedUser: req.session.user,
-                    backLink: `teacher/sessions/brainstorming-edit/${req.params.sessionId}`,
+                    backLink: `teacher/sessions/quizzing-edit/${req.params.sessionId}`,
                 })
             }
         }
@@ -107,8 +108,10 @@ exports.postEdit = async (req, res, next) => {
     req.body.name ? sessionToSave.name = req.body.name : logger.log('debug', 'No updated Name found');
     req.body.topic ? sessionToSave.topic = req.body.topic : logger.log('debug','No updated topic found');
 
+    // TODO List all quiz questions, save them if altered
+
     try {
-        await EduSession.saveBrainstormsession(sessionToSave);
+        await EduSession.saveQuizzingsession(sessionToSave);
     } catch (error) {
         return res.render('error', { error: error })
     }
@@ -116,15 +119,15 @@ exports.postEdit = async (req, res, next) => {
 
 
 
-   return res.redirect(`/teacher/sessions/brainstorming-edit/${req.params.sessionId}`);
+   return res.redirect(`/teacher/sessions/quizzing-edit/${req.params.sessionId}`);
 }
 
-// POST => /teacher/sessions/brainstorming-destroy/:id
+// POST => /teacher/sessions/quizzing-destroy/:id
 exports.destroySession = async (req, res, next) => {
     
     // permissions
     try {
-        const currentSession = await EduSession.getBrainstormsession(req.params.sessionId)
+        const currentSession = await EduSession.getQuizzingsession(req.params.sessionId)
         const sessionsUserId = currentSession.userId
         if(req.session.user.id != sessionsUserId) {
             if(!req.session.user.isSuperAdmin) {
@@ -133,7 +136,7 @@ exports.destroySession = async (req, res, next) => {
                     'error': `Sie sind nicht berechtigt diese Session zu löschen!`,
                     isLoggedIn: req.session.isLoggedIn,
                     loggedUser: req.session.user,
-                    backLink: `teacher/sessions/brainstorming-edit/${req.params.sessionId}`,
+                    backLink: `teacher/sessions/quizzing-edit/${req.params.sessionId}`,
                 })
             }
         }
@@ -142,7 +145,7 @@ exports.destroySession = async (req, res, next) => {
     }
 
     try {
-        EduSession.destroyBrainstormsession(req.params.sessionId);
+        EduSession.destroyQuizzingsession(req.params.sessionId);
         
     } catch (error) {
         return res.render('error', { error: error })
@@ -151,4 +154,188 @@ exports.destroySession = async (req, res, next) => {
     return res.redirect(`/teacher/sessions`);
 }
 
+// GET => /teacher/sessions/quizzing-addquestion/:sessionId
+exports.getNewQuizzingQuestion = async (req, res, next) => {
+    // permissions
+    try {
+        const currentSession = await EduSession.getQuizzingsession(req.params.sessionId)
+        const sessionsUserId = currentSession.userId
+        if(req.session.user.id != sessionsUserId) {
+            if(!req.session.user.isSuperAdmin) {
+                return res.render('teacher/error', {
+                    'docTitle': "Error! | Node ICT",
+                    'error': `Sie sind nicht berechtigt dieser Quiz Session Fragen hinzuzufügen!`,
+                    isLoggedIn: req.session.isLoggedIn,
+                    loggedUser: req.session.user,
+                    backLink: `teacher/sessions/quizzing-edit/${req.params.sessionId}`,
+                })
+            }
+        }
+    } catch (error) {
+        return res.render('error', { error: error })
+    }
 
+    try {
+        const sessionToEdit = await EduSession.getQuizzingsession(req.params.sessionId) 
+        return res.render('teacher/edusessions/quizzing/new-question', 
+        {
+            docTitle: "Neue Quiz Frage | Node ICT",
+            isLoggedIn: req.session.isLoggedIn,
+            loggedUser: req.session.user,
+            session: sessionToEdit
+        });
+    } catch (error) {
+        return res.render('error', { error: error })
+    }
+    
+
+}
+
+// POST => /teacher/sessions/quizzing-addquestion/:sessionId
+exports.postNewQuizzingQuestion = async (req, res, next) => {
+    // permissions
+    try {
+        const currentSession = await EduSession.getQuizzingsession(req.params.sessionId)
+        const sessionsUserId = currentSession.userId
+        if(req.session.user.id != sessionsUserId) {
+            if(!req.session.user.isSuperAdmin) {
+                return res.render('teacher/error', {
+                    'docTitle': "Error! | Node ICT",
+                    'error': `Sie sind nicht berechtigt dieser Quiz Session Fragen hinzuzufügen!`,
+                    isLoggedIn: req.session.isLoggedIn,
+                    loggedUser: req.session.user,
+                    backLink: `teacher/sessions/quizzing-edit/${req.params.sessionId}`,
+                })
+            }
+        }
+    } catch (error) {
+        return res.render('error', { error: error })
+    }
+
+    try {
+       const questionToSave = { 
+           question: req.body.question,
+           answer1: req.body.answer1,
+           answer2: req.body.answer2,
+           answer3: req.body.answer3,
+           answer4: req.body.answer4,
+           validAnswer: req.body.validAnswer
+       } 
+       await EduSession.addQuizzingQuestion(req.params.sessionId, questionToSave )
+    } catch (error) {
+        return res.render('error', { error: error })
+    }
+    
+    return res.redirect(`/teacher/sessions/quizzing-edit/${req.params.sessionId}`)
+}
+
+// GET => /sessions/quizzing-editquestion/:sessionId/:questionId
+exports.getEditQuestion = async (req, res) => {
+    // permissions
+    try {
+        const currentSession = await EduSession.getQuizzingsession(req.params.sessionId)
+        const sessionsUserId = currentSession.userId
+        if(req.session.user.id != sessionsUserId) {
+            if(!req.session.user.isSuperAdmin) {
+                return res.render('teacher/error', {
+                    'docTitle': "Error! | Node ICT",
+                    isLoggedIn: req.session.isLoggedIn,
+                    loggedUser: req.session.user,
+                    'error': `Sie sind nicht berechtigt diese Quiz Frage anzuzeigen!`,
+                    backLink: `teacher/sessions/quizzing-edit/${req.params.sessionId}`,
+                })
+            }
+        }
+    } catch (error) {
+        return res.render('error', { error: error })
+    }
+    
+    
+    try {
+        const session = await EduSession.getQuizzingsession(req.params.sessionId);
+        const questionToEdit = await EduSession.getQuizzingQuestion(req.params.sessionId, req.params.questionId)
+        return res.render('teacher/edusessions/quizzing/edit-question', 
+        {
+            docTitle: "Quiz Frage bearbeiten | Node ICT",
+            isLoggedIn: req.session.isLoggedIn,
+            loggedUser: req.session.user,
+            session: session,
+            question: questionToEdit
+        });
+        
+        
+       
+    } catch (error) {
+        return res.render('error', { error: error })
+    }
+   
+}
+// POST => /sessions/quizzing-editquestion/:sessionId/:questionId
+exports.postEditQuestion = async (req, res, next) => {
+    // permissions
+    try {
+        const currentSession = await EduSession.getQuizzingsession(req.params.sessionId)
+        const sessionsUserId = currentSession.userId
+        if(req.session.user.id != sessionsUserId) {
+            if(!req.session.user.isSuperAdmin) {
+                return res.render('teacher/error', {
+                    'docTitle': "Error! | Node ICT",
+                    'error': `Sie sind nicht berechtigt diese Quiz Frage zu bearbeiten!`,
+                    isLoggedIn: req.session.isLoggedIn,
+                    loggedUser: req.session.user,
+                    backLink: `teacher/sessions/quizzing-edit/${req.params.sessionId}`,
+                })
+            }
+        }
+    } catch (error) {
+        return res.render('error', { error: error })
+    }
+
+    try {
+       const questionToSave = { 
+           question: req.body.question,
+           answer1: req.body.answer1,
+           answer2: req.body.answer2,
+           answer3: req.body.answer3,
+           answer4: req.body.answer4,
+           validAnswer: req.body.validAnswer
+       } 
+       await EduSession.editQuizzingQuestion(req.params.questionId, questionToSave);
+    } catch (error) {
+        return res.render('error', { error: error })
+    }
+    
+    return res.redirect(`/teacher/sessions/quizzing-edit/${req.params.sessionId}`)
+}
+
+// POST => /sessions/quizzing-destroyquestion/:sessionId/:questionId
+exports.postDestroyQuestion = async (req, res, next) => {
+    
+    // permissions
+    try {
+        const currentSession = await EduSession.getQuizzingsession(req.params.sessionId)
+        const sessionsUserId = currentSession.userId
+        if(req.session.user.id != sessionsUserId) {
+            if(!req.session.user.isSuperAdmin) {
+                return res.render('teacher/error', {
+                    'docTitle': "Error! | Node ICT",
+                    'error': `Sie sind nicht berechtigt diese Quiz Frage zu löschen!`,
+                    isLoggedIn: req.session.isLoggedIn,
+                    loggedUser: req.session.user,
+                    backLink: `teacher/sessions/quizzing-edit/${req.params.sessionId}`,
+                })
+            }
+        }
+    } catch (error) {
+        return res.render('error', { error: error })
+    }
+
+    try {
+        EduSession.destroyQuizzingQuestion(req.params.questionId);
+        
+    } catch (error) {
+        return res.render('error', { error: error })
+    }
+    
+    return res.redirect(`/teacher/sessions/quizzing-edit/${req.params.sessionId}`);
+}
