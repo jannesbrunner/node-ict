@@ -33,79 +33,6 @@ exports.getAllSessions = async () => {
     return constructSessions(allSessions);
 }
 
-exports.saveBrainstormsession = async (session) => {
-    try {
-        // Got Id, so update existing one
-        if (session.id) {
-            const foundSession = await db.EduSession.findByPk(session.id)
-
-            foundSession.name = session.name;
-            
-
-            const associatedBrainstorming = await db.Brainstorming.findOne({ where: { eduSessionId: session.id } });
-
-            associatedBrainstorming.topic = session.topic;
-
-            await foundSession.save();
-            await associatedBrainstorming.save();
-
-            return true;
-            // No id, create new session
-        } else {
-            if (!session.name || !session.topic || !session.ownerId) {
-                throw new Error("Please provide a valid brainstormsession object {name, topic, ownerId}");
-            } else {
-                const currentUser = await db.User.findByPk(session.ownerId);
-                const newSession = await db.EduSession.create(
-                    {
-                        name: session.name,
-                        isActive: false,
-                        type: "brainstorming",
-                    }
-                );
-
-                await newSession.setUser(currentUser);
-                const newBrainstorming = await db.Brainstorming.create(
-                    {
-                        topic: session.topic
-                    }
-                );
-                await newBrainstorming.setEduSession(newSession);
-            }
-
-        }
-    }
-
-    catch (error) {
-        throw new Error(`DB Save Brainstormsession Error: " + error: ${error}`);
-    }
-}
-
-exports.getBrainstormsession = async (bsId) => {
-  try {
-      if(!bsId) {
-          throw new Error("bsId is undefined!");
-      }
-      const foundBbss = await db.EduSession.findByPk(bsId);
-      return await constructSession(foundBbss);
-  } catch (error) {
-    throw new Error("DB Get Brainstormsession: " + error);
-  }
-}
-
-exports.destroyBrainstormsession = async (bsId) => {
-    try {
-        if(!bsId) {
-            throw new Error("bsId is undefined!");
-        }
-        
-        const foundBbss = await db.EduSession.findByPk(bsId);
-        return await foundBbss.destroy({ force: true });
-    } catch (error) {
-      throw new Error("DB Destroy Brainstormsession: " + error);
-    }
-}
-
 exports.getActiveSessions = async(running = false) =>{
     try {
         const activeSessions = await db.EduSession.findAll({where: {isActive: true, isRunning: running}});
@@ -207,11 +134,12 @@ async function constructSession(session) {
         const owner = await User.getUser({id: session.dataValues.userId})
         let lecture
             if (session.type == "brainstorming") {
-            lecture = await db.Brainstorming.get({where: {eduSessionId: session.dataValues.id}});
-            lecture = lecture.dataValues;
+                lecture = await db.Brainstorming.findOne({where: {eduSessionId: session.dataValues.id}});
+                lecture = lecture.dataValues;
             }
             if (session.type == "quizzing") {
-                // TODO: implement get quiz
+                lecture = await db.Quizzing.findOne({where: {eduSessionId: session.dataValues.id}});
+                lecture = lecture.dataValues;
             }
             const students = await Student.getStudentsForSession(session.id);
             const constructedSession = { ...session.dataValues, owner, lecture, students }
@@ -221,6 +149,167 @@ async function constructSession(session) {
         throw new Error(error)
     }
 }
+
+
+// BRAINSTORMING CRUD
+
+exports.saveBrainstormsession = async (session) => {
+    try {
+        // Got Id, so update existing one
+        if (session.id) {
+            const foundSession = await db.EduSession.findByPk(session.id)
+
+            foundSession.name = session.name;
+            
+
+            const associatedBrainstorming = await db.Brainstorming.findOne({ where: { eduSessionId: session.id } });
+
+            associatedBrainstorming.topic = session.topic;
+
+            await foundSession.save();
+            await associatedBrainstorming.save();
+
+            return true;
+            // No id, create new session
+        } else {
+            if (!session.name || !session.topic || !session.ownerId) {
+                throw new Error("Please provide a valid brainstormsession object {name, topic, ownerId}");
+            } else {
+                const currentUser = await db.User.findByPk(session.ownerId);
+                const newSession = await db.EduSession.create(
+                    {
+                        name: session.name,
+                        isActive: false,
+                        type: "brainstorming",
+                    }
+                );
+
+                await newSession.setUser(currentUser);
+                const newBrainstorming = await db.Brainstorming.create(
+                    {
+                        topic: session.topic
+                    }
+                );
+                await newBrainstorming.setEduSession(newSession);
+            }
+
+        }
+    }
+
+    catch (error) {
+        throw new Error(`DB Save Brainstormsession Error: ${error}`);
+    }
+}
+
+exports.getBrainstormsession = async (bsId) => {
+  try {
+      if(!bsId) {
+          throw new Error("bsId is undefined!");
+      }
+      const foundBbss = await db.EduSession.findByPk(bsId);
+      return await constructSession(foundBbss);
+  } catch (error) {
+    throw new Error("DB Get Brainstormsession error: " + error);
+  }
+}
+
+exports.destroyBrainstormsession = async (bsId) => {
+    try {
+        if(!bsId) {
+            throw new Error("bsId is undefined!");
+        }
+        
+        const foundBbss = await db.EduSession.findByPk(bsId);
+        return await foundBbss.destroy({ force: true });
+    } catch (error) {
+      throw new Error("DB Destroy Brainstormsession error: " + error);
+    }
+}
+
+// QUIZZING CRUD
+
+exports.saveQuizzingsession = async (session, json = null) => {
+    try {
+        // Got Id, so update existing one
+        if (session.id) {
+            const foundSession = await db.EduSession.findByPk(session.id)
+
+            foundSession.name = session.name;
+
+            
+
+            const associatedQuizzing = await db.Quizzing.findOne({ where: { eduSessionId: session.id } });
+
+
+            associatedQuizzing.topic = session.topic;
+            if( json ) { // if updated quizzing JSON is provided:
+                associatedQuizzing.quizzingJSON = json;
+            }  
+
+            await foundSession.save();
+            await associatedQuizzing.save();
+
+            return true;
+            // No id, create new session
+        } else {
+            if (!session.name || !session.topic || !session.ownerId) {
+                throw new Error("Please provide a valid quizzingsession object {name, topic, ownerId}");
+            } else {
+                const currentUser = await db.User.findByPk(session.ownerId);
+                const newSession = await db.EduSession.create(
+                    {
+                        name: session.name,
+                        isActive: false,
+                        type: "quizzing",
+                    }
+                );
+
+                await newSession.setUser(currentUser);
+                const newQuizzing = await db.Quizzing.create(
+                    {
+                        topic: session.topic,
+                        quizzingJSON: json != null ? session.quizzingJSON = JSON : logger.log("info", 'No JSON for QO provided! Skip'),
+                    }
+                );
+                await newQuizzing.setEduSession(newSession);
+            }
+
+        }
+    }
+
+    catch (error) {
+        throw new Error(`DB Save Quizzing Error: ${error}`);
+    }
+}
+
+exports.getQuizzingsession = async (qsId) => {
+  try {
+      if(!qsId) {
+          throw new Error("qsId is undefined!");
+      }
+      const foundqzs = await db.EduSession.findByPk(qsId);
+      return await constructSession(foundqzs);
+  } catch (error) {
+    throw new Error("DB Get Quizzing: " + error);
+  }
+}
+
+exports.destroyQuizzingsession = async (qsId) => {
+    try {
+        if(!qsId) {
+            throw new Error("qsId is undefined!");
+        }
+        
+        const foundQzs = await db.EduSession.findByPk(foundQzs);
+        return await foundQzs.destroy({ force: true });
+    } catch (error) {
+      throw new Error("DB Destroy Quizzingsession: " + error);
+    }
+}
+
+
+
+
 
 
 
