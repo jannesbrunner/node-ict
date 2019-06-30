@@ -143,4 +143,49 @@ exports.settings = (sequelize, Sequelize) => {
     })
   };
 
+  exports.quizzingquestion = (sequelize, Sequelize) => {
+    return sequelize.define('quizzingQuestion', {
+  
+      id: {
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
+        allowNull: false,
+        primaryKey: true
+      },
+      question: {
+        type: Sequelize.STRING,
+        allowNull: false
+      },
+      answer1: {
+        type: Sequelize.STRING,
+        allowNull: true,
+        defaultValue: null,
+      },
+      answer2: {
+        type: Sequelize.STRING,
+        allowNull: true,
+        defaultValue: null,
+      },
+      answer3: {
+        type: Sequelize.STRING,
+        allowNull: true,
+        defaultValue: null,
+      },
+      answer4: {
+        type: Sequelize.STRING,
+        allowNull: true,
+        defaultValue: null,
+      },
+      validAnswer: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        validate: {
+          isInt: true,
+          min: 1,
+          max: 4
+        }
+      }
+    })
+  };
+
   
