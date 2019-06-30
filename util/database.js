@@ -46,6 +46,7 @@ const EduSession = tables.eduSession(sequelize, Sequelize);
 const Brainstorming = tables.brainstorming(sequelize, Sequelize);
 // Quizzing
 const Quizzing = tables.quizzing(sequelize, Sequelize);
+const QuizzingQuestion = tables.quizzingquestion(sequelize, Sequelize);
 
 // Relationships App General
 User.hasMany(EduSession, { onDelete: 'cascade' });
@@ -56,9 +57,11 @@ Student.belongsTo(EduSession);
 // Relationship Brainstorming
 Brainstorming.belongsTo(EduSession, { onDelete: 'cascade' });
 // Relationship Quizzing
-Quizzing.belongsTo(EduSession, { onDelete: 'cascade'})
+Quizzing.belongsTo(EduSession, { onDelete: 'cascade'});
+Quizzing.hasMany(QuizzingQuestion, { onDelete: 'cascade'});
+QuizzingQuestion.belongsTo(Quizzing);
 
-const db = { sequelize, User, Student, Settings, EduSession, Brainstorming, Quizzing }
+const db = { sequelize, User, Student, Settings, EduSession, Brainstorming, Quizzing, QuizzingQuestion };
 
 
 
