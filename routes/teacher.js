@@ -52,5 +52,10 @@ router.post('/sessions/quizzing/new', isAuth, quizzingController.postNew)
 router.get('/sessions/quizzing-edit/:sessionId', isAuth, quizzingController.getEdit)
 router.post('/sessions/quizzing-edit/:sessionId', isAuth, quizzingController.postEdit)
 router.post('/sessions/quizzing-destroy/:sessionId', isAuth, quizzingController.destroySession)
+router.get('/sessions/quizzing-addquestion/:sessionId', isAuth, quizzingController.getNewQuizzingQuestion)
+router.post('/sessions/quizzing-addquestion/:sessionId', isAuth, quizzingController.postNewQuizzingQuestion)
+router.get('/sessions/quizzing-editquestion/:sessionId/:questionId', isAuth, quizzingController.getEditQuestion)
+router.post('/sessions/quizzing-editquestion/:sessionId/:questionId', isAuth, quizzingController.postEditQuestion)
+router.post('/sessions/quizzing-destroyquestion/:sessionId/:questionId', isAuth, quizzingController.postDestroyQuestion)
 module.exports = router;
 

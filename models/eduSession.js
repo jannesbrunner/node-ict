@@ -268,7 +268,6 @@ exports.saveQuizzingsession = async (session, json = null) => {
                 const newQuizzing = await db.Quizzing.create(
                     {
                         topic: session.topic,
-                        quizzingJSON: json != null ? session.quizzingJSON = JSON : logger.log("info", 'No JSON for QO provided! Skip'),
                     }
                 );
                 await newQuizzing.setEduSession(newSession);
@@ -304,6 +303,99 @@ exports.destroyQuizzingsession = async (qsId) => {
         return await foundQzs.destroy({ force: true });
     } catch (error) {
       throw new Error("DB Destroy Quizzingsession: " + error);
+    }
+}
+
+// QUIZZING QUESTION CRUD
+exports.addQuizzingQuestion = async (qsId, question) => {
+    try {
+        if(!qsId || !question) {
+            throw new Error("qsId or question is undefined!");
+        }
+        const foundQzs = await db.Quizzing.findOne({where: {eduSessionId: qsId}})
+        if(!question.question || !question.answer1 || !question.answer2 || !question.answer3 || !question.answer4 || !question.validAnswer) {
+            throw new Error("Question object is not valid!");
+        } 
+        const newQuestion = await db.QuizzingQuestion.create({
+            question: question.question,
+            answer1: question.answer1,
+            answer2: question.answer2,
+            answer3: question.answer3,
+            answer4: question.answer4,
+            validAnswer: question.validAnswer,
+        });
+        
+        await newQuestion.setQuizzing(foundQzs);
+
+        return newQuestion
+
+
+    } catch (error) {
+        throw new Error(error)
+    }
+}
+
+exports.editQuizzingQuestion = async(questionId, question) =>{
+    try {
+        if(!questionId || !questionId) {
+            throw new Error("questionId or question object is undefined!");
+        } 
+
+        const questionToSave = await db.QuizzingQuestion.findByPk(questionId);
+        questionToSave.question = question.question;
+        questionToSave.answer1 = question.answer1;
+        questionToSave.answer2 = question.answer2;
+        questionToSave.answer3 = question.answer3;
+        questionToSave.answer4 = question.answer4;
+        questionToSave.validAnswer = question.validAnswer;
+        await questionToSave.save();
+
+    } catch (error) {
+        throw new Error(error)
+    }
+}
+
+exports.getQuizzingQuestion = async(qsId, qId) => {
+    try {
+        if(qsId && qId) {
+            const quizzingQuestion = db.QuizzingQuestion.findOne({where: {quizzingId: qsId, id: qId}})
+            return quizzingQuestion;
+        } else {
+            throw new Error("Can't get Quiz Question without Quizsession and Question Id provided!");
+        }
+        
+
+    } catch (error) {
+        throw error;
+    }
+}
+
+exports.getQuizzingQuestionsForQuizzing = async(qsId) => {
+    try {
+        if(qsId) {
+            const quizzing = await db.Quizzing.findOne({where: {eduSessionId: qsId}})
+            const quizzingQuestions = db.QuizzingQuestion.findAll({where: {quizzingId: quizzing.id}})
+            return quizzingQuestions;
+        } else {
+            throw new Error("Can't get Quiz Questions without Quizzing Id provided!");
+        }
+        
+
+    } catch (error) {
+        throw error;
+    }
+}
+
+exports.destroyQuizzingQuestion = async(questionId) => {
+    try {
+        if(questionId) {
+            const questionToDestroy = await db.QuizzingQuestion.findByPk(questionId);
+            return await questionToDestroy.destroy({ force: true });
+        } else {
+            throw new Error("DB Destroy Quiz Session: Id must be provided!");
+        }
+    } catch (error) {
+        throw error;
     }
 }
 
