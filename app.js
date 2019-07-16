@@ -34,7 +34,8 @@ const logger = require('./util/loggerSetup');
 // ------------------------------------------------ //
 const app = express();
 
-const server_ip = "127.0.0.1" // ip.address();
+const server_ip = ip.address(); 
+// "127.0.0.1" 
 
 
 // Set up Event Emitter 
