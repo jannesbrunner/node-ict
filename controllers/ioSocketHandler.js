@@ -1,6 +1,7 @@
 const socket = require('../util/socket')
 const EduSession = require('../models/eduSession')
-const BrainstormTeacher = require('./ioGameHandler');
+const ioBrainstormHandler = require('./ioBrainstormHandler');
+const ioQuizHandler = require('./ioQuizHandler');
 const eventEmitter = require('../util/eventEmitter')
 const logger = require('winston');
 
@@ -32,7 +33,7 @@ module.exports = async () => {
         } else {
             logger.log('info', `Teacher connected: SID > ${teacherS.id}, Name > ${teacherUser.name}`);
 
-            if (availableSessionHandlers.has(teacherUser.id)) {
+            if (availableSessionHandlers.has(teacherUser.id) && teacherUser) {
                 teacherS.emit("appError", { errorMsg: "Sie können nur eine Lehrerkonsole gleichzeitig starten!", fatalError: true })
             } else {
                 EduSession.getActiveSession(teacherUser.id).then(
@@ -43,13 +44,14 @@ module.exports = async () => {
                             // old
                             switch (sessionT.type) {
                                 case "brainstorming":
-                                    sessionHandler = new BrainstormTeacher(sessionT, teacherS);
+                                    sessionHandler = new ioBrainstormHandler(sessionT, teacherS);
                                     availableSessionHandlers.set(teacherUser.id, sessionHandler)
                                     updateStudentsSessionsList()
                                     break
 
                                 case "quizzing":
-                                    // TODO
+                                    sessionHandler = new ioQuizHandler(sessionT, teacherS);
+                                    availableSessionHandlers.set(teacherUser.id, sessionHandler)
                                     updateStudentsSessionsList()
                                     break;
                                 default:

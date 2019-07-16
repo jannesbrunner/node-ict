@@ -9,15 +9,25 @@ block content
       div(v-if="!isError")
         template(v-if="session != null")
           div(v-if="session.type == 'brainstorming'")
-            h3 {{ session.type | capitalize }}
-            h1 {{ session.lecture.topic }}
-
-            div#cloud
-            h3 Spieler: 
-              p(v-for="student in students")
-                span {{ student.name }} &nbsp;
+             h2 {{ session.name}} - Brainstorming
+             div#cloud
+            
           div(v-if="session.type == 'quizzing'")#quiz
-        p(v-if="!isRunning") Der Lehrende hat die Session noch nicht gestartet!
+            h2 {{ session.name}} - Quiz
+            h1 - {{ session.lecture.topic}} - 
+          div(v-if="session.type == 'quizzing' && isRunning")
+            div.quiz-question-box
+              div.quiz-question-number Frage No. {{ quizzing.currentQuestionId + 1 }}
+              div.quiz-question-question {{ quizzing.currentQuestion.question }}
+              div.quiz-question-answer-box
+                div.quiz-question-answer 1: {{ quizzing.currentQuestion.answer1 }}
+                div.quiz-question-answer 2: {{ quizzing.currentQuestion.answer2 }}
+                div.quiz-question-answer 3: {{ quizzing.currentQuestion.answer3 }}
+                div.quiz-question-answer 4: {{ quizzing.currentQuestion.answer4 }}
+        h1(v-if="!isRunning") Der Lehrende hat die Session noch nicht gestartet!
+        div.players Spieler: 
+        span(v-for="student in students")
+          span.player {{ student.name }} &nbsp;
         template(v-if="!isRunning && session == null") 
           h1 Der Lehrende hat diese Session beendet.  
       div(v-else)

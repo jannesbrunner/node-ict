@@ -103,7 +103,11 @@ exports.saveActiveSession = async (updatedSession) => {
                 associatedLecture.brainstormingJSON = updatedSession.lecture.brainstormingJSON;
                 await associatedLecture.save();
             }
-            // TODO if type = quiz;
+            if( activeSession.type == "quizzing") {
+                const associatedLecture = await db.Quizzing.findOne({where: {eduSessionId: activeSession.id}});
+                associatedLecture.quizzingJSON = updatedSession.lecture.quizzingJSON;
+                await associatedLecture.save();
+            }
             
 
             await activeSession.save();
@@ -139,7 +143,9 @@ async function constructSession(session) {
             }
             if (session.type == "quizzing") {
                 lecture = await db.Quizzing.findOne({where: {eduSessionId: session.dataValues.id}});
+                let questions = await db.QuizzingQuestion.findAll({where: {quizzingId: lecture.id}})
                 lecture = lecture.dataValues;
+                lecture.questions = questions;
             }
             const students = await Student.getStudentsForSession(session.id);
             const constructedSession = { ...session.dataValues, owner, lecture, students }

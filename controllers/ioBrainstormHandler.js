@@ -3,19 +3,21 @@ const EduSession = require("../models/eduSession");
 const Student = require("../models/student");
 
 
-module.exports = class BrainstormTeacher {
+module.exports = class IoBrainstormHandler {
     constructor(session, socket) {
+        
         this.session = session;
         this.socketT = socket;
 
         this.teacherId = session.userId;
         this.isRunning = false;
-
+        logger.log('info', `New Brainstorm Session started!`);
+        
         // Brainstorming
         if(this.session.lecture.brainstormingJSON) {
-            this.brainstorming = JSON.parse(this.session.lecture.brainstormingJSON);
+            this.brainstormingData = JSON.parse(this.session.lecture.brainstormingJSON);
         } else {
-            this.brainstorming = {
+            this.brainstormingData = {
                 answers: []
             }
         }
@@ -25,7 +27,11 @@ module.exports = class BrainstormTeacher {
         this.presenterSockets = [];
         this.ioEventsTC();
         // Send Teacher client init session
-        this.socketT.emit("newSession", this.session);
+        this.socketT.emit("initSession", 
+        {
+            session: this.session,
+            brainstorming: this.brainstormingData
+        });
         this.emitStudentList();
         
          
@@ -39,6 +45,7 @@ module.exports = class BrainstormTeacher {
         // Teacher Client wants to kick a student
         this.socketT.on("kickStudent", (data) => {
             logger.log("info", `Teacher wants to kick student with id ${data.studentId}`)
+            this.emitToPresenters("showInfo", `Spieler ${data.studentName} wurde aus der Sitzung entfernt`);
             if (data.sessionId == this.session.id) {
                 this.removeStudent(data.studentId);
             }
@@ -68,15 +75,15 @@ module.exports = class BrainstormTeacher {
 
         this.socketT.on("updateBrainstorming", (brainstorming) => {
             if(brainstorming) {
-                this.brainstorming = brainstorming;
-                this.emitToPresenters("updateBrainstorming", this.brainstorming);
+                this.brainstormingData = brainstorming;
+                this.emitToPresenters("updateBrainstorming", this.brainstormingData);
             }
            
 
         });
 
         this.socketT.on("getBrainstorming", (answer) => {
-            this.socketT.emit("updateBrainstorming", this.brainstorming);
+            this.socketT.emit("updateBrainstorming", this.brainstormingData);
         });
     }
     ioEventsSC(socketS) {
@@ -111,13 +118,13 @@ module.exports = class BrainstormTeacher {
         socketS.on("newBSAnswer", (data) => {
             logger.log("info", "Got new BS Answer!");
             if (data) {
-                console.log(this.brainstorming.answers, "NEW BSS");
+                console.log(this.brainstormingData.answers, "NEW BSS");
                 
-                this.brainstorming.answers.push(data);
-                
-                this.emitToPresenters("updateBrainstorming", this.brainstorming);
-                this.emitToStudents("updateBrainstorming", this.brainstorming);
-                this.socketT.emit("updateBrainstorming", this.brainstorming);
+                this.brainstormingData.answers.push(data);
+                this.emitToPresenters("showInfo", `${data.clientName} hatte eine Idee!`);
+                this.emitToPresenters("updateBrainstorming", this.brainstormingData);
+                this.emitToStudents("updateBrainstorming", this.brainstormingData);
+                this.socketT.emit("updateBrainstorming", this.brainstormingData);
 
             }
         })
@@ -184,10 +191,7 @@ module.exports = class BrainstormTeacher {
     // PRESENTER :::::: 
     attachPresenter(presenterS) {
         this.presenterSockets.push(presenterS);
-        presenterS.emit("newSession", { session: this.session, isRunning: this.isRunning });
-        if(this.isRunning) {
-            this.emitToPresenters("updateBrainstorming", this.brainstorming);
-        }
+        presenterS.emit("initSession", { session: this.session, isRunning: this.isRunning, brainstorming: this.brainstormingData });
         this.emitStudentList();
         this.ioEventsPC(presenterS);
     }
@@ -204,6 +208,7 @@ module.exports = class BrainstormTeacher {
                 if (result) {
                     // associate student socket with student id
                     this.studentSockets.set(result.id, student.socket);
+                    this.emitToPresenters("showInfo", `${student.name} ist beigetreten!`);
                     student.socket.emit("sessionJoined", { session: this.session, studentId: result.id });
                     this.emitStudentList();
                     this.ioEventsSC(student.socket);
@@ -306,17 +311,17 @@ module.exports = class BrainstormTeacher {
 
     async endSession() {
         try {
-            if(this.session.type == "brainstorming") {
+           
                 logger.log("info", `Saving BS... ID:${this.session.id}`);
-                if(this.brainstorming && this.session) {
-                    this.session.lecture.brainstormingJSON = JSON.stringify(this.brainstorming);
+                if(this.brainstormingData && this.session) {
+                    this.session.lecture.brainstormingJSON = JSON.stringify(this.brainstormingData);
                     const save = await EduSession.saveActiveSession(this.session);
             
                     if(save == false) {
                         throw new Error("Error saving BSS!");
                     }
                 }
-            }
+            
             const deleteUsers = await Student.removeStudentsFromSession(this.session.id);
             const answer = await EduSession.unsetActiveSession(this.teacherId);
             if (answer && deleteUsers) {

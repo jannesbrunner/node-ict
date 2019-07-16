@@ -20,6 +20,8 @@ const vue = new Vue({
         brainstorming: {},
         cloudWordWeight: 200,
         cloudWords: [],
+        // Quizzing
+        quizzing: {}
     },
     mounted() {
         socketListen();
@@ -73,15 +75,23 @@ const vue = new Vue({
         },
         brainstorming: (newValue) => {
             console.log("Brainstorm data updated!", newValue);
-            vue.cloudWords = [{"text": vue.session.lecture.topic, "count": 400, "name": "Das heutige Thema!"}];
-            newValue.answers.forEach( 
-                (answer) => {
-                    vue.cloudWords.push({"text": answer.answer, "count": vue.cloudWordWeight, "name": answer.clientName});
-                    }
-                );
+            vue.cloudWords = [{"text": vue.session.lecture.topic, "count": 500, "name": "Das heutige Thema!"}];
+            if(newValue.answers) {
+
+                newValue.answers.forEach( 
+                    (answer) => {
+                        vue.cloudWords.push({"text": answer.answer, "count": vue.cloudWordWeight, "name": answer.clientName});
+                        }
+                    );
+               
+            }
             renderCloud();
+            
         },
-        
+        quizzing: (newValue) => {
+            console.log("Quizzing data updated!", newValue);
+            this.quizzing = newValue;
+        }
      },
     
     methods: {
@@ -90,6 +100,16 @@ const vue = new Vue({
                 message: "Hello World!"
             });
         },
+        displayInfo: function(info) {
+            Swal.fire({
+                position: 'top-end',
+                type: 'success',
+                title: info,
+                showConfirmButton: false,
+                timer: 1500,
+                backdrop: 'rgba(0,0,0,0)'
+              })
+        }
         
     },
     filters: {
@@ -103,6 +123,7 @@ const vue = new Vue({
 
 // Brainstorming render Cloud
 function renderCloud() {
+    console.log("re-rendering cloud");
     zingchart.render({
         id: 'cloud',
         data: {
@@ -156,16 +177,20 @@ function socketListen () {
     });
 
     // Server sends init session data
-    socket.on("newSession", (data) => {
+    socket.on("initSession", (data) => {
         console.log(data);
         vue.session = data.session;
         vue.isRunning = data.isRunning;
         switch (vue.session.type) {
             case "brainstorming":
-                
+                vue.brainstorming = data.brainstorming;
+                setTimeout( () => {
+                    renderCloud();
+                }, 100)
+               
                 break;
             case "quizzing":
-                
+                vue.quizzing = data.quizzing;
                 break;
         
             default:
@@ -199,20 +224,6 @@ function socketListen () {
         if(newSession && newSession.id == vue.session.id) {
             vue.session = newSession;
         }
-        switch (vue.session.type) {
-            case "brainstorming":
-                    vue.cloudWords = [];
-                for(let answer in JSON.parse(vue.session.lecture.brainstormingJSON)) {
-                    vue.cloudWords.push(answer.answer);
-                }
-                break;
-            case "quizzing":
-                
-                break;
-        
-            default:
-                break;
-        }
      });
 
      socket.on("updateStudentList", (newList) => {
@@ -237,6 +248,10 @@ function socketListen () {
         }
     });
 
+    socket.on("showInfo", (info) => {
+        vue.displayInfo(info);
+    })
+
     socket.on('appError', (error) => {
 
         Swal.fire({
@@ -260,6 +275,11 @@ function socketListen () {
     /// -------- BRAINSTORMING --------- ///
     socket.on("updateBrainstorming", (data) => {
         vue.brainstorming = data;
+    });
+
+    // --------- QUIZZING --------- /// 
+    socket.on("updateQuizzing", (data) => {
+        vue.quizzing = data;
     });
 
 

@@ -22,6 +22,10 @@ const vue = new Vue({
         // Brainstorming 
         brainstorming: {},
         cloudWords: [],
+
+        // Quizzing
+        quizzingData: {},
+
     },
     mounted() {
         socketListen();
@@ -61,6 +65,11 @@ const vue = new Vue({
             this.cloudWords = [...newValue.answers]
             console.log(this.cloudWords);
         },
+        quizzing: (newValue) => {
+            console.log("Quizzing data updated!", newValue);
+            this.quizzing = newValue;
+            console.log(this.quizzing);
+        }
     },
     methods: {
         endSession: function () {
@@ -105,10 +114,10 @@ const vue = new Vue({
                 message: "Hello World!"
             });
         },
-        kickStudent: function (studentId) {
+        kickStudent: function (studentId, studentName) {
             Swal.fire({
-                title: 'Spieler rauswerfen?',
-                text: "Der Spieler wird aus der Session entfernt.",
+                title: `Spieler ${studentName} rauswerfen?`,
+                text: `Spieler ${studentName} wird aus der Session entfernt.`,
                 type: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
@@ -117,15 +126,17 @@ const vue = new Vue({
             }).then((result) => {
                 if (result.value) {
                     console.log(`Kicking Student with ID: ${studentId}`);
-                    socket.emit("kickStudent", { sessionId: this.session.id, studentId: studentId })
+                    socket.emit("kickStudent", { sessionId: this.session.id, studentId: studentId, studentName: studentName })
                     Swal.fire(
-                        'Spieler rausgeworfen!',
+                        `Spieler ${studentName} rausgeworfen!`,
                         'Der Spieler ist nicht mehr Teil der Lehrsession.',
                         'success'
                     )
                 }
             })
         },
+
+        // Brainstorming
         removeAnswer: function (answer, clientId) {
             console.log(`Removing answer '${answer}' by sId ${clientId}`);
             socket.emit("removeAnswer", {answer, clientId});
@@ -168,10 +179,24 @@ function socketListen() {
         })
     });
 
-
-    socket.on('newSession', function (data) {
-        console.log(data, "Got the Session");
-        vue.session = data
+    // Server sent inital session object
+    socket.on('initSession', function (data) {
+        console.log(data, 'init session object received!');
+        vue.session = data.session
+        switch (vue.session.type) {
+            case "brainstorming":
+                    console.log(data.brainstorming, "GOT BS data from Server");
+                vue.brainstorming = data.brainstorming
+                break;
+            case "quizzing":
+                console.log(data.quizzing, "GOT QZ data from Server");
+                vue.quizzing = data.quizzing
+                break;
+            default:
+                vue.errorText = "Fehler! Unbekannter Spiel Typ!"
+                vue.isError = true;
+                break;
+        }
     });
 
     // Sever tells client to update the session object
@@ -185,12 +210,6 @@ function socketListen() {
     socket.on("startSession", function (data) {
         if (data) {
             vue.isRunning = true;
-            if(vue.session.type == "brainstorming") {
-                socket.emit("getBrainstorming");
-            } else if (vue.session.type == "quizzing") {
-                // TODO
-            }
-           
         }
     })
     socket.on('appError', function (error) {
@@ -240,6 +259,21 @@ function socketListen() {
         //     })
 
             vue.brainstorming = data;
+        }
+    });
+
+    // QUIZZING
+    socket.on('updateQuizzing', (data) => {
+        console.log("Got new QZ Object!");
+        if (vue.isRunning) {
+        //     Swal.fire({
+        //         type: 'info',
+        //         title: 'test',
+        //         text: `Got new BS object!`,
+        //         footer: `${data}`
+        //     })
+
+            vue.quizzing = data;
         }
     });
 }
