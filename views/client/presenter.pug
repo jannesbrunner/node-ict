@@ -17,13 +17,17 @@ block content
             h1 - {{ session.lecture.topic}} - 
           div(v-if="session.type == 'quizzing' && isRunning")
             div.quiz-question-box
-              div.quiz-question-number Frage No. {{ quizzing.currentQuestionId + 1 }}
-              div.quiz-question-question {{ quizzing.currentQuestion.question }}
+              div.quiz-question-number Frage {{ currentQuestionId + 1 }} von {{session.lecture.questions.length }}
+              div.quiz-question-question {{ session.lecture.questions[currentQuestionId].question }}
+              template(v-if="studentList.length - receivedAnswers != 0")
+                div {{ studentList.length - receivedAnswers}} Mitspieler müssen noch Antworten!
+              template(v-if="studentList.length == receivedAnswers")
+                div Alle Mitspieler haben ihre Antwort abgegeben! 
               div.quiz-question-answer-box
-                div.quiz-question-answer 1: {{ quizzing.currentQuestion.answer1 }}
-                div.quiz-question-answer 2: {{ quizzing.currentQuestion.answer2 }}
-                div.quiz-question-answer 3: {{ quizzing.currentQuestion.answer3 }}
-                div.quiz-question-answer 4: {{ quizzing.currentQuestion.answer4 }}
+                div.quiz-question-answer 1: {{ session.lecture.questions[currentQuestionId].answer1 }}
+                div.quiz-question-answer 2: {{ session.lecture.questions[currentQuestionId].answer2 }}
+                div.quiz-question-answer 3: {{ session.lecture.questions[currentQuestionId].answer3 }}
+                div.quiz-question-answer 4: {{ session.lecture.questions[currentQuestionId].answer4 }}
         h1(v-if="!isRunning") Der Lehrende hat die Session noch nicht gestartet!
         div.players Spieler: 
         span(v-for="student in students")

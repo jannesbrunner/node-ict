@@ -33,7 +33,15 @@ block content
             div#quiz(v-if="session.type === 'quizzing'")
               h1 Quiz Session!
               div(v-if="isRunning")
-                p blubiblub das quiz game läuft
+                h3 Aktuelle Frage:
+                  div.quiz-question-box
+                    div.quiz-question-number Frage {{ currentQuestionId + 1 }} von {{session.lecture.questions.length}}
+                    div.quiz-question-question {{ session.lecture.questions[currentQuestionId].question }}
+                    div.quiz-question-answer-box
+                      div.quiz-question-answer(@click="quizAnswer(1)") 1: {{ session.lecture.questions[currentQuestionId].answer1 }}
+                      div.quiz-question-answer(@click="quizAnswer(2)") 2: {{ session.lecture.questions[currentQuestionId].answer2 }}
+                      div.quiz-question-answer(@click="quizAnswer(3)") 3: {{ session.lecture.questions[currentQuestionId].answer3 }}
+                      div.quiz-question-answer(@click="quizAnswer(4)") 4: {{ session.lecture.questions[currentQuestionId].answer4 }}
               div(v-else)
                 p Der Lehrende hat diese Session noch nicht gestartet.
                 button(@click="leaveSession()") Spiel verlassen!

@@ -24,7 +24,10 @@ const vue = new Vue({
         cloudWords: [],
 
         // Quizzing
-        quizzingData: {},
+        quizzing: {},
+        receivedAnswers: 0,
+        currentQuestionId: 0,
+        quizConclusion: false,
 
     },
     mounted() {
@@ -72,6 +75,16 @@ const vue = new Vue({
         }
     },
     methods: {
+        displayInfo: function (info) {
+            Swal.fire({
+                position: 'top-end',
+                type: 'success',
+                title: info,
+                showConfirmButton: false,
+                timer: 1500,
+                backdrop: 'rgba(0,0,0,0)'
+            })
+        },
         endSession: function () {
             Swal.fire({
                 title: 'Beenden?',
@@ -139,23 +152,65 @@ const vue = new Vue({
         // Brainstorming
         removeAnswer: function (answer, clientId) {
             console.log(`Removing answer '${answer}' by sId ${clientId}`);
-            socket.emit("removeAnswer", {answer, clientId});
+            socket.emit("removeAnswer", { answer, clientId });
 
 
             for (let index = 0; index < this.brainstorming.answers.length; index++) {
                 const element = this.brainstorming.answers[index];
-                if(element.answer == answer && element.id == clientId) {
-                   this.brainstorming.answers.splice(index, 1);
-                   break;
+                if (element.answer == answer && element.id == clientId) {
+                    this.brainstorming.answers.splice(index, 1);
+                    break;
                 }
-                
+
             }
-            
+
             socket.emit('updateBrainstorming', this.brainstorming);
-            
-            }
+
         },
-    
+
+        // Quizzing
+        nextQuestion: function () {
+            Swal.fire({
+                title: 'Nächste Frage stellen?',
+                text: this.receivedAnswers == this.students.length ? `Schülerinnen und Schüler erhalten die nächste Antwort` : `Es haben noch nicht alle Schülerinnen und Schüler geantwortet!`,
+                type: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ja, nächste Frage!'
+            }).then((result) => {
+                if (result.value) {
+                    this.receivedAnswers = 0;
+                    socket.emit("nextQuestion", true);
+                    Swal.fire(
+                        'Erfolg!',
+                        'Die nächste Frage ist nun in der Befragungsrunde.',
+                        'success'
+                    )
+                }
+            })
+        },
+        endQuiz: function () {
+            Swal.fire({
+                title: 'Auswertung starten?',
+                text: this.receivedAnswers == this.students.length ? `Quiz beenden und Auswertung starten.` : `Es haben noch nicht alle Schülerinnen und Schüler geantwortet!`,
+                type: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ja, Quiz beenden.'
+            }).then((result) => {
+                if (result.value) {
+                    this.receivedAnswers = 0;
+                    socket.emit("endQuiz", true);
+                    
+                }
+            })
+        },
+
+
+    }
+
 
 });
 
@@ -185,7 +240,7 @@ function socketListen() {
         vue.session = data.session
         switch (vue.session.type) {
             case "brainstorming":
-                    console.log(data.brainstorming, "GOT BS data from Server");
+                console.log(data.brainstorming, "GOT BS data from Server");
                 vue.brainstorming = data.brainstorming
                 break;
             case "quizzing":
@@ -251,12 +306,12 @@ function socketListen() {
     socket.on('updateBrainstorming', (data) => {
         console.log("Got new BS Object!");
         if (vue.isRunning) {
-        //     Swal.fire({
-        //         type: 'info',
-        //         title: 'test',
-        //         text: `Got new BS object!`,
-        //         footer: `${data}`
-        //     })
+            //     Swal.fire({
+            //         type: 'info',
+            //         title: 'test',
+            //         text: `Got new BS object!`,
+            //         footer: `${data}`
+            //     })
 
             vue.brainstorming = data;
         }
@@ -266,16 +321,22 @@ function socketListen() {
     socket.on('updateQuizzing', (data) => {
         console.log("Got new QZ Object!");
         if (vue.isRunning) {
-        //     Swal.fire({
-        //         type: 'info',
-        //         title: 'test',
-        //         text: `Got new BS object!`,
-        //         footer: `${data}`
-        //     })
-
             vue.quizzing = data;
         }
     });
+    socket.on('nextQuestion', (data) => {
+        vue.currentQuestionId = data.currentQuestionId;
+        vue.receivedAnswers = 0;
+    })
+    socket.on('endQuiz', (data) => {
+        vue.quizzing = data;
+        vue.isRunning = false;
+        vue.quizConclusion = true;
+    })
+    socket.on('newAnswer', (answer) => {
+        vue.receivedAnswers += 1;
+        vue.displayInfo(`${answer.studentName} hat geantwortet.`);
+    })
 }
 
 // Prevent user from accidently closing the browser window

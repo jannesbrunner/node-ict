@@ -21,7 +21,9 @@ const vue = new Vue({
         cloudWordWeight: 200,
         cloudWords: [],
         // Quizzing
-        quizzing: {}
+        quizzing: {},
+        currentQuestionId: 0,
+        receivedAnswers: 0
     },
     mounted() {
         socketListen();
@@ -280,6 +282,19 @@ function socketListen () {
     // --------- QUIZZING --------- /// 
     socket.on("updateQuizzing", (data) => {
         vue.quizzing = data;
+    });
+
+    socket.on("newAnswer", (data) => {
+        vue.displayInfo(`${data} hat seine Antwort abgegeben!`);
+        vue.receivedAnswers += 1;
+    })
+
+    socket.on("nextQuestion", (data) => {
+        vue.currentQuestionId = data.currentQuestionId;
+    });
+
+    socket.on("endQuiz", (data) => {
+        vue.quizzing = data; 
     });
 
 

@@ -14,37 +14,48 @@ module.exports = class IoQuizHandler {
         logger.log('info', `New Quiz Session started!`);
 
         // Quizzing
-        if(JSON.parse(this.session.lecture.quizzingJSON).currentQuestionId) {
-           this.quizzingData = JSON.parse(this.session.lecture.quizzingJSON);
-        } else {
+        // Check if there is at least one question!
+        if (this.session.lecture.questions.length > 0) {
 
+           
             this.quizzingData = {
-                currentQuestionId: 0,
-                givenAnswers: {}
-            }; 
-            this.quizzingData.currentQuestion = this.session.lecture.questions[this.quizzingData.currentQuestionId];
+                givenAnswers: []
+            };
+
+            this.currentQuestionId = 0;
+        } else {
+            this.socketT.emit("appError", { errorMsg: `Dieses Quiz hat noch keine Fragen!`, fatalError: true });
+            EduSession.unsetActiveSession(this.teacherId).then(() => {
+                logger.log('info', 'Disabling session due to no questions present');
+            }).catch(error => {
+                logger.log('error', `Error Disabling session due to no questions present: ${error}`);
+            });
         }
-        console.log(JSON.parse(this.session.lecture.quizzingJSON).currentQuestionId != undefined);
-        console.log(this.quizzingData, 'QUIZZING DATA')
+
+
+
+
 
         this.studentSockets = new Map();
         this.presenterSockets = [];
         this.ioEventsTC();
         // Send Teacher client init session
-        this.socketT.emit("initSession", 
-        {
-            session: this.session,
-            quizzing: this.quizzingData
-        });
+        this.socketT.emit("initSession",
+            {
+                session: this.session,
+                quizzing: this.quizzingData,
+                currentQuestionId: this.currentQuestionId,
+                receivedAnswers: this.receivedAnswers,
+            });
         this.emitStudentList();
-        
-         
 
-        
+
+
+
     }
     ioEventsTC() {
         // ioEvents emitted by teacher
-       
+
         // TEACHER ::::::::
         // Teacher Client wants to kick a student
         this.socketT.on("kickStudent", (data) => {
@@ -80,16 +91,32 @@ module.exports = class IoQuizHandler {
         // The specific quizzing object
 
         this.socketT.on("updateQuizzing", (quizzing) => {
-            if(quizzing) {
+            if (quizzing) {
                 this.quizzingData = quizzing;
                 this.emitToPresenters("updateQuizzing", this.quizzingData);
             }
-           
+
 
         });
 
         this.socketT.on("getQuizzing", () => {
             this.socketT.emit("updateQuizzing", this.quizzingData);
+        });
+
+        // the teacher wants to ask the next question of the quiz
+        this.socketT.on("nextQuestion", () => {
+            if (this.session.lecture.questions.length != this.currentQuestionId) {
+               this.currentQuestionId += 1;
+               this.socketT.emit("nextQuestion", {currentQuestionId: this.currentQuestionId});
+               this.emitToPresenters("nextQuestion", {currentQuestionId: this.currentQuestionId});
+               this.emitToStudents("nextQuestion", {currentQuestionId: this.currentQuestionId});
+            }
+        });
+        // the teacher wants to end the quiz and start the conclusion
+        this.socketT.on("endQuiz", () => {
+            this.socketT.emit("endQuiz", this.quizzingData);
+            this.emitToPresenters("endQuiz", this.quizzingData);
+            this.emitToStudents("endQuiz", this.quizzingData);
         });
     }
     ioEventsSC(socketS) {
@@ -120,7 +147,21 @@ module.exports = class IoQuizHandler {
             this.cleanUpStudents();
         });
         // QUIZZING 
-        // TODO
+
+        socketS.on("newAnswer", (answer) => {
+            this.quizzingData.receivedAnswers += 1;
+            this.quizzingData.givenAnswers.push(answer);
+            this.emitToPresenters("newAnswer", answer.studentName)
+            this.socketT.emit("newAnswer", answer);
+            this.socketT.emit("updateQuizzing", this.quizzingData)
+        })
+
+        socketS.on("endQuiz", () => {
+            this.emitToPresenters("endQuiz", this.quizzingData);
+            this.emitToStudents("endQuiz", this.quizzingData);
+            this.socketT.emit("endQuiz", this.quizzingData);
+        });
+
 
     }
 
@@ -201,7 +242,7 @@ module.exports = class IoQuizHandler {
                 if (result) {
                     // associate student socket with student id
                     this.studentSockets.set(result.id, student.socket);
-                    student.socket.emit("sessionJoined", { session: this.session, studentId: result.id });
+                    student.socket.emit("sessionJoined", { session: this.session, studentId: result.id, quizzing: this.quizzingData });
                     this.emitToPresenters("showInfo", `${student.name} ist beigetreten!`);
                     this.emitStudentList();
                     this.ioEventsSC(student.socket);
@@ -304,22 +345,22 @@ module.exports = class IoQuizHandler {
 
     async endSession() {
         try {
-            
-                logger.log("info", `Saving BS... ID:${this.session.id}`);
-                if(this.quizzingData && this.session) {
-                    this.session.lecture.quizzingJSON = JSON.stringify(this.quizzingData);
-                    const save = await EduSession.saveActiveSession(this.session);
-            
-                    if(save == false) {
-                        throw new Error("Error saving QSS!");
-                    }
+
+            logger.log("info", `Saving BS... ID:${this.session.id}`);
+            if (this.quizzingData && this.session) {
+                this.session.lecture.quizzingJSON = JSON.stringify(this.quizzingData);
+                const save = await EduSession.saveActiveSession(this.session);
+
+                if (save == false) {
+                    throw new Error("Error saving QSS!");
                 }
-            
+            }
+
             const deleteUsers = await Student.removeStudentsFromSession(this.session.id);
             const answer = await EduSession.unsetActiveSession(this.teacherId);
             if (answer && deleteUsers) {
 
-                
+
 
                 this.socketT.emit("endSession", true);
                 this.emitToStudents("endSession", true);
@@ -328,7 +369,7 @@ module.exports = class IoQuizHandler {
             }
         } catch (error) {
             this.socketT.emit("AppError", { errorMsg: "Error during disabling session!", fatalError: false });
-            logger.log("error", `Error during disabling session! ID: ${this.session.id}: ${error}` );
+            logger.log("error", `Error during disabling session! ID: ${this.session.id}: ${error}`);
             // TODO Impement error hadnling
         }
 
