@@ -15,7 +15,7 @@ const clientController = require('../controllers/client');
 const isAuth = require('../middleware/is-auth');
 
 
-// Presenter & Studen Clients
+// Presenter & Student Clients
 router.get('/presenter/:sessionId', isAuth, clientController.getPresenter);
 router.get('/student', clientController.getStudent);
 router.get('/', clientController.getStudent);
