@@ -44,9 +44,6 @@ const server = app.listen(3000, server_ip, function () {
   logger.log({ level: 'info', message: `Hello! The Server is running on ${server_ip}!`});
 });
 
-
-
-
 // Set static content folder
 app.set('view engine', 'pug');
 app.set('views', 'views');
@@ -96,12 +93,10 @@ io.getIO().use(
 // Start IO SocketHandler (handles incoming socket io connections)
 ioSocketHandler();
 
-
-
 app.get('/error', errorController.getError)
 app.use('/teacher', teacherRoutes);
 app.use('/client', clientRoutes);
-// protecting teacher client
+// protecting teacher client (Web Sockets Only)
 app.use('/tclient', isAuth);
 // Clients
 // app.get('/client/student', (req, res) => {
