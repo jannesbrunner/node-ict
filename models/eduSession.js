@@ -305,7 +305,7 @@ exports.destroyQuizzingsession = async (qsId) => {
             throw new Error("qsId is undefined!");
         }
         
-        const foundQzs = await db.EduSession.findByPk(foundQzs);
+        const foundQzs = await db.EduSession.findByPk(qsId);
         return await foundQzs.destroy({ force: true });
     } catch (error) {
       throw new Error("DB Destroy Quizzingsession: " + error);
