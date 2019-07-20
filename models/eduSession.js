@@ -364,7 +364,8 @@ exports.editQuizzingQuestion = async(questionId, question) =>{
 exports.getQuizzingQuestion = async(qsId, qId) => {
     try {
         if(qsId && qId) {
-            const quizzingQuestion = db.QuizzingQuestion.findOne({where: {quizzingId: qsId, id: qId}})
+            const quizzing = await db.Quizzing.findOne({where: {eduSessionId: qsId}})
+            const quizzingQuestion = await db.QuizzingQuestion.findOne({where: {quizzingId: quizzing.id, id: qId}})
             return quizzingQuestion;
         } else {
             throw new Error("Can't get Quiz Question without Quizsession and Question Id provided!");
@@ -380,7 +381,7 @@ exports.getQuizzingQuestionsForQuizzing = async(qsId) => {
     try {
         if(qsId) {
             const quizzing = await db.Quizzing.findOne({where: {eduSessionId: qsId}})
-            const quizzingQuestions = db.QuizzingQuestion.findAll({where: {quizzingId: quizzing.id}})
+            const quizzingQuestions = await db.QuizzingQuestion.findAll({where: {quizzingId: quizzing.id}})
             return quizzingQuestions;
         } else {
             throw new Error("Can't get Quiz Questions without Quizzing Id provided!");

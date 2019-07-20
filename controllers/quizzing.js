@@ -241,6 +241,7 @@ exports.getEditQuestion = async (req, res) => {
                     'docTitle': "Error! | Node ICT",
                     isLoggedIn: req.session.isLoggedIn,
                     loggedUser: req.session.user,
+                    session: currentSession,
                     'error': `Sie sind nicht berechtigt diese Quiz Frage anzuzeigen!`,
                     backLink: `teacher/sessions/quizzing-edit/${req.params.sessionId}`,
                 })
@@ -252,14 +253,15 @@ exports.getEditQuestion = async (req, res) => {
     
     
     try {
-        const session = await EduSession.getQuizzingsession(req.params.sessionId);
+        const currentSession = await EduSession.getQuizzingsession(req.params.sessionId)
         const questionToEdit = await EduSession.getQuizzingQuestion(req.params.sessionId, req.params.questionId)
+        console.log(`Session id: ${req.params.sessionId} || Question Id: ${req.params.questionId} ${questionToEdit.id}`);
         return res.render('teacher/edusessions/quizzing/edit-question', 
         {
             docTitle: "Quiz Frage bearbeiten | Node ICT",
             isLoggedIn: req.session.isLoggedIn,
             loggedUser: req.session.user,
-            session: session,
+            session: currentSession,
             question: questionToEdit
         });
         
