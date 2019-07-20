@@ -333,7 +333,6 @@ function socketListen() {
         vue.quizzing = data.givenAnswers;
         console.log("Got Quiz Statistics", data.statistics);
         vue.quizStatistics = data.statistics;
-        vue.isRunning = false;
         vue.quizConclusion = true;
     })
     socket.on('newAnswer', (answer) => {
