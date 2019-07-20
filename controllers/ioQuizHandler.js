@@ -114,8 +114,9 @@ module.exports = class IoQuizHandler {
         });
         // the teacher wants to end the quiz and start the conclusion
         this.socketT.on("endQuiz", () => {
-            this.socketT.emit("endQuiz", this.quizzingData);
-            this.emitToPresenters("endQuiz", this.quizzingData);
+            const statistics = this.calculateStatistics();
+            this.socketT.emit("endQuiz", {givenAnswers: this.quizzingData, statistics: statistics});
+            this.emitToPresenters("endQuiz", {givenAnswers: this.quizzingData, statistics: statistics});
             this.emitToStudents("endQuiz", this.quizzingData);
         });
     }
@@ -171,6 +172,91 @@ module.exports = class IoQuizHandler {
         socketP.on("getSession", () => {
             socketP.emit("updateSession", this.session);
         });
+
+    }
+    // Calculates the quiz statistics at the end
+    calculateStatistics() {
+        
+        let playersStatistic = new Map();
+        
+        for(let answer of this.quizzingData.givenAnswers) {
+            playersStatistic.set(answer.studentId, {
+                name: answer.studentName,
+                id: answer.studentId,
+                rightAnswers: 0,
+                wrongAnswers: 0,
+            })
+        }
+        // Right and Wrong answers per player
+        for(let answer of this.quizzingData.givenAnswers) {
+            for( let question of this.session.lecture.questions) {
+                if(answer.questionId == question.id && question.validAnswer == answer.answerId) {
+                    let answers = playersStatistic.get(answer.studentId)
+                    answers.rightAnswers += 1;
+                    playersStatistic.set(answer.studentId, answers)
+                } else if(answer.questionId == question.id && question.validAnswer != answer.answerId){
+                    let answers = playersStatistic.get(answer.studentId)
+                    answers.wrongAnswers += 1;
+                    playersStatistic.set(answer.studentId, answers)
+                }
+            }
+        }
+
+        // best player and worst player
+       let bestPlayer = {
+           studentId: null,
+           studentName: null,
+           highscore: 0,
+       }
+
+       let worstPlayer = {
+        studentId: null,
+        studentName: null,
+        highscore: 0,
+       }
+
+       // total wrong & total right
+       let totalWrong = 0;
+       let totalRight = 0;
+       
+        playersStatistic.forEach( (player, key) => {
+            if(bestPlayer.highscore < player.rightAnswers) {
+                bestPlayer = {
+                    studentId: key,
+                    studentName: player.name,
+                    highscore: player.rightAnswers
+                }
+            }
+            if(worstPlayer.highscore < player.wrongAnswers) {
+                worstPlayer = {
+                    studentId: key,
+                    studentName: player.name,
+                    highscore: player.wrongAnswers
+                }
+            }
+
+            totalRight += player.rightAnswers;
+            totalWrong += player.wrongAnswers;
+
+       })
+
+       let rwRatio = totalRight / totalWrong;
+
+       let playersStatisticObj = Array.from(playersStatistic).reduce((obj, [key, value]) => {
+        obj[key] = value;
+        return obj;
+      }, {});
+
+       const statistics = {
+           playersStatistic: playersStatisticObj,
+           bestPlayer: bestPlayer,
+           worstPlayer: worstPlayer,
+           totalRight: totalRight,
+           totalWrong: totalWrong,
+           rwRatio: rwRatio,
+       }
+
+       return statistics;
 
     }
 

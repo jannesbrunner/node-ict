@@ -45,8 +45,15 @@ block content
                   span {{ question.answer4}} 
                   template(v-if="quizConclusion")
                     ul(v-for="(answer) in quizzing.givenAnswers")
-                      li(v-if="answer.questionId == question.id") {{answer}}
-              
+                      li(v-if="answer.questionId == question.id") {{ answer.studentName }} hat diese Frage {{ question.validAnswer == answer.answerId ? "richtig" : `falsch mit '${question["answer"+answer.answerId]}'`}} beantwortet!
+              template(v-if="quizConclusion")
+                hr
+                div Bester Spieler: {{ quizStatistics.bestPlayer.studentName }} mit {{ quizStatistics.bestPlayer.highscore }} richtigen Antworten!
+                div Das Schlusslicht: {{ quizStatistics.worstPlayer.studentName }} mit {{ quizStatistics.worstPlayer.highscore }} falschen Antworten!
+                div Richtige Antworten Total: {{ quizStatistics.totalRight }}
+                div Falsche Antworten Total: {{ quizStatistics.totalWrong }}
+                div Im Verhältnis (Richtige/Falsche): {{ quizStatistics.rwRatio }}
+
           div(v-if="session.type == 'quizzing' && isRunning")
             strong Aktuelle Frage:
             p {{ session.lecture.questions[currentQuestionId].question }} 

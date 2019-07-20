@@ -28,6 +28,7 @@ const vue = new Vue({
         receivedAnswers: 0,
         currentQuestionId: 0,
         quizConclusion: false,
+        quizStatistics: {},
 
     },
     mounted() {
@@ -35,7 +36,7 @@ const vue = new Vue({
         window.addEventListener('beforeunload', beforeUnload);
     },
     computed: {
-
+        
     },
     watch: {
         session: function (newSession) {
@@ -329,7 +330,9 @@ function socketListen() {
         vue.receivedAnswers = 0;
     })
     socket.on('endQuiz', (data) => {
-        vue.quizzing = data;
+        vue.quizzing = data.givenAnswers;
+        console.log("Got Quiz Statistics", data.statistics);
+        vue.quizStatistics = data.statistics;
         vue.isRunning = false;
         vue.quizConclusion = true;
     })

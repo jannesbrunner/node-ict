@@ -23,7 +23,8 @@ const vue = new Vue({
         // Quizzing
         quizzing: {},
         currentQuestionId: 0,
-        receivedAnswers: 0
+        receivedAnswers: 0,
+        quizStatistics: {}
     },
     mounted() {
         socketListen();
@@ -294,7 +295,8 @@ function socketListen () {
     });
 
     socket.on("endQuiz", (data) => {
-        vue.quizzing = data; 
+        vue.quizzing = data.givenAnswers;
+        vue.quizStatistics = data.statistics;
     });
 
 
