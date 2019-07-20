@@ -10,19 +10,23 @@ html(lang="en")
     link(rel="stylesheet", href="/css/bootstrap.min.css")
     script(src="/js/jquery.min.js")
     script(src="/js/bootstrap.min.js")
+    script(src="/client/js/sweetalert.js")
+    block scripts
     block styles
   body
     .container
       header.row.bg-warning
         div.col-sm           
           h1 Node ICT
-          bold Lehrer Bereich
+          bold Lehrer Bereich 
+          if loggedUser
+            span von #{loggedUser.name}
         nav.navbar.navbar-dark.justify-content-center
           a.nav-link(href="/teacher/") Start
           if isLoggedIn
             a.nav-link(href="/teacher/settings") Einstellungen
             a.nav-link(href="/teacher/sessions") Lehreinheiten
-            a.nav-link(href="/client/") Zu Teilnehmer wechseln
+            a.nav-link(href="/client/student" target="_blank") Zu Teilnehmer wechseln
             form(method="POST" action="/teacher/logout")
               button(type="SUBMIT") Log Out
           unless isLoggedIn

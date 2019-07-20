@@ -1,0 +1,50 @@
+extends ../layouts/client-layout.pug
+
+block styles
+  link(rel="stylesheet", href="/css/presenter.css")
+
+block content
+  div#container
+    div#presenter
+      div(v-if="!isError")
+        template(v-if="session != null")
+          div(v-if="session.type == 'brainstorming'")
+             h2 {{ session.name}} - Brainstorming
+             div#cloud
+            
+          div(v-if="session.type == 'quizzing'")#quiz
+            h2 {{ session.name}} - Quiz
+            h1 - {{ session.lecture.topic}} - 
+          
+          div(v-if="session.type == 'quizzing' && isRunning && !endQuiz")
+            div.quiz-question-box
+              div.quiz-question-number Frage {{ currentQuestionId + 1 }} von {{session.lecture.questions.length }}
+              div.quiz-question-question {{ session.lecture.questions[currentQuestionId].question }}
+              template(v-if="studentList.length - receivedAnswers != 0")
+                div {{ studentList.length - receivedAnswers}} Mitspieler müssen noch Antworten!
+              template(v-if="studentList.length == receivedAnswers")
+                div Alle Mitspieler haben ihre Antwort abgegeben! 
+              div.quiz-question-answer-box
+                div.quiz-question-answer 1: {{ session.lecture.questions[currentQuestionId].answer1 }}
+                div.quiz-question-answer 2: {{ session.lecture.questions[currentQuestionId].answer2 }}
+                div.quiz-question-answer 3: {{ session.lecture.questions[currentQuestionId].answer3 }}
+                div.quiz-question-answer 4: {{ session.lecture.questions[currentQuestionId].answer4 }}
+          div(v-if="session.type == 'quizzing' && isRunning && endQuiz")
+            h1 Ende!
+            div Bester Spieler: {{ quizStatistics.bestPlayer.studentName }} mit {{ quizStatistics.bestPlayer.highscore }} richtigen Antworten!
+            div Das Schlusslicht: {{ quizStatistics.worstPlayer.studentName }} mit {{ quizStatistics.worstPlayer.highscore }} falschen Antworten!
+            div Richtige Antworten Total: {{ quizStatistics.totalRight }}
+            div Falsche Antworten Total: {{ quizStatistics.totalWrong }}
+        h1(v-if="!isRunning") Der Lehrende hat die Session noch nicht gestartet!
+        div.players Spieler: 
+        span(v-for="student in students")
+          span.player {{ student.name }} &nbsp;
+        template(v-if="!isRunning && session == null") 
+          h1 Der Lehrende hat diese Session beendet.  
+      div(v-else)
+        p {{ errorText }}
+        
+
+  em#presenterId(style="display: none") #{presenterId}
+  script(src="/client/js/presenter/index.js")
+ 

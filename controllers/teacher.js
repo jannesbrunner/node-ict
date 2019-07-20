@@ -8,7 +8,11 @@
 // Imports
 const User = require("../models/user");
 const Settings = require("../models/settings");
+const EduSession = require("../models/eduSession");
 const dbSetup = require('../util/db_setup');
+const eventEmitter = require('../util/eventEmitter');
+
+
 
 
 // GET => /teacher
@@ -16,7 +20,8 @@ exports.getMain = (req, res, next) => {
     res.render('teacher/index',
         {
             docTitle: 'Teacher | Node ICT',
-            isLoggedIn: req.session.isLoggedIn
+            isLoggedIn: req.session.isLoggedIn,
+            loggedUser: req.session.user
 
         });
 };
@@ -29,7 +34,8 @@ exports.getLogin = (req, res, next) => {
     return res.render('teacher/login',
         {
             docTitle: 'Login | Node ICT',
-            isLoggedIn: req.session.isLoggedIn
+            isLoggedIn: req.session.isLoggedIn,
+            loggedUser: req.session.user
         });
 };
 
@@ -58,6 +64,7 @@ exports.postLogin = async (req, res, next) => {
                 req.session.isLoggedIn = true;
                 req.session.user = user;
                 await req.session.save();
+
                 return res.redirect('/teacher');
 
             } else {
@@ -69,13 +76,14 @@ exports.postLogin = async (req, res, next) => {
             }
         }
     } catch (error) {
-        res.render('error', { error: error })
+        return res.render('error', { error: error })
     }
 }
 
 // POST => /teacher/logout
 exports.postLogout = async (req, res, next) => {
     try {
+        eventEmitter.get().emit('session_end', req.session.user.id);
         await req.session.destroy();
         return res.redirect('/teacher');
     } catch (error) {
@@ -115,7 +123,7 @@ exports.getNew = async (req, res, next) => {
                 });
         }
     } catch (error) {
-        res.render('error', { error: error })
+        return res.render('error', { error: error })
     }
 }
 
@@ -149,7 +157,7 @@ exports.postReset = async (req, res, next) => {
         await req.session.destroy();
         res.render('reset');
     } catch (error) {
-        res.render('error', { error: error })
+        return res.render('error', { error: error })
     }
 }
 
@@ -235,7 +243,7 @@ exports.destroyUser = async (req, res, next) => {
         await User.destroy(req.params.userId);
         return res.redirect('/teacher/settings');
     } catch (error) {
-        res.render('error', { error: error })
+        return res.render('error', { error: error })
     }
     
 }
@@ -276,6 +284,6 @@ exports.postSignup = async (req, res, next) => {
             res.redirect('/teacher/settings');
         }
     } catch (error) {
-        res.render('error', { error: error })
+        return res.render('error', { error: error })
     }
 }

@@ -1,0 +1,79 @@
+extends ../../layouts/teacher-layout.pug
+
+block styles
+  link(rel="stylesheet", href="/css/client.css")
+block content
+  div#teacher
+    div(v-if="!isError")
+      div(v-if="session")
+        h1 Lehrkraft Monitor
+        strong Name: 
+        span {{ session.name }} 
+        strong Typ: 
+        span {{ session.type }} 
+        a(v-bind:href="presenterUrl" target="_blank") Presenter öffnen
+        p
+          strong Lobby:
+          ul(v-for="(student, i) in students") 
+            li {{ student.name }}
+              button(v-if="!isRunning" @click="kickStudent(student.id, student.name)") Entfernen
+        hr
+        div#eduBrainstorm
+          div(v-if="session.type == 'brainstorming'") 
+            h4 Brainstorming Thema: {{ session.lecture.topic}}
+            h3 Bisherige Antworten:
+            div(v-if="brainstorming.answers.length > 0")
+              ul(v-for="(answer) in brainstorming.answers")
+                li {{ answer.answer}} (hinzugefügt von {{ answer.clientName }}) 
+                button(@click="removeAnswer(answer.answer, answer.id)") Entfernen
+            p(v-else) Bisher keine Antworten.
+          div(v-if="session.type == 'brainstorming' && isRunning")
+            
+        div#eduQuiz
+          div(v-if="session.type == 'quizzing'") 
+            h4 Quiz Thema: {{ session.lecture.topic}}
+            p Fragen:
+              ul(v-for="(question) in session.lecture.questions") 
+                li {{ question.question}} 
+                  strong A: 
+                  span {{question.answer1}} 
+                  strong B: 
+                  span {{ question.answer2}}  
+                  strong C: 
+                  span {{ question.answer3}}  
+                  strong D:  
+                  span {{ question.answer4}} 
+                  template(v-if="quizConclusion")
+                    ul(v-for="(answer) in quizzing.givenAnswers")
+                      li(v-if="answer.questionId == question.id") {{ answer.studentName }} hat diese Frage {{ question.validAnswer == answer.answerId ? "richtig" : `falsch mit '${question["answer"+answer.answerId]}'`}} beantwortet!
+              template(v-if="quizConclusion")
+                hr
+                div Bester Spieler: {{ quizStatistics.bestPlayer.studentName }} mit {{ quizStatistics.bestPlayer.highscore }} richtigen Antworten!
+                div Das Schlusslicht: {{ quizStatistics.worstPlayer.studentName }} mit {{ quizStatistics.worstPlayer.highscore }} falschen Antworten!
+                div Richtige Antworten Total: {{ quizStatistics.totalRight }}
+                div Falsche Antworten Total: {{ quizStatistics.totalWrong }}
+                div Im Verhältnis (Richtige/Falsche): {{ quizStatistics.rwRatio }}
+
+          div(v-if="session.type == 'quizzing' && isRunning && !quizConclusion")
+            strong Aktuelle Frage:
+            p {{ session.lecture.questions[currentQuestionId].question }} 
+            strong Beantwortet von: 
+            p {{ receivedAnswers }} / {{ students.length}}
+            button(v-if="session.lecture.questions.length != currentQuestionId + 1" @click="nextQuestion") Nächste Frage 
+            button(v-if="session.lecture.questions.length == currentQuestionId + 1 && !quizConclusion" @click="endQuiz") Beenden / Auswertung 
+          
+
+        hr
+        button(v-if="!isRunning && students.length > 0" @click="startSession()") Lehreinheit Starten
+        button(@click="endSession") Lehreinheit Beenden 
+      div(v-else)
+        h1 Die Session wurde beendet
+    div(v-else) {{ errorText }}
+
+
+
+
+
+
+
+  script(src="/client/js/teacher/index.js")

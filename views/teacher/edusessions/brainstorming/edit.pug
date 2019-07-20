@@ -1,0 +1,31 @@
+extends ../../../layouts/teacher-layout.pug
+
+block styles
+  link(rel="stylesheet", href="/css/teacher.css")
+block content
+  h1 Lehreinheiten
+  ul.nav.nav-pills.nav-fill
+    li.nav-item
+      a.nav-link(href="/teacher/sessions") Zurück
+    li.nav-item
+      a.nav-link.active(href="#") Brainstorm Session aktualisieren
+    li.nav-item
+      a.nav-link(href="/teacher/sessions/quizzing/new") Neue Quiz Session anlegen
+  hr
+  div.card
+    div.card-header Brainstorm Session Bearbeiten
+  div.card-body
+    form(method='POST' action=`/teacher/sessions/brainstorming-edit/${session.id}`)
+      div.form-group
+        label(for='name') Name der Brainstorm Session
+        input.form-control(type='text' id='name' placeholder='z.B. Klasse 7A: Deutsch' name='name' value=`${session.name}` required) 
+      div.form-group
+        label(for='topic') Thema der Brainstorm Session 
+        input.form-control(type='text' id='topic' placeholder='z.B. Werke von Goethe' name='topic' value=`${session.lecture.topic}` required) 
+      button.btn.btn-primary(type='submit') Speichern
+  if session.userId == loggedUser.id || loggedUser.isSuperAdmin
+  form(method='POST' action=`/teacher/sessions/brainstorming-destroy/${session.id}`)
+    button.btn.btn-danger(type='submit') Löschen
+
+
+

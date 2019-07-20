@@ -20,7 +20,7 @@ exports.updatePw = async (id, newPw) => {
     await user.save();
     return true;
   } catch (error) {
-    return error;
+    throw new Error(`DB Update User PW Error` + error);
   }
 };
 
@@ -51,7 +51,7 @@ exports.save = async (user) => {
 
   }
   catch (error) {
-    return error;
+    throw new Error(`DB User Save Error: ${error}`);
   }
 
 }
@@ -92,12 +92,12 @@ exports.destroy = async (id) => {
   try {
     const foundUser = await db.User.findByPk(id);
     if(foundUser) {
-    return foundUser.destroy({ force: true });
+    return await foundUser.destroy({ force: true });
     } else {
-      throw new Error(`DB Destroy User: User with ID ${id} does not exist!`);
+      throw new Error(`User with ID ${id} does not exist!`);
     }
   } catch (error) {
-    throw new Error("DB Get User Error " + error)
+    throw new Error("DB Get User Error:  " + error)
   }
 }
 

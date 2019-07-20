@@ -51,6 +51,23 @@ exports.settings = (sequelize, Sequelize) => {
     )
   };
 
+  exports.student = (sequelize, Sequelize) => {
+    return sequelize.define('student', {
+  
+      id: {
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
+        allowNull: false,
+        primaryKey: true
+      },
+      name: {
+        type: Sequelize.STRING,
+        allowNull: false
+      },
+    })
+  };
+
+
   exports.eduSession = (sequelize, Sequelize) => {
     return sequelize.define('eduSession', {
   
@@ -69,6 +86,11 @@ exports.settings = (sequelize, Sequelize) => {
         allowNull: false,
         defaultValue: false,
       },
+      isRunning: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
       type: {
         type: Sequelize.STRING,
         allowNull: false,
@@ -76,10 +98,94 @@ exports.settings = (sequelize, Sequelize) => {
           isIn: [['brainstorming', 'quizzing']]
         }
       },
-      sessionJSON: {
+    })
+  };
+
+  exports.brainstorming = (sequelize, Sequelize) => {
+    return sequelize.define('brainstorming', {
+  
+      id: {
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
+        allowNull: false,
+        primaryKey: true
+      },
+      topic: {
+        type: Sequelize.STRING,
+        allowNull: false
+      },
+      brainstormingJSON: {
         type: Sequelize.JSON,
         allowNull: true,
         defaultValue: null,
       }
     })
   };
+
+  exports.quizzing = (sequelize, Sequelize) => {
+    return sequelize.define('quizzing', {
+  
+      id: {
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
+        allowNull: false,
+        primaryKey: true
+      },
+      topic: {
+        type: Sequelize.STRING,
+        allowNull: false
+      },
+      quizzingJSON: {
+        type: Sequelize.JSON,
+        allowNull: true,
+        defaultValue: null,
+      }
+    })
+  };
+
+  exports.quizzingquestion = (sequelize, Sequelize) => {
+    return sequelize.define('quizzingQuestion', {
+  
+      id: {
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
+        allowNull: false,
+        primaryKey: true
+      },
+      question: {
+        type: Sequelize.STRING,
+        allowNull: false
+      },
+      answer1: {
+        type: Sequelize.STRING,
+        allowNull: true,
+        defaultValue: null,
+      },
+      answer2: {
+        type: Sequelize.STRING,
+        allowNull: true,
+        defaultValue: null,
+      },
+      answer3: {
+        type: Sequelize.STRING,
+        allowNull: true,
+        defaultValue: null,
+      },
+      answer4: {
+        type: Sequelize.STRING,
+        allowNull: true,
+        defaultValue: null,
+      },
+      validAnswer: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        validate: {
+          isInt: true,
+          min: 1,
+          max: 4
+        }
+      }
+    })
+  };
+
+  

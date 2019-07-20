@@ -7,35 +7,39 @@
 
 // imports
 const db = require('../util/database');
+const ip = require('ip');
 
-// GET => /client
-exports.getMain = (req, res, next) => {
-    let username = userCookie(req.cookies);
-    if (username != false) {
-        return res.render('client/index',
+// GET => /client/student
+exports.getStudent = (req, res, next) => {
+    
+        return res.render('client/student',
             {
                 docTitle: 'Student | Node ICT',
-                name: username
+                ipAdd: ip.address(),
             });
-    } else {
-        return res.redirect('/client/new');
-    }
 };
 
-
-// GET => /client/new
-exports.getNew = (req, res, next) => {
-    return res.render('client/new',
+// GET => /client/presenter/:sessionId
+exports.getPresenter = (req, res, next) => {
+    return res.render('client/presenter', 
         {
-            docTitle: 'Student | Node ICT'
-        });
-};
+            docTitle: 'Presenter | Node ICT',
+            presenterId: req.params.sessionId,
+            ipAdd: ip.address(),
+        }
+    );
+}
 
-// POST => /client/new
-exports.postNew = (req, res, next) => {
-    res.setHeader('Set-cookie', `ict_username=${req.body.name}`)
-    res.redirect('/client')
-};
+// GET => /client/teacher
+exports.getTeacher = (req, res, next) => {
+    return res.render('client/teacher', 
+        {
+            docTitle: 'Teacher | Node ICT'
+        }
+    );
+}
+
+
 
 
 // Helpers
