@@ -6,10 +6,9 @@ const Swal = require('sweetalert2');
 // connect to student client namespace
 const socket = socketIO('/sclient');
 
-/* eslint-disable no-undef */
-const vue = new Vue({
-    el: '#student',
-    data: {
+
+function initialState() {
+    return {
         session: null,
         isRunning: false,
         isActive: true,
@@ -28,7 +27,18 @@ const vue = new Vue({
         quizzing: {},
         currentQuestionId: 0,
         givenAnswers: [],
-        questionIsAnswered: false
+        questionIsAnswered: false,
+        endQuiz: false,
+        quizConclusion: [], 
+        quizRight: 0, 
+        quizWrong: 0
+    }
+}
+
+const vue = new Vue({
+    el: '#student',
+    data: function () {
+        return initialState();
     },
     mounted() {
         if (localStorage.username) {
@@ -63,6 +73,9 @@ const vue = new Vue({
         }
     },
     methods: {
+        resetClient: function (){
+            Object.assign(this.$data, initialState());
+        },
         signup: function () {
             if (this.username != "") {
                 localStorage.username = this.username;
@@ -106,17 +119,7 @@ const vue = new Vue({
             }).then((result) => {
                 if (result.value) {
                     socket.emit("sessionLeft", { clientName: this.username, teacherId: this.session.userId, studentId: this.studentId });
-                    this.session = null;
-                    this.studentId = null;
-                     // Brainstorming
-                    this.bsAnswer = "",
-                    this.bsAnwers = [],
-                    // Quizzing
-                    this.quizzing = {},
-                    this.currentQuestionId = 0,
-                    this.givenAnswers = [],
-                    this.questionIsAnswered = false
-                    this.sessionBrowser = true;
+                    this.resetClient();
                     Swal.fire(
                         'Erfolg',
                         'Du hast die Lehreinheit verlassen!',
@@ -177,11 +180,8 @@ const vue = new Vue({
                             studentId: this.studentId,
                             studentName: this.username
                         }
-
                         this.givenAnswers.push(answer);
-
                         socket.emit("newAnswer", answer);
-
                         Swal.fire(
                             'OK',
                             'Deine Antwort wurde übermittelt',
@@ -196,14 +196,16 @@ const vue = new Vue({
                     type: 'warning'
                 })
             }
-
-
-
+        },
+       
+    },
+    filters: {
+        capitalize: (value) => {
+          if (!value) return ''
+          value = value.toString()
+          return value.charAt(0).toUpperCase() + value.slice(1)
         }
-
-
-
-    }
+      },
 
 });
 
@@ -229,18 +231,7 @@ function socketListen() {
 
     socket.on('kicked', function (studentId) {
         if (vue.studentId == studentId) {
-            vue.session = null;
-            vue.studentId = null;
-            vue.sessionBrowser = true;
-            vue.isRunning = false;
-            // Brainstorming
-            vue.bsAnswer = "",
-            vue.bsAnwers = [],
-            // Quizzing
-            vue.quizzing = {},
-            vue.currentQuestionId = 0,
-            vue.givenAnswers = [],
-            vue.questionIsAnswered = false
+            Object.assign(vue.$data, initialState());
             Swal.fire(
                 'Achtung!',
                 'Sie wurden aus der Sitzung geworfen!',
@@ -294,13 +285,49 @@ function socketListen() {
         vue.currentQuestionId = data.currentQuestionId;
         vue.questionIsAnswered = false;
     });
+
+    socket.on("endQuiz", () => {
+            let conclusion = [];
+            let rightAnswers = 0;
+            let wrongAnswers = 0;
+    
+                // Right and Wrong answers 
+            for(let answer of vue.givenAnswers) {
+                for( let question of vue.session.lecture.questions) {
+                    if(answer.questionId == question.id && question.validAnswer == answer.answerId) {
+                        conclusion.push({
+                            question: question.question,
+                            validAnswer: question["answer"+question.validAnswer],
+                            playerAnswer: question["answer"+answer.answerId],
+                            answerCorrect: true
+                        })
+                        rightAnswers += 1;
+                       
+                    } else if(answer.questionId == question.id && question.validAnswer != answer.answerId){
+                        conclusion.push({
+                            question: question.question,
+                            validAnswer: question["answer"+question.validAnswer],
+                            playerAnswer: question["answer"+answer.answerId],
+                            answerCorrect: false
+                        })
+                        wrongAnswers += 1;
+                       
+                    }
+                }
+            }
+    
+        vue.quizConclusion = conclusion;
+        vue.quizRight = rightAnswers;
+        vue.quizWrong = wrongAnswers;
+    
+    
+        vue.endQuiz = true;
+
+    });
     // teacher ends session
     socket.on("endSession", function (data) {
         if (data == true) {
-            vue.session = null;
-            vue.studentId = null;
-            vue.sessionBrowser = true;
-            vue.isRunning = false;
+            Object.assign(vue.$data, initialState());
             Swal.fire({
                 type: 'warning',
                 title: 'Ende',
