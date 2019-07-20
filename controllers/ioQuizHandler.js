@@ -205,13 +205,13 @@ module.exports = class IoQuizHandler {
         // best player and worst player
        let bestPlayer = {
            studentId: null,
-           studentName: null,
+           studentName: "Niemand",
            highscore: 0,
        }
 
        let worstPlayer = {
         studentId: null,
-        studentName: null,
+        studentName: "Niemand",
         highscore: 0,
        }
 
@@ -240,7 +240,8 @@ module.exports = class IoQuizHandler {
 
        })
 
-       let rwRatio = totalRight / totalWrong;
+       let rwRatio = totalWrong == 0 ? "Alle Antworten waren richtig!" :  totalRight / totalWrong;
+      
 
        let playersStatisticObj = Array.from(playersStatistic).reduce((obj, [key, value]) => {
         obj[key] = value;
@@ -473,7 +474,7 @@ module.exports = class IoQuizHandler {
     // Emit a Message with title and message to all connected students
     emitToStudents(title, message) {
         this.studentSockets.forEach((studentS, studentId) => {
-            console.log(`Emitting: ${title} to student ${studentId}`)
+            // console.log(`Emitting: ${title} to student ${studentId}`)
             studentS.emit(title, message);
         });
     }
