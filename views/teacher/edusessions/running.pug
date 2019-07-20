@@ -54,18 +54,18 @@ block content
                 div Falsche Antworten Total: {{ quizStatistics.totalWrong }}
                 div Im Verhältnis (Richtige/Falsche): {{ quizStatistics.rwRatio }}
 
-          div(v-if="session.type == 'quizzing' && isRunning")
+          div(v-if="session.type == 'quizzing' && isRunning && !quizConclusion")
             strong Aktuelle Frage:
             p {{ session.lecture.questions[currentQuestionId].question }} 
             strong Beantwortet von: 
             p {{ receivedAnswers }} / {{ students.length}}
             button(v-if="session.lecture.questions.length != currentQuestionId + 1" @click="nextQuestion") Nächste Frage 
-            button(v-if="session.lecture.questions.length == currentQuestionId + 1" @click="endQuiz") Beenden / Auswertung 
+            button(v-if="session.lecture.questions.length == currentQuestionId + 1 && !quizConclusion" @click="endQuiz") Beenden / Auswertung 
           
 
         hr
-        button(v-if="!isRunning && students.length > 0" @click="startSession()") Session Starten
-        button(@click="endSession") Session Beenden (Speichern)
+        button(v-if="!isRunning && students.length > 0" @click="startSession()") Lehreinheit Starten
+        button(@click="endSession") Lehreinheit Beenden 
       div(v-else)
         h1 Die Session wurde beendet
     div(v-else) {{ errorText }}

@@ -15,7 +15,8 @@ block content
           div(v-if="session.type == 'quizzing'")#quiz
             h2 {{ session.name}} - Quiz
             h1 - {{ session.lecture.topic}} - 
-          div(v-if="session.type == 'quizzing' && isRunning")
+          
+          div(v-if="session.type == 'quizzing' && isRunning && !endQuiz")
             div.quiz-question-box
               div.quiz-question-number Frage {{ currentQuestionId + 1 }} von {{session.lecture.questions.length }}
               div.quiz-question-question {{ session.lecture.questions[currentQuestionId].question }}
@@ -28,6 +29,12 @@ block content
                 div.quiz-question-answer 2: {{ session.lecture.questions[currentQuestionId].answer2 }}
                 div.quiz-question-answer 3: {{ session.lecture.questions[currentQuestionId].answer3 }}
                 div.quiz-question-answer 4: {{ session.lecture.questions[currentQuestionId].answer4 }}
+          div(v-if="session.type == 'quizzing' && isRunning && endQuiz")
+            h1 Ende!
+            div Bester Spieler: {{ quizStatistics.bestPlayer.studentName }} mit {{ quizStatistics.bestPlayer.highscore }} richtigen Antworten!
+            div Das Schlusslicht: {{ quizStatistics.worstPlayer.studentName }} mit {{ quizStatistics.worstPlayer.highscore }} falschen Antworten!
+            div Richtige Antworten Total: {{ quizStatistics.totalRight }}
+            div Falsche Antworten Total: {{ quizStatistics.totalWrong }}
         h1(v-if="!isRunning") Der Lehrende hat die Session noch nicht gestartet!
         div.players Spieler: 
         span(v-for="student in students")

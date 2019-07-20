@@ -17,32 +17,41 @@ block content
               p(v-if="sessions.length == 0") Keine Spiele gefunden.
               ul
                 li(v-for="(session, i) in sessions")
-                  h5 {{ session.name }}
-                  p {{ session.type }}
+                  h5 {{ session.name | capitalize}}
+                  p {{ session.type | capitalize}}
                   button(@click="joinSession(session.userId)") Beitreten
           template(v-if="session")
+            h1 {{ session.name | capitalize }} 
             div#brainstorming(v-if="session.type === 'brainstorming'")
-              h1 Brainstorm Session
+              h2 Brainstorming zum Thema {{ session.lecture.topic | capitalize }}
               div(v-if="isRunning")
-                h3 Thema: {{ session.lecture.topic }}
                 input(type="text", v-model="bsAnswer")
                 button(@click="studentAnswer()") Antwort abgeben!
-              div(v-else)
+              template(v-if="isRunning == false")
                 p Der Lehrende hat diese Session noch nicht gestartet.
                 button(@click="leaveSession()") Spiel verlassen!
+              
             div#quiz(v-if="session.type === 'quizzing'")
-              h1 Quiz Session!
-              div(v-if="isRunning")
+              h2 Quiz zum Thema: {{ session.lecture.topic | capitalize}}
+              div(v-if="isRunning && !endQuiz")
                 h3 Aktuelle Frage:
                   div.quiz-question-box
                     div.quiz-question-number Frage {{ currentQuestionId + 1 }} von {{session.lecture.questions.length}}
-                    div.quiz-question-question {{ session.lecture.questions[currentQuestionId].question }}
+                    div.quiz-question-question {{ session.lecture.questions[currentQuestionId].question | capitalize }}
                     div.quiz-question-answer-box
-                      div.quiz-question-answer(@click="quizAnswer(1)") 1: {{ session.lecture.questions[currentQuestionId].answer1 }}
-                      div.quiz-question-answer(@click="quizAnswer(2)") 2: {{ session.lecture.questions[currentQuestionId].answer2 }}
-                      div.quiz-question-answer(@click="quizAnswer(3)") 3: {{ session.lecture.questions[currentQuestionId].answer3 }}
-                      div.quiz-question-answer(@click="quizAnswer(4)") 4: {{ session.lecture.questions[currentQuestionId].answer4 }}
-              div(v-else)
+                      div.quiz-question-answer(@click="quizAnswer(1)") 1: {{ session.lecture.questions[currentQuestionId].answer1 | capitalize}}
+                      div.quiz-question-answer(@click="quizAnswer(2)") 2: {{ session.lecture.questions[currentQuestionId].answer2 | capitalize}}
+                      div.quiz-question-answer(@click="quizAnswer(3)") 3: {{ session.lecture.questions[currentQuestionId].answer3 | capitalize}}
+                      div.quiz-question-answer(@click="quizAnswer(4)") 4: {{ session.lecture.questions[currentQuestionId].answer4 | capitalize}}
+              div(v-if="endQuiz")
+                p Das Quiz ist beendet. Deine Ergebnis:
+                ul(v-for="(result) in quizConclusion")
+                  li Frage "{{ result.question }}"
+                    p Deine Antwort: {{ result.playerAnswer }}
+                    p {{ result.answerCorrect ? `Das ist korrekt!` : `Leider falsch, die richtige Antwort lautet "${result.validAnswer}".`}}
+                
+                        
+              template(v-if="isRunning == false")
                 p Der Lehrende hat diese Session noch nicht gestartet.
                 button(@click="leaveSession()") Spiel verlassen!
         div(v-else)#error {{ errorText }}
