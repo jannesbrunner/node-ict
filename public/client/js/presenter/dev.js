@@ -7,9 +7,8 @@ const Swal = require('sweetalert2');
 // connect to presenter namespace
 const socket = socketIO('/pclient');
 
-const vue = new Vue({
-    el: '#presenter',
-    data: {
+function initialState() {
+    return {
         session: null,
         isRunning: false,
         isActive: true,
@@ -24,7 +23,15 @@ const vue = new Vue({
         quizzing: {},
         currentQuestionId: 0,
         receivedAnswers: 0,
-        quizStatistics: {}
+        quizStatistics: {},
+        endQuiz: false,
+    }
+}
+
+const vue = new Vue({
+    el: '#presenter',
+    data: function () {
+        return initialState();
     },
     mounted() {
         socketListen();
@@ -112,6 +119,9 @@ const vue = new Vue({
                 timer: 1500,
                 backdrop: 'rgba(0,0,0,0)'
               })
+        },
+        resetClient: function() {
+            Object.assign(this.$data, initialState());
         }
         
     },
@@ -292,11 +302,14 @@ function socketListen () {
 
     socket.on("nextQuestion", (data) => {
         vue.currentQuestionId = data.currentQuestionId;
+        vue.receivedAnswers = 0;
     });
 
     socket.on("endQuiz", (data) => {
         vue.quizzing = data.givenAnswers;
         vue.quizStatistics = data.statistics;
+        vue.endQuiz = true;
+        console.log("End of the quiz, got Statistics", vue.quizStatistics);
     });
 
 
