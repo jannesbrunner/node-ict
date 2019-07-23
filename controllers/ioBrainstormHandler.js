@@ -85,6 +85,11 @@ module.exports = class IoBrainstormHandler {
         this.socketT.on("getBrainstorming", (answer) => {
             this.socketT.emit("updateBrainstorming", this.brainstormingData);
         });
+
+        this.socketT.on("changePzoomLevel", (level) => {
+            logger.log("debug", "Teacher tells presenters to adjust the zoom level!");
+            this.emitToPresenters("changePzoomLevel", level);
+        });
     }
     ioEventsSC(socketS) {
         // ioEvents emitted by student clients

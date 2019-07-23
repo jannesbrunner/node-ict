@@ -3,7 +3,7 @@ extends ../layouts/client-layout.pug
 block styles
     link(rel="stylesheet", href="/css/student.css")
 block content
-    div.container
+    div.container-alone
       div#student
         div(v-if="!isError")
           div(v-if="sessionBrowser")
@@ -13,42 +13,60 @@ block content
                   input(type="text", v-model="username")
                   button(@click="signup").button Mitmachen!
             template(v-else)
+              p(style="text-align: left;")
+                span.display-4 {{username}}<br/>
+                a(href="#" onclick="location.reload();") (Namen ändern)
               h3 Verfügbare Spiele
-              p(v-if="sessions.length == 0") Keine Spiele gefunden.
-              ul
-                li(v-for="(session, i) in sessions")
-                  h5 {{ session.name | capitalize}}
+              p(v-if="!sessions.length") Keine Spiele gefunden.
+              div.col-md-4(v-for="(session, i) in sessions")
+                div.blog-text.game-browser-item
+                  h3 {{ session.name | capitalize}}
                   p {{ session.type | capitalize}}
-                  button(@click="joinSession(session.userId)") Beitreten
+                  button.btn.btn-primary(@click="joinSession(session.userId)") Beitreten
           template(v-if="session")
-            h1 {{ session.name | capitalize }} 
+            h1 {{ session.name | capitalize }}
+            p Spieler <span class="text-primary">{{ username }} </span> 
             div#brainstorming(v-if="session.type === 'brainstorming'")
-              h2 Brainstorming zum Thema {{ session.lecture.topic | capitalize }}
+              h2 Brainstorming 
+              h3 "{{ session.lecture.topic | capitalize }}"
               div(v-if="isRunning")
                 input(type="text", v-model="bsAnswer")
-                button(@click="studentAnswer()") Antwort abgeben!
+                button.btn.btn-primary(@click="studentAnswer()") Antwort abgeben!
               template(v-if="isRunning == false")
                 p Der Lehrende hat diese Session noch nicht gestartet.
-                button(@click="leaveSession()") Spiel verlassen!
+                button.btn.btn-danger(@click="leaveSession()") Spiel verlassen!
               
             div#quiz(v-if="session.type === 'quizzing'")
-              h2 Quiz zum Thema: {{ session.lecture.topic | capitalize}}
+              h2 Quiz 
+              h3 {{ session.lecture.topic | capitalize}}
               div(v-if="isRunning && !endQuiz")
-                h3 Aktuelle Frage:
-                  div.quiz-question-box
-                    div.quiz-question-number Frage {{ currentQuestionId + 1 }} von {{session.lecture.questions.length}}
-                    div.quiz-question-question {{ session.lecture.questions[currentQuestionId].question | capitalize }}
-                    div.quiz-question-answer-box
-                      div.quiz-question-answer(@click="quizAnswer(1)") 1: {{ session.lecture.questions[currentQuestionId].answer1 | capitalize}}
-                      div.quiz-question-answer(@click="quizAnswer(2)") 2: {{ session.lecture.questions[currentQuestionId].answer2 | capitalize}}
-                      div.quiz-question-answer(@click="quizAnswer(3)") 3: {{ session.lecture.questions[currentQuestionId].answer3 | capitalize}}
-                      div.quiz-question-answer(@click="quizAnswer(4)") 4: {{ session.lecture.questions[currentQuestionId].answer4 | capitalize}}
+                  div.quiz-question-box.card
+                    div.card-body
+                      h5.quiz-question-number.card-title Frage {{ currentQuestionId + 1 }} / {{session.lecture.questions.length}}
+                      p.quiz-question-question.card-text.lead {{ session.lecture.questions[currentQuestionId].question | capitalize }}
+                      ul.quiz-question-answer-box.list-group.list-group-flush
+                        li.quiz-question-answer.list-group-item(@click="quizAnswer(1)" v-bind:class="{ givenAnswer: questionIsAnswered && questionIsAnsweredWith == 1}") 
+                          strong.h3 1 
+                          p {{ session.lecture.questions[currentQuestionId].answer1 | capitalize}}
+                        li.quiz-question-answer.list-group-item(@click="quizAnswer(2)" v-bind:class="{ givenAnswer: questionIsAnswered && questionIsAnsweredWith == 2}")
+                          strong.h3 2 
+                          p {{ session.lecture.questions[currentQuestionId].answer2 | capitalize}}
+                        li.quiz-question-answer.list-group-item(@click="quizAnswer(3)" v-bind:class="{ givenAnswer: questionIsAnswered && questionIsAnsweredWith == 3}")
+                          strong.h3 3 
+                          p {{ session.lecture.questions[currentQuestionId].answer3 | capitalize}}
+                        li.quiz-question-answer.list-group-item(@click="quizAnswer(4)" v-bind:class="{ givenAnswer: questionIsAnswered && questionIsAnsweredWith == 4}")
+                          strong.h3 4
+                          p {{ session.lecture.questions[currentQuestionId].answer4 | capitalize}}
               div(v-if="endQuiz")
-                p Das Quiz ist beendet. Deine Ergebnis:
-                ul(v-for="(result) in quizConclusion")
-                  li Frage "{{ result.question }}"
-                    p Deine Antwort: {{ result.playerAnswer }}
+                p Das Quiz ist beendet.
+                h3 Auswertung
+                ul.list-group(v-for="(result) in quizConclusion")
+                  li.list-group-item <strong>Frage</strong>: "{{ result.question }}"
+                    p <strong>Deine Antwort</strong>: "{{ result.playerAnswer }}"
                     p {{ result.answerCorrect ? `Das ist korrekt!` : `Leider falsch, die richtige Antwort lautet "${result.validAnswer}".`}}
+                h5 Richtige Antworten:  <span class="text-success">{{ quizRight }}</span>
+                h5 Falsche Antworten:  <span class="text-danger">{{ quizWrong }}</span>
+                button(@click="leaveSession()") Spiel verlassen!
                 
                         
               template(v-if="isRunning == false")

@@ -17,26 +17,34 @@ block content
       b Super Administrator: 
       span #{settings.superAdmin}
   if settings.superAdmin == loggedUser.email
-    form(method='POST' action='/teacher/reset')
-      button.btn.btn-danger(type='submit') App Reset
+    form#appReset(method='POST' action='/teacher/reset' style="display: none;")
+    button.btn.btn-danger(onclick="confirmAppReset()") App Reset
   hr
   h2 Benutzer
   a(href="/teacher/signup") Neuen Nutzer Anlegen
-  ul Registrierte Benutzer
+  div.row
     each user in users
-      li #{user.name}
-        div 
-          strong e-Mail: 
-          span #{user.email}
-        div 
-          strong Administrator: 
-          span #{user.isSuperAdmin}
-        div 
-          strong Freigeschaltet:  
-          span #{user.canLogIn}
-        div 
-          a(href=`/teacher/user-edit/${user.id}`) 
-            button Bearbeiten
+      div.col-md-4
+        div.fh5co-blog.animate-box
+          div.blog-text
+            if user.isSuperAdmin
+              span.posted_on Administrator
+            else
+              span.posted_on Lehrkraft
+            h2 #{user.name}
+            h3 #{user.email}
+            if user.canLogIn
+              small <b>Freigeschaltet</b> Ja
+            else 
+              small <b>Freigeschaltet</b> Nein
+            ul.stuff
+              li 
+                a(href=`/teacher/user-edit/${user.id}`) Bearbeiten
+                  
+  
+ 
+
+
 
 
 

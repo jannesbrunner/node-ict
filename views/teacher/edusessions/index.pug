@@ -6,35 +6,44 @@ block content
     h1 Lehreinheiten
     ul.nav.nav-pills.nav-fill
       li.nav-item
-        a.nav-link.active(href="#") Alle Sessions
+        a.nav-link.active(href="#") Alle Lehreinheiten
       li.nav-item
-        a.nav-link(href="/teacher/sessions/brainstorming/new") Neue Brainstorm Session anlegen
+        a.nav-link(href="/teacher/sessions/brainstorming/new") Neue Brainstorm Lehreinheit anlegen
       li.nav-item
-        a.nav-link(href="/teacher/sessions/quizzing/new") Neue Quiz Session anlegen
+        a.nav-link(href="/teacher/sessions/quizzing/new") Neue Quiz Lehreinheit anlegen
     hr
     if sessions.length == 0
       p Noch keine Lehreinheiten vorhanden
     else 
-      ul.list-unstyled
-      each session in sessions
-        li.media
-          img.mr-3(src="" alt="")
-          div.media-body
-            h5.mt-0.mb-1 #{session.name}
-            strong Typ: 
-            span #{session.type}
-            if loggedUser.isSuperAdmin
-              div
-                strong Besitzer: 
-                span #{session.owner.name}
-            div
-              a(href=`/teacher/sessions/${session.type}-edit/${session.id}`)
-                button Bearbeiten
-              if loggedUser.id == session.userId
-                form(method="POST" action=`/teacher/sessions/start/${session.id}`)
-                  button(type="SUBMIT") Starten &#9658;
-              else
-                p Lehrinhalte können nur vom Eigentümer gestartet werden.
+      div.row
+        each session in sessions
+          div.col-md-4
+            div.fh5co-blog.animate-box
+              div.blog-text
+                span.posted_on 2019-01-01
+                h2 #{session.name}
+                h3 #{session.type}
+                p #{session.lecture.topic}
+                if loggedUser.isSuperAdmin
+                  small <b>Besitzer:</b>  #{session.owner.name}
+                ul.stuff
+                  li 
+                    a(href=`/teacher/sessions/${session.type}-edit/${session.id}`) Bearbeiten
+                  if loggedUser.id == session.userId
+                    li 
+                      form#startSession(method="POST" action=`/teacher/sessions/start/${session.id}`)
+                        button.btn-primary.btn-sm(type="SUBMIT") Starten &#9658;
+                  else
+                    li
+                      button.btn-primary.btn-sm(type="button" 
+                      onclick="Swal.fire(`Kann nur vom Besitzer gestartet werden.`)"
+                      ) Starten &#9658;
+                      
+                  
+                    
+        
+        
+    
             
               
 

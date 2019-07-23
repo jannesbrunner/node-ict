@@ -1,36 +1,44 @@
 extends ../../layouts/teacher-layout.pug
 
-block styles
-  link(rel="stylesheet", href="/css/client.css")
 block content
   div#teacher
     div(v-if="!isError")
       div(v-if="session")
-        h1 Lehrkraft Monitor
-        strong Name: 
-        span {{ session.name }} 
-        strong Typ: 
-        span {{ session.type }} 
-        a(v-bind:href="presenterUrl" target="_blank") Presenter öffnen
-        p
-          strong Lobby:
-          ul(v-for="(student, i) in students") 
-            li {{ student.name }}
-              button(v-if="!isRunning" @click="kickStudent(student.id, student.name)") Entfernen
+        div.lecture-topbar
+          h1 Lehrkraft Monitor
+          div.lecture-stats
+            small Name: <strong> {{ session.name }} </strong>
+            small Typ:  <strong> {{ session.type }} </strong>
+            a(v-bind:href="presenterUrl" target="_blank") Presenter öffnen
+          div.lecture-lobby
+          p
+            strong Lobby:
+            ul.lobby-list
+              li.lobby-item(v-for="(student, i) in students")  {{ student.name }}
+               a.btn.btn-link(v-if="!isRunning" @click="kickStudent(student.id, student.name)") Entfernen
+          h2(style="text-transform: uppercase;")  {{ session.type }}
+        hr
+        div.zoom-container
+          div.zoom-control
+            button.btn.btn-outline-secondary(@click="zoom(0)") -
+            div.zoom-label Presenter Zoom Level
+            button.btn.btn-outline-secondary(@click="zoom(1)") +
+          div.progress
+            div.progress-bar(role="progressbar" v-bind:style="{ width: zoomLevel +'%' }" :aria-valuenow="zoomLevel" aria-valuemin="0" aria-valuemax="100") {{zoomLevel}} 
         hr
         div#eduBrainstorm
-          div(v-if="session.type == 'brainstorming'") 
-            h4 Brainstorming Thema: {{ session.lecture.topic}}
+          div.jumbotron(v-if="session.type == 'brainstorming'") 
+            h4 Thema: {{ session.lecture.topic}}
             h3 Bisherige Antworten:
             div(v-if="brainstorming.answers.length > 0")
               ul(v-for="(answer) in brainstorming.answers")
                 li {{ answer.answer}} (hinzugefügt von {{ answer.clientName }}) 
-                button(@click="removeAnswer(answer.answer, answer.id)") Entfernen
+                button.btn(@click="removeAnswer(answer.answer, answer.id)") Entfernen
             p(v-else) Bisher keine Antworten.
           div(v-if="session.type == 'brainstorming' && isRunning")
             
         div#eduQuiz
-          div(v-if="session.type == 'quizzing'") 
+          div.jumbotron(v-if="session.type == 'quizzing'") 
             h4 Quiz Thema: {{ session.lecture.topic}}
             p Fragen:
               ul(v-for="(question) in session.lecture.questions") 
@@ -64,8 +72,9 @@ block content
           
 
         hr
-        button(v-if="!isRunning && students.length > 0" @click="startSession()") Lehreinheit Starten
-        button(@click="endSession") Lehreinheit Beenden 
+        button.btn.btn-success(v-if="!isRunning && students.length > 0" @click="startSession()") Lehreinheit Starten
+        button.btn.btn-danger(@click="endSession") Lehreinheit Beenden
+        
       div(v-else)
         h1 Die Session wurde beendet
     div(v-else) {{ errorText }}

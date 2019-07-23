@@ -5,46 +5,69 @@ block styles
 
 block content
   div#container
-    div#presenter
+    div#presenter(v-bind:style="{ transform: 'scale(' + (zoomLevel / 100) * 2  + ') translateY(' + zoomLevel * 2 + 'px)' }")
       div(v-if="!isError")
+        div.card-footer.players 
+          div.session-info
+            div.session-name {{ session.name | capitalize}}
+            div.session-topic {{ session.lecture.topic | capitalize}}
+            div.session-type {{ session.type | capitalize}}
+          h1(v-if="!isRunning" style="text-align: center; padding: 1em; font-size: 1em;}") Der Lehrende hat die Session noch nicht gestartet!
+          hr
+          span Mitspieler 
+          span(v-for="student in students")
+            span.player {{ student.name }} &nbsp;
+        template(v-if="!isRunning && session == null") 
+          h1(style="font-size: 10em;") Der Lehrende hat diese Session beendet.  
         template(v-if="session != null")
           div(v-if="session.type == 'brainstorming'")
-             h2 {{ session.name}} - Brainstorming
-             div#cloud
-            
+            div#cloud  
           div(v-if="session.type == 'quizzing'")#quiz
-            h2 {{ session.name}} - Quiz
-            h1 - {{ session.lecture.topic}} - 
-          
           div(v-if="session.type == 'quizzing' && isRunning && !endQuiz")
-            div.quiz-question-box
-              div.quiz-question-number Frage {{ currentQuestionId + 1 }} von {{session.lecture.questions.length }}
-              div.quiz-question-question {{ session.lecture.questions[currentQuestionId].question }}
-              template(v-if="studentList.length - receivedAnswers != 0")
-                div {{ studentList.length - receivedAnswers}} Mitspieler müssen noch Antworten!
-              template(v-if="studentList.length == receivedAnswers")
-                div Alle Mitspieler haben ihre Antwort abgegeben! 
-              div.quiz-question-answer-box
-                div.quiz-question-answer 1: {{ session.lecture.questions[currentQuestionId].answer1 }}
-                div.quiz-question-answer 2: {{ session.lecture.questions[currentQuestionId].answer2 }}
-                div.quiz-question-answer 3: {{ session.lecture.questions[currentQuestionId].answer3 }}
-                div.quiz-question-answer 4: {{ session.lecture.questions[currentQuestionId].answer4 }}
+            div.quiz-question-box.card
+              div.card-body
+                div.quiz-head
+                  p.quiz-current-question Frage {{ currentQuestionId + 1 }} / {{session.lecture.questions.length}}
+                  p.quiz-question-question {{ session.lecture.questions[currentQuestionId].question | capitalize }}
+                ul.quiz-question-answer-box.list-group.list-group-flush
+                  li.quiz-question-answer.list-group-item(@click="quizAnswer(1)")
+                    p.quiz-question-number 1 
+                    p.quiz-question-answer-text {{ session.lecture.questions[currentQuestionId].answer1 | capitalize}}
+                  li.quiz-question-answer.list-group-item(@click="quizAnswer(2)")
+                    p.quiz-question-number 2
+                    p.quiz-question-answer-text {{ session.lecture.questions[currentQuestionId].answer2 | capitalize}}
+                  li.quiz-question-answer.list-group-item(@click="quizAnswer(3)")
+                    p.quiz-question-number 3 
+                    p.quiz-question-answer-text {{ session.lecture.questions[currentQuestionId].answer3 | capitalize}}
+                  li.quiz-question-answer.list-group-item(@click="quizAnswer(4)")
+                    p.quiz-question-number 4
+                    p.quiz-question-answer-text {{ session.lecture.questions[currentQuestionId].answer4 | capitalize}}
+                template(v-if="studentList.length - receivedAnswers != 0")
+                  div.quiz-info {{ studentList.length - receivedAnswers}} Mitspieler müssen noch Antworten!
+                template(v-if="studentList.length == receivedAnswers")
+                  div.quiz-info Alle Mitspieler haben ihre Antwort abgegeben! 
           div(v-if="session.type == 'quizzing' && isRunning && endQuiz")
-            h1 Ende!
-            div Bester Spieler: {{ quizStatistics.bestPlayer.studentName }} mit {{ quizStatistics.bestPlayer.highscore }} richtigen Antworten!
-            div Das Schlusslicht: {{ quizStatistics.worstPlayer.studentName }} mit {{ quizStatistics.worstPlayer.highscore }} falschen Antworten!
-            div Richtige Antworten Total: {{ quizStatistics.totalRight }}
-            div Falsche Antworten Total: {{ quizStatistics.totalWrong }}
-        h1(v-if="!isRunning") Der Lehrende hat die Session noch nicht gestartet!
-        div.players Spieler: 
-        span(v-for="student in students")
-          span.player {{ student.name }} &nbsp;
-        template(v-if="!isRunning && session == null") 
-          h1 Der Lehrende hat diese Session beendet.  
+            div.card-body
+              div.quiz-stats
+                p.quiz-stats-headline Auswertung
+                div.quiz-stats-box
+                  div.quiz-stats-stat 
+                    div.quiz-stats-parameter Gewinner
+                    div.quiz-stats-value {{ quizStatistics.bestPlayer.studentName }} : {{ quizStatistics.bestPlayer.highscore }} richtig.
+                  div.quiz-stats-stat 
+                    div.quiz-stats-parameter Verlierer
+                    div.quiz-stats-value {{ quizStatistics.worstPlayer.studentName }} : {{ quizStatistics.worstPlayer.highscore }} falsch.
+                  div.quiz-stats-stat 
+                     div.quiz-stats-parameter Richtige Antworten
+                     div.quiz-stats-value {{ quizStatistics.totalRight }}
+                  div.quiz-stats-stat 
+                     div.quiz-stats-parameter Falsche Antworten 
+                     div.quiz-stats-value {{ quizStatistics.totalWrong }}      
       div(v-else)
-        p {{ errorText }}
-        
+        p(style="font-size: 10em;") {{ errorText }}
+
+
 
   em#presenterId(style="display: none") #{presenterId}
   script(src="/client/js/presenter/index.js")
- 
+

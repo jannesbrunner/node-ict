@@ -5,9 +5,16 @@
 }
 
 #signup {
-    display: flex;
-    margin-top: 50%;
-    justify-content: space-around;
+
+}
+
+#student{
+    padding: 1em;
+}
+
+game-browser-item {
+    border: 1px solid black;
+    margin: 1em;
 }
 
 label {
@@ -36,4 +43,18 @@ input {
   
   .button:hover {opacity: 1}
 
+
+  /* Quiz CSS */
+  .quiz-question-answer{
+    cursor: pointer;
+  }
+
+
+  .quiz-question-answer:hover {
+    background-color:palegreen;
+  }
+
+  .givenAnswer {
+    background-color:palegreen;
+  }
 

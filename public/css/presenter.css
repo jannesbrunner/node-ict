@@ -1,21 +1,43 @@
 #container {
-    border: 1px solid red;
+    width: 80%;
+    margin-top: 5em;
+    margin-left: 10%;
+    margin-right: 10%;
+    line-height: 1.0;
+}
+
+#presenter {
+    
+}
+
+
+.session-info {
+    display: flex;
+    justify-content: space-between;
+}
+
+.session-type {
+    font-family: sans-serif;
+    font-weight: 800;
+}
+
+.session-name {
+    font-family: sans-serif;
+    font-weight: 800;
+}
+
+.session-topic {
+    color: black;
+}
+
+
+#cloud {
     width: 100%;
     height: 100%;
-    display: flex;    
-    justify-content: center;
-    text-align: center;
-}
-
-.players {
-
-}
-
-.player {
-
 }
 
 /* Quiz Game */
+
 .quiz-question-box {
     display: flex;
     flex-direction: column;
@@ -23,14 +45,27 @@
     font-family: sans-serif;
 }
 
-.quiz-question-question {
+.quiz-current-question {
     font-size: 5em;
-    color: #336d1b;
+    color: grey;
+    font-weight: 700;
+}
+
+.quiz-question-question {
+    font-size: 8em;
+    color: black;
+}
+}
+
+.quiz-question-answer-text {
+    font-size: 1.5em;
+    color: black;
 }
 
 .quiz-question-number {
     font-size: 3em;
     margin: 0.3em;
+    text-align: center;
 }
 
 .quiz-question-answer-box {
@@ -48,17 +83,70 @@
     width: 49%;
     text-align: start;
     border: 1px solid;
+    text-align: center;
 }
 
 .player::before {
-    content: "» ";
+    content: "• ";
 }
 
 .players {
-    font-size: 3em;
-    font-family: monospace;
+    font-size: 4em;
 }
 
 .player {
-    font-size: 2em;
+    font-size: 1em;
+    margin-left: 0.5em;
+    color: black;
+}
+
+.quiz-info {
+    padding: 1em;
+    font-size: 4em;
+    color: cornflowerblue;
+    text-align: center;
+    font-weight: 800;
+}
+
+.quiz-head {
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    margin-bottom: 3em;
+    flex-direction: column;
+}
+
+
+.quiz-stats-box {
+    display: flex;
+}
+
+
+
+.quiz-stats {
+    background-color: white;
+}
+
+p.quiz-stats-headline {
+    font-size: 5em;
+    text-align: center;
+    color: black;
+    padding: .1em;
+}
+
+.quiz-stats-stat {
+    display: flex;
+    justify-content: space-between;
+    font-size: 5em;
+    border: 1px solid;
+}
+
+.quiz-stats-value {
+    padding: 0.4em;
+    color: black;
+    font-weight: 600;
+}
+
+.quiz-stats-parameter {
+    padding: 0.4em;
 }

@@ -19,7 +19,7 @@ function initialState() {
         sessionBrowser: true,
         sessions: null,
         studentId: null,
-        username: "",
+        username: localStorage.username ? localStorage.username : "",
         // Brainstorming
         bsAnswer: "",
         bsAnwers: [],
@@ -28,6 +28,7 @@ function initialState() {
         currentQuestionId: 0,
         givenAnswers: [],
         questionIsAnswered: false,
+        questionIsAnsweredWith: 0,
         endQuiz: false,
         quizConclusion: [], 
         quizRight: 0, 
@@ -173,6 +174,7 @@ const vue = new Vue({
                 }).then((result) => {
                     if (result.value) {
                         this.questionIsAnswered = true;
+                        this.questionIsAnsweredWith = answerId;
                         const answer = {
                             quizzingId: this.session.lecture.questions[this.currentQuestionId].quizzingId,
                             questionId: this.session.lecture.questions[this.currentQuestionId].id,
@@ -182,10 +184,16 @@ const vue = new Vue({
                         }
                         this.givenAnswers.push(answer);
                         socket.emit("newAnswer", answer);
-                        Swal.fire(
-                            'OK',
-                            'Deine Antwort wurde übermittelt',
-                            'success'
+                        Swal.fire({
+                            timer: 2000,
+                            title: 'OK',
+                            text: 'Deine Antwort wurde übermittelt',
+                            showCancelButton: false,
+                            type: 'success'
+                        }
+                           
+                           
+                           
                         )
                     }
                 })
@@ -249,7 +257,7 @@ function socketListen() {
             window.addEventListener('beforeunload', beforeUnload);
 
             window.onunload = (e) => {
-                socket.emit("sessionLeft", { clientName: vue.username, teacherId: session.teacherId, studentId: vue.studentId });
+                socket.emit("sessionLeft", { clientName: vue.username, teacherId: data.session.teacherId, studentId: vue.studentId });
             }
 
             // START THE GAME
@@ -326,7 +334,7 @@ function socketListen() {
     });
     // teacher ends session
     socket.on("endSession", function (data) {
-        if (data == true) {
+        if (data == true && vue.session) {
             Object.assign(vue.$data, initialState());
             Swal.fire({
                 type: 'warning',
