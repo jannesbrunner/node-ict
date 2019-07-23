@@ -11,6 +11,7 @@ const Settings = require("../models/settings");
 const dbSetup = require('../util/db_setup');
 const eventEmitter = require('../util/eventEmitter');
 const logger = require('winston');
+const winHotspot = require('../util/winHotspot')
 
 
 
@@ -101,15 +102,49 @@ exports.getSettings = async (req, res) => {
     try {
         let settings = await Settings.getSettings();
         let users = await User.getUsers();
+        let hotspotStatus = "";
+        if(process.platform === "win32") {
+            try {
+                hotspotStatus = await winHotspot.getStats();
+            } catch (error) {
+                hotspotStatus = "Der Status konnte nicht ermittelt werden.\nEin WLAN Netzwerkadapter ist installiert?";
+            }
+           
+        }
+        
         return res.render('teacher/settings',
             {
                 'docTitle': 'Teacher > Settings | Node ICT',
                 'settings': settings,
                 'isLoggedIn': req.session.isLoggedIn,
                 'loggedUser': req.session.user,
-                'users': users
+                'users': users,
+                'canHotspot': process.platform === "win32",
+                'hotspotStatus': hotspotStatus
 
             });
+    } catch (error) {
+        return res.render('error', { error: error })
+    }
+}
+
+// POST => /teacher/wifion
+exports.postEnableWifi = async (req, res) => {
+    try {
+        await winHotspot.enableHotspot();
+        logger.log("info", "Enabling Wifi Hotspot")
+        res.redirect('/teacher/settings');
+    } catch (error) {
+        return res.render('error', { error: error })
+    }
+}
+
+// POST => /teacher/wifioff
+exports.postDisableWifi = async (req, res) => {
+    try {
+        await winHotspot.disableHotspot()
+        logger.log("info", "Disabling Wifi Hotspot")
+        res.redirect('/teacher/settings');
     } catch (error) {
         return res.render('error', { error: error })
     }
@@ -163,6 +198,19 @@ exports.postReset = async (req, res) => {
         await dbSetup.forceSync();
         logger.log("warn", "App Reset executed!")
         res.render('reset');
+    } catch (error) {
+        return res.render('error', { error: error })
+    }
+}
+
+// POST => /teacher/shutdown
+exports.postShutdown = async (req, res) => {
+    try {
+
+        logger.log("warn", "App Shutdown executed!")
+        console.log( "\nGracefully shutting down from Admin interface\nThanks for using Node ICT! Good bye..." );
+        logger.log("info", "Server shutdown initiated. Reason: Teacher Client")
+        process.exit( );
     } catch (error) {
         return res.render('error', { error: error })
     }

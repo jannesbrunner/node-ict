@@ -30,4 +30,52 @@ function confirmAppReset() {
       })
 }
 
+function confirmAppShutdown() {
+  Swal.fire({
+      title: 'App Beenden?',
+      text: "Damit wird die Software heruntergefahren und beendet!\nSie müssen den Server neu starten zur erneuten Nutzung.",
+      type: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Ja, App Beenden!'
+    }).then((result) => {
+      if (result.value) {
+          document.getElementById('appShutdown').submit()
+      }
+    })
+}
+
+function confirmWifiOn() {
+  Swal.fire({
+      title: 'Hotspot aktivieren?',
+      text: "Damit wird der interne Windows WLAN Hotspot aktiviert.",
+      type: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Ja, Aktivieren!'
+    }).then((result) => {
+      if (result.value) {
+          document.getElementById('appWifiOn').submit()
+      }
+    })
+}
+
+function confirmWifiOff() {
+  Swal.fire({
+      title: 'Hotspot deaktivieren?',
+      text: "Damit wird der interne Windows WLAN Hotspot deaktiviert.",
+      type: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Ja, Deaktivieren!'
+    }).then((result) => {
+      if (result.value) {
+          document.getElementById('appWifiOff').submit()
+      }
+    })
+}
+
 

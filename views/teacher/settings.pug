@@ -19,6 +19,21 @@ block content
   if settings.superAdmin == loggedUser.email
     form#appReset(method='POST' action='/teacher/reset' style="display: none;")
     button.btn.btn-danger(onclick="confirmAppReset()") App Reset
+    form#appShutdown(method='POST' action='/teacher/shutdown' style="display: none;")
+    button.btn.btn-danger(onclick="confirmAppShutdown()") App Beenden
+  hr
+  h2 WiFi Hotspot
+  if canHotspot
+    b Status: 
+    span #{hotspotStatus}
+    br
+    form#appWifiOn(method='POST' action='/teacher/wifion' style="display: none;")
+    button.btn.btn-secondary(onclick="confirmWifiOn()") Hotspot Aktivieren
+    form#appWifiOff(method='POST' action='/teacher/wifioff' style="display: none;")
+    button.btn.btn-secondary(onclick="confirmWifiOff()") Hotspot Deaktivieren
+  else 
+    p.badge.badge-warning Achtung
+    span  WiFi/WLAN Hotspot Support nur unter MS Windows Betriebsystemen.
   hr
   h2 Benutzer
   a(href="/teacher/signup") Neuen Nutzer Anlegen

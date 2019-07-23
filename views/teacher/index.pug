@@ -3,6 +3,17 @@ extends ../layouts/teacher-layout.pug
 block content
     h3 Hallo #{loggedUser.name}!
     p Sie befinden sich im Lehrer_in Bereich von Node ICT.
-    br 
     p Von hier aus können Sie die Applikation verwalten, 
        | Lehreinheiten anlegen und starten. 
+
+    .jumbotron
+        h3 Teilnehmende?
+        .lead Teilnehmende verbinden sich bitte mit einem Endgerät (z.B. Smartphone) 
+          | mit dem gleichen Netzwerk und öffnen anschließend in ihrem Webbrowser:
+        a.btn.btn-primary.btn-lg(href="#" role="button") 192.168.192:3000
+        hr
+        span.badge.badge-info info
+        p Sie können unter einem Windows Betriebsystem einen mobilen WiFi/WLAN
+         | Hotspot im <a href="/teacher/settings">Einstellungen</a> Bereich einrichten.
+        p Alternativ bietet sich die Verwendung eines Smartphones als mobiler Hotspot an.
+         | In diesem Fall verbinden sie den Host des Servers ebenfalls mit diesem und starten ihn anschließend neu.

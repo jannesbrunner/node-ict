@@ -23,6 +23,9 @@ router.get('/', hasSettings, isAuth, teacherController.getMain);
 router.get('/new', teacherController.getNew);
 router.post('/new', teacherController.postNew);
 router.post('/reset', isAuth, teacherController.postReset);
+router.post('/shutdown', isAuth, teacherController.postShutdown);
+router.post('/wifion', isAuth, teacherController.postEnableWifi);
+router.post('/wifioff', isAuth, teacherController.postDisableWifi);
 // Create/Signup new user
 router.get('/signup', teacherController.getSignup);
 router.post('/signup', teacherController.postSignup);
