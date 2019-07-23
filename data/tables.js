@@ -1,3 +1,11 @@
+/**
+ * Sequelize Node ICT Table Configuration
+ * @author Jannes Brunner
+ * @version 1.0
+ * @copyright 2019
+ */
+
+ // User aka Teachers
 exports.user = (sequelize, Sequelize) => {
     return sequelize.define('user', {
             id: {
@@ -32,7 +40,7 @@ exports.user = (sequelize, Sequelize) => {
   
 
 
-
+ // App settings
 exports.settings = (sequelize, Sequelize) => {
     return sequelize.define('setting', {
       id: {
@@ -51,6 +59,7 @@ exports.settings = (sequelize, Sequelize) => {
     )
   };
 
+   // Students
   exports.student = (sequelize, Sequelize) => {
     return sequelize.define('student', {
   
@@ -67,7 +76,7 @@ exports.settings = (sequelize, Sequelize) => {
     })
   };
 
-
+  // An interactive learning session
   exports.eduSession = (sequelize, Sequelize) => {
     return sequelize.define('eduSession', {
   
@@ -101,6 +110,8 @@ exports.settings = (sequelize, Sequelize) => {
     })
   };
 
+  
+  // An interactive learning session type brainstorming
   exports.brainstorming = (sequelize, Sequelize) => {
     return sequelize.define('brainstorming', {
   
@@ -122,6 +133,7 @@ exports.settings = (sequelize, Sequelize) => {
     })
   };
 
+  // An interactive learning session type quizzing
   exports.quizzing = (sequelize, Sequelize) => {
     return sequelize.define('quizzing', {
   
@@ -143,6 +155,7 @@ exports.settings = (sequelize, Sequelize) => {
     })
   };
 
+  // Quiz questions belonging to session type quizzing
   exports.quizzingquestion = (sequelize, Sequelize) => {
     return sequelize.define('quizzingQuestion', {
   

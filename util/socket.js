@@ -1,3 +1,10 @@
+/**
+ * Socket IO Singleton Util
+ * @author Jannes Brunner
+ * @version 1.0
+ * @copyright 2019
+ */
+
 let io;
 
 module.exports = {

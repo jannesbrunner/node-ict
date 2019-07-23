@@ -1,3 +1,10 @@
+/**
+ * Student Data Model
+ * @author Jannes Brunner
+ * @version 1.0
+ * @copyright 2019
+ */
+
 const db = require('../util/database');
 const logger = require("winston");
 

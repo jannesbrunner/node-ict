@@ -9,7 +9,7 @@ const EduSession = require('../models/eduSession')
 const logger = require('winston');
 
  // GET => /teacher/sessions/quizzing/new 
- exports.getNew = (req, res, next) => {
+ exports.getNew = (req, res) => {
    
         res.render('teacher/edusessions/quizzing/new', 
         {
@@ -108,8 +108,6 @@ exports.postEdit = async (req, res, next) => {
     req.body.name ? sessionToSave.name = req.body.name : logger.log('debug', 'No updated Name found');
     req.body.topic ? sessionToSave.topic = req.body.topic : logger.log('debug','No updated topic found');
 
-    // TODO List all quiz questions, save them if altered
-
     try {
         await EduSession.saveQuizzingsession(sessionToSave);
     } catch (error) {
@@ -123,7 +121,7 @@ exports.postEdit = async (req, res, next) => {
 }
 
 // POST => /teacher/sessions/quizzing-destroy/:id
-exports.destroySession = async (req, res, next) => {
+exports.destroySession = async (req, res) => {
     
     // permissions
     try {
@@ -155,13 +153,14 @@ exports.destroySession = async (req, res, next) => {
 }
 
 // GET => /teacher/sessions/quizzing-addquestion/:sessionId
-exports.getNewQuizzingQuestion = async (req, res, next) => {
+exports.getNewQuizzingQuestion = async (req, res) => {
     // permissions
     try {
         const currentSession = await EduSession.getQuizzingsession(req.params.sessionId)
         const sessionsUserId = currentSession.userId
         if(req.session.user.id != sessionsUserId) {
             if(!req.session.user.isSuperAdmin) {
+                logger.log("info", `Security alert: User ${req.session.user.id} tried to add quiz question without permission`)
                 return res.render('teacher/error', {
                     'docTitle': "Error! | Node ICT",
                     'error': `Sie sind nicht berechtigt dieser Quiz Session Fragen hinzuzufügen!`,
@@ -192,13 +191,14 @@ exports.getNewQuizzingQuestion = async (req, res, next) => {
 }
 
 // POST => /teacher/sessions/quizzing-addquestion/:sessionId
-exports.postNewQuizzingQuestion = async (req, res, next) => {
+exports.postNewQuizzingQuestion = async (req, res) => {
     // permissions
     try {
         const currentSession = await EduSession.getQuizzingsession(req.params.sessionId)
         const sessionsUserId = currentSession.userId
         if(req.session.user.id != sessionsUserId) {
             if(!req.session.user.isSuperAdmin) {
+                logger.log("info", `Security alert: User ${req.session.user.id} tried to add quiz question without permission`)
                 return res.render('teacher/error', {
                     'docTitle': "Error! | Node ICT",
                     'error': `Sie sind nicht berechtigt dieser Quiz Session Fragen hinzuzufügen!`,
@@ -237,6 +237,7 @@ exports.getEditQuestion = async (req, res) => {
         const sessionsUserId = currentSession.userId
         if(req.session.user.id != sessionsUserId) {
             if(!req.session.user.isSuperAdmin) {
+                logger.log("info", `Security alert: User ${req.session.user.id} tried to alter quiz question without permission`)
                 return res.render('teacher/error', {
                     'docTitle': "Error! | Node ICT",
                     isLoggedIn: req.session.isLoggedIn,
@@ -273,13 +274,14 @@ exports.getEditQuestion = async (req, res) => {
    
 }
 // POST => /sessions/quizzing-editquestion/:sessionId/:questionId
-exports.postEditQuestion = async (req, res, next) => {
+exports.postEditQuestion = async (req, res) => {
     // permissions
     try {
         const currentSession = await EduSession.getQuizzingsession(req.params.sessionId)
         const sessionsUserId = currentSession.userId
         if(req.session.user.id != sessionsUserId) {
             if(!req.session.user.isSuperAdmin) {
+                logger.log("info", `Security alert: User ${req.session.user.id} tried to add quiz question without permission`)
                 return res.render('teacher/error', {
                     'docTitle': "Error! | Node ICT",
                     'error': `Sie sind nicht berechtigt diese Quiz Frage zu bearbeiten!`,
@@ -311,7 +313,7 @@ exports.postEditQuestion = async (req, res, next) => {
 }
 
 // POST => /sessions/quizzing-destroyquestion/:sessionId/:questionId
-exports.postDestroyQuestion = async (req, res, next) => {
+exports.postDestroyQuestion = async (req, res) => {
     
     // permissions
     try {
@@ -319,6 +321,7 @@ exports.postDestroyQuestion = async (req, res, next) => {
         const sessionsUserId = currentSession.userId
         if(req.session.user.id != sessionsUserId) {
             if(!req.session.user.isSuperAdmin) {
+                logger.log("info", `Security alert: User ${req.session.user.id} tried to delete quiz question without permission`)
                 return res.render('teacher/error', {
                     'docTitle': "Error! | Node ICT",
                     'error': `Sie sind nicht berechtigt diese Quiz Frage zu löschen!`,

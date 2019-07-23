@@ -1,5 +1,5 @@
 /**
- * User Model
+ * User Model (teachers)
  * @author Jannes Brunner
  * @version 1.0
  * @copyright 2019

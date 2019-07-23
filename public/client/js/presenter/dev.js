@@ -1,4 +1,15 @@
-//var cloud = require("vue-d3-cloud");
+/**
+ * SocketIO Client for connected presenters
+ * @author Jannes Brunner
+ * @version 1.0
+ * @copyright 2019
+ * WARNING: You need to run "npm run buildClients" to 
+ * trigger Browserify generation in order to see 
+ * changes in production!
+ */
+
+
+
 const Vue = require('vue');
 const zingchart = require('zingchart');
 const socketIO = require('socket.io-client');
@@ -186,13 +197,6 @@ function socketListen () {
         let sessionId = document.getElementById("presenterId").innerHTML;
         console.log(`Attach myself as Presenter for Session with id ${sessionId}`)
         socket.emit("attachPresenter", sessionId);
-        // window.addEventListener('beforeunload', function (e) {
-        //     //Cancel the event
-        //     e.preventDefault();
-        //     // Chrome requires returnValue to be set
-        //     e.returnValue = 'HALLO';
-
-        // });
 
         // Clean exit on closed window
         window.addEventListener('unload', function (event) {

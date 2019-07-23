@@ -1,4 +1,9 @@
-
+/**
+ * Event Emitter. Send messages across the whole App
+ * @author Jannes Brunner
+ * @version 1.0
+ * @copyright 2019
+ */
 let eventsEmitter;
 
 module.exports = {

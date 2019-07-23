@@ -3,14 +3,14 @@
  * @author Jannes Brunner
  * @version 1.0
  * @copyright 2019
+ * Will deliver client HTML and JS to requester
  */
 
 // imports
-const db = require('../util/database');
 const ip = require('ip');
 
 // GET => /client/student
-exports.getStudent = (req, res, next) => {
+exports.getStudent = (req, res) => {
     
         return res.render('client/student',
             {
@@ -20,7 +20,7 @@ exports.getStudent = (req, res, next) => {
 };
 
 // GET => /client/presenter/:sessionId
-exports.getPresenter = (req, res, next) => {
+exports.getPresenter = (req, res) => {
     return res.render('client/presenter', 
         {
             docTitle: 'Presenter | Node ICT',
@@ -31,38 +31,12 @@ exports.getPresenter = (req, res, next) => {
 }
 
 // GET => /client/teacher
-exports.getTeacher = (req, res, next) => {
+exports.getTeacher = (req, res) => {
     return res.render('client/teacher', 
         {
             docTitle: 'Teacher | Node ICT'
         }
     );
-}
-
-
-
-
-// Helpers
-function userCookie(cookies) {
-    if (cookies.ict_username) {
-        return cookies.ict_username;
-    } else return false;
-
-    // if( cookie == undefined || !cookie.includes('ict_username')  ) {
-    //     return false;
-    // } 
-    // if ( cookie.includes(';') ) {
-    //     const cookieData = cookie.split(';');
-    //     let cookieValue = "";
-    //     for (let data in cookieData) {
-    //         if (data.includes('ict_username=')) {
-    //             cookieValue = data;
-    //             return cookieValue.split('=')[1].trim();
-    //         }
-    //     }
-    // } else {
-    //     return cookie.split('=')[1].trim();
-    // }
 }
 
 

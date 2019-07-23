@@ -8,15 +8,15 @@
 // Imports
 const User = require("../models/user");
 const Settings = require("../models/settings");
-const EduSession = require("../models/eduSession");
 const dbSetup = require('../util/db_setup');
 const eventEmitter = require('../util/eventEmitter');
+const logger = require('winston');
 
 
 
 
 // GET => /teacher
-exports.getMain = (req, res, next) => {
+exports.getMain = (req, res) => {
     res.render('teacher/index',
         {
             docTitle: 'Teacher | Node ICT',
@@ -27,7 +27,7 @@ exports.getMain = (req, res, next) => {
 };
 
 // GET => /teacher/login
-exports.getLogin = (req, res, next) => {
+exports.getLogin = (req, res) => {
     if (req.session.isLoggedIn) {
         return res.redirect('/teacher');
     }
@@ -40,12 +40,13 @@ exports.getLogin = (req, res, next) => {
 };
 
 // POST => /teacher/login
-exports.postLogin = async (req, res, next) => {
+exports.postLogin = async (req, res) => {
     const email = req.body.mail;
     const password = req.body.password;
     try {
         const user = await User.getUser({ email: email })
         if (!user) {
+            logger.log("warn", `Security alert: ${email} tried to login but does not exists.`)
             return res.render('teacher/error', {
                 'docTitle': "Error! | Node ICT",
                 'error': "Dieser Nutzer existiert nicht!",
@@ -53,6 +54,7 @@ exports.postLogin = async (req, res, next) => {
             })
         } else {
             if (!user.canLogIn) {
+                logger.log("warn", `Security alert: ${user.email} tried to login but is not allowed to.`)
                 return res.render('teacher/error', {
                     'docTitle': "Error! | Node ICT",
                     'error': "Dieser Nutzer ist nicht freigeschaltet.",
@@ -81,18 +83,21 @@ exports.postLogin = async (req, res, next) => {
 }
 
 // POST => /teacher/logout
-exports.postLogout = async (req, res, next) => {
+exports.postLogout = async (req, res) => {
     try {
+        // end teachers session if one running
         eventEmitter.get().emit('session_end', req.session.user.id);
         await req.session.destroy();
+        logger.log("warn", `Security alert: teacher.id ${req.session.user.id} did logout.`)
         return res.redirect('/teacher');
+        
     } catch (error) {
         return res.render('error', { error: error })
     }
 }
 
 // GET => /teacher/settings
-exports.getSettings = async (req, res, next) => {
+exports.getSettings = async (req, res) => {
     try {
         let settings = await Settings.getSettings();
         let users = await User.getUsers();
@@ -111,10 +116,11 @@ exports.getSettings = async (req, res, next) => {
 }
 
 // GET => /teacher/new
-exports.getNew = async (req, res, next) => {
+exports.getNew = async (req, res) => {
     try {
         const settings = await Settings.getSettings();
         if (settings) {
+            logger.log("warn", `Security alert: App init trial without app reset!.`)
             res.status(403).render('error', { error: 'Forbidden' });
         } else {
             res.render('teacher/new',
@@ -128,7 +134,7 @@ exports.getNew = async (req, res, next) => {
 }
 
 // POST => /teacher/new
-exports.postNew = async (req, res, next) => {
+exports.postNew = async (req, res) => {
     const name = req.body.name;
     const email = req.body.email;
     const password = req.body.password;
@@ -151,10 +157,11 @@ exports.postNew = async (req, res, next) => {
 }
 
 // POST => /teacher/reset
-exports.postReset = async (req, res, next) => {
+exports.postReset = async (req, res) => {
     try {
-        await dbSetup.forceSync()
         await req.session.destroy();
+        await dbSetup.forceSync();
+        logger.log("warn", "App Reset executed!")
         res.render('reset');
     } catch (error) {
         return res.render('error', { error: error })
@@ -163,7 +170,7 @@ exports.postReset = async (req, res, next) => {
 
 
 // GET => /teacher/user-edit/:userId
-exports.getUserEdit = async (req, res, next) => {
+exports.getUserEdit = async (req, res) => {
     const userId = req.params.userId;
     try {
         const foundUser = await User.getUser({ id: userId })
@@ -190,10 +197,11 @@ exports.getUserEdit = async (req, res, next) => {
 }
 
 // POST => /teacher/user-edit 
-exports.postUserEdit = async (req, res, next) => {
+exports.postUserEdit = async (req, res) => {
 
     if(req.session.user.id != req.params.userId) {
         if(!req.session.user.isSuperAdmin) {
+            logger.log("warn", `Security alert: User ${req.session.user.id} tried to alter a user without permission to!`)
             return res.render('teacher/error', {
                 'docTitle': "Error! | Node ICT",
                 'error': `Sie sind nicht berechtigt diesen Benutzer zu ändern!`,
@@ -231,8 +239,9 @@ exports.postUserEdit = async (req, res, next) => {
     res.redirect(`/teacher/user-edit/${req.params.userId}`);
 }
 // POST => /teacher/user-destroy/:userId
-exports.destroyUser = async (req, res, next) => {
+exports.destroyUser = async (req, res) => {
     if(req.session.user.id == req.params.userId || !req.session.user.isSuperAdmin) {
+        logger.log("warn", `Security alert: User ${req.session.user.id} tried to delete a user without permission to!`)
             return res.render('teacher/error', {
                 'docTitle': "Error! | Node ICT",
                 'error': `Sie sind nicht berechtigt diesen Benutzer zu löschen!`,
@@ -249,7 +258,7 @@ exports.destroyUser = async (req, res, next) => {
 }
 
 // GET => /teacher/signup
-exports.getSignup = (req, res, next) => {
+exports.getSignup = (req, res) => {
     res.render('teacher/signup',
         {
             docTitle: 'Neuer Lehrender | Node ICT',
@@ -273,6 +282,7 @@ exports.postSignup = async (req, res, next) => {
     }
     try {
         const foundUser = await User.getUser({ email: email })
+        logger.log("info", "Security Alert: Someone tried to signup with an already existing eMail!");
         if (foundUser) {
             res.render('teacher/error', {
                 'docTitle': "Error! | Node ICT",

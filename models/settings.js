@@ -1,5 +1,5 @@
 /**
- * Applikation Settings Model
+ * Application Settings Model
  * @author Jannes Brunner
  * @version 1.0
  * @copyright 2019

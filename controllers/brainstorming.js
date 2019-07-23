@@ -8,10 +8,10 @@
 const EduSession = require('../models/eduSession')
 const logger = require('winston');
 
- // GET => /teacher/sessions/brainstorming/new 
- exports.getNew = (req, res, next) => {
-   
-        res.render('teacher/edusessions/brainstorming/new', 
+// GET => /teacher/sessions/brainstorming/new 
+exports.getNew = (req, res) => {
+
+    res.render('teacher/edusessions/brainstorming/new',
         {
             docTitle: "Neue Brainstromsession | Node ICT",
             isLoggedIn: req.session.isLoggedIn,
@@ -22,19 +22,19 @@ const logger = require('winston');
 // POST => /teacher/sessions/brainstorming/new
 exports.postNew = async (req, res) => {
     try {
-        const session = await EduSession.saveBrainstormsession({
+        await EduSession.saveBrainstormsession({
             name: req.body.name,
             topic: req.body.topic,
             ownerId: req.session.user.id
         });
-        
-        
-       
+
+
+
     } catch (error) {
         return res.render('error', { error: error })
     }
     return res.redirect('/teacher/sessions');
-   
+
 }
 
 // GET => /teacher/sessions/brainstorming-edit/:id
@@ -43,8 +43,8 @@ exports.getEdit = async (req, res) => {
     try {
         const currentSession = await EduSession.getBrainstormsession(req.params.sessionId)
         const sessionsUserId = currentSession.userId
-        if(req.session.user.id != sessionsUserId) {
-            if(!req.session.user.isSuperAdmin) {
+        if (req.session.user.id != sessionsUserId) {
+            if (!req.session.user.isSuperAdmin) {
                 return res.render('teacher/error', {
                     'docTitle': "Error! | Node ICT",
                     isLoggedIn: req.session.isLoggedIn,
@@ -57,35 +57,35 @@ exports.getEdit = async (req, res) => {
     } catch (error) {
         return res.render('error', { error: error })
     }
-    
-    
+
+
     try {
         const sessionToEdit = await EduSession.getBrainstormsession(req.params.sessionId);
-        return res.render('teacher/edusessions/brainstorming/edit', 
-        {
-            docTitle: "Brainstormsession Bearbeiten | Node ICT",
-            isLoggedIn: req.session.isLoggedIn,
-            loggedUser: req.session.user,
-            session: sessionToEdit
-        });
-        
-        
-       
+        return res.render('teacher/edusessions/brainstorming/edit',
+            {
+                docTitle: "Brainstormsession Bearbeiten | Node ICT",
+                isLoggedIn: req.session.isLoggedIn,
+                loggedUser: req.session.user,
+                session: sessionToEdit
+            });
+
+
+
     } catch (error) {
         return res.render('error', { error: error })
     }
-   
+
 }
 
 // POST => /teacher/sessions/brainstorming-edit/:id
-exports.postEdit = async (req, res, next) => {
+exports.postEdit = async (req, res) => {
 
     // permissions
     try {
         const currentSession = await EduSession.getBrainstormsession(req.params.sessionId)
         const sessionsUserId = currentSession.userId
-        if(req.session.user.id != sessionsUserId) {
-            if(!req.session.user.isSuperAdmin) {
+        if (req.session.user.id != sessionsUserId) {
+            if (!req.session.user.isSuperAdmin) {
                 return res.render('teacher/error', {
                     'docTitle': "Error! | Node ICT",
                     'error': `Sie sind nicht berechtigt diese Session zu ändern!`,
@@ -101,11 +101,11 @@ exports.postEdit = async (req, res, next) => {
 
 
     const sessionToSave = { id: parseInt(req.params.sessionId) }
-    
+
 
 
     req.body.name ? sessionToSave.name = req.body.name : logger.log('debug', 'No updated Name found');
-    req.body.topic ? sessionToSave.topic = req.body.topic : logger.log('debug','No updated topic found');
+    req.body.topic ? sessionToSave.topic = req.body.topic : logger.log('debug', 'No updated topic found');
 
     try {
         await EduSession.saveBrainstormsession(sessionToSave);
@@ -116,18 +116,18 @@ exports.postEdit = async (req, res, next) => {
 
 
 
-   return res.redirect(`/teacher/sessions/brainstorming-edit/${req.params.sessionId}`);
+    return res.redirect(`/teacher/sessions/brainstorming-edit/${req.params.sessionId}`);
 }
 
 // POST => /teacher/sessions/brainstorming-destroy/:id
-exports.destroySession = async (req, res, next) => {
-    
+exports.destroySession = async (req, res) => {
+
     // permissions
     try {
         const currentSession = await EduSession.getBrainstormsession(req.params.sessionId)
         const sessionsUserId = currentSession.userId
-        if(req.session.user.id != sessionsUserId) {
-            if(!req.session.user.isSuperAdmin) {
+        if (req.session.user.id != sessionsUserId) {
+            if (!req.session.user.isSuperAdmin) {
                 return res.render('teacher/error', {
                     'docTitle': "Error! | Node ICT",
                     'error': `Sie sind nicht berechtigt diese Session zu löschen!`,
@@ -143,11 +143,11 @@ exports.destroySession = async (req, res, next) => {
 
     try {
         EduSession.destroyBrainstormsession(req.params.sessionId);
-        
+
     } catch (error) {
         return res.render('error', { error: error })
     }
-    
+
     return res.redirect(`/teacher/sessions`);
 }
 

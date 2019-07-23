@@ -1,10 +1,19 @@
+/**
+ * SocketIO Client for connected teachers
+ * @author Jannes Brunner
+ * @version 1.0
+ * @copyright 2019
+ * WARNING: You need to run "npm run buildClients" to 
+ * trigger Browserify generation in order to see 
+ * changes in production!
+ */
+
 const socketIO = require('socket.io-client');
 const Vue = require("vue");
 const Swal = require('sweetalert2');
 
 // Join the teacher namespace
 const socket = socketIO('/tclient');
-
 
 const vue = new Vue({
     el: '#teacher',
@@ -281,9 +290,6 @@ function socketListen() {
             text: error.errorMsg,
             footer: 'Bitte an den Support wenden!'
         })
-
-
-
         if (error.fatalError) {
             vue.session = null;
             vue.errorText = error.errorMsg;
@@ -312,13 +318,6 @@ function socketListen() {
     socket.on('updateBrainstorming', (data) => {
         console.log("Got new BS Object!");
         if (vue.isRunning) {
-            //     Swal.fire({
-            //         type: 'info',
-            //         title: 'test',
-            //         text: `Got new BS object!`,
-            //         footer: `${data}`
-            //     })
-
             vue.brainstorming = data;
         }
     });

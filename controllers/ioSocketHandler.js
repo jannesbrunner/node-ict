@@ -7,7 +7,6 @@ const logger = require('winston');
 
 module.exports = async () => {
 
-
     // Set up namespaces
     const teacherIOs = socket.getIO().of('/tclient');
     const studentIOs = socket.getIO().of('/sclient');
@@ -15,8 +14,6 @@ module.exports = async () => {
 
     // Holds active games, key: teacher userId
     const availableSessionHandlers = new Map();
-
-
 
     // TEACHER Connection Manager
     teacherIOs.on('connection', (teacherS) => {
@@ -28,13 +25,14 @@ module.exports = async () => {
         // check if the teacher has a valid session, if not disconnect 
         if (!teacherUser) {
             teacherS.emit("appError", { errorMsg: "Ihre Session ist abgelaufe. Bitte melden Sie sich erneut an!", fatalError: true })
-            logger.log('info', `Teacher connected: SID > ${teacherS.id}, No valid session. Disconnecting.`);
+            logger.log('verbose', `Teacher connected: SID > ${teacherS.id}, No valid session. Disconnecting.`);
             // socket.disconnect();
         } else {
-            logger.log('info', `Teacher connected: SID > ${teacherS.id}, Name > ${teacherUser.name}`);
-
+            logger.log('verbose', `Teacher connected: SID > ${teacherS.id}, Name > ${teacherUser.name}`);
+            // check if the connected teacher already has a running game
             if (availableSessionHandlers.has(teacherUser.id) && teacherUser) {
                 teacherS.emit("appError", { errorMsg: "Sie können nur eine Lehrerkonsole gleichzeitig starten!", fatalError: true })
+                logger.log("info", `The Teacher ${teacherUser.id} already hosts a running session`);
             } else {
                 EduSession.getActiveSession(teacherUser.id).then(
                     (activeSession) => {
@@ -46,13 +44,15 @@ module.exports = async () => {
                                 case "brainstorming":
                                     sessionHandler = new ioBrainstormHandler(sessionT, teacherS);
                                     availableSessionHandlers.set(teacherUser.id, sessionHandler)
-                                    updateStudentsSessionsList()
+                                    updateStudentsSessionsList();
+                                    logger.log("info", `The Teacher ${teacherUser.id} hosts now a brainstorming session`);
                                     break
 
                                 case "quizzing":
                                     sessionHandler = new ioQuizHandler(sessionT, teacherS);
                                     availableSessionHandlers.set(teacherUser.id, sessionHandler)
                                     updateStudentsSessionsList()
+                                    logger.log("info", `The Teacher ${teacherUser.id} hosts now a quizzing session`);
                                     break;
                                 default:
                                     teacherIOs.emit("appError", { errorMsg: "Unkwnown Session Type!", fatalError: true });
@@ -61,16 +61,15 @@ module.exports = async () => {
                                     throw new Error("Unknown Session Type!");
                             }
                         } else {
-                            logger.log("error", "This Teacher has no active session!");
-                            teacherS.emit("appError", { errorMsg: "Keine gestartete Lernsession gefunden!", fatalError: true });
+                            logger.log("info", `The Teacher ${teacherUser.id} has no active session!`);
+                            teacherS.emit("appError", { errorMsg: "Keine gestartete Lehrnsession gefunden!", fatalError: true });
                             teacherS.disconnect();
                         }
                     });
             }
 
             
-            
-    // check if the connected teacher already has a running game
+    
     // Teacher disconnects
     teacherS.on("disconnect", function () {
         logger.log('info', `Lost connection to teacher: SID > ${teacherS.id}, Name > ${teacherUser.name}`);
@@ -141,11 +140,11 @@ function startSession(sessionHandler, teacherUserId) {
 
 // Presenter
 presenterIOs.on('connection', (presenterS) => {
-    logger.log('info', `Presenter connected: SID > ${presenterS.id}`);
+    logger.log('info', `A Presenter connected: SID > ${presenterS.id}`);
 
 
     presenterS.on("attachPresenter", function (sessionId) {
-        logger.log("info", `New Presenter connected to session with id ${sessionId}`);
+        logger.log("verbose", `New Presenter connected to session with id ${sessionId}`);
         EduSession.getSessionById(sessionId).then(
             (session) => {
                 if (availableSessionHandlers.has(session.userId)) {
@@ -158,18 +157,18 @@ presenterIOs.on('connection', (presenterS) => {
         ).catch(
             (error) => {
                 logger.log("warn", `Attach Presenter: ${error}`);
-                presenterS.emit("appError", { errorMsg: `ERROR: ${error}`, fatalError: true });
+                presenterS.emit("appError", { errorMsg: `${error}`, fatalError: true });
             }
         )
     })
 
     presenterS.on('disconnect', function () {
-        logger.log("info", "a presenter left a session");
+        logger.log("verbose", "a presenter disconnected");
     })
 
     presenterS.on("presenterLeft", function (data) {
         if (data) {
-            logger.log("info", `a presenter left the session of teacher with id ${null}`);
+            logger.log("verbose", `a presenter left the session of teacher with id ${null}`);
         }
     });
 
@@ -189,7 +188,7 @@ studentIOs.on('connection', (studentS) => {
     studentS.on("joinSession", function (data) {
 
         if (data) {
-            logger.log("info", `User ${data.clientName} wants to join a session of teacher with id ${data.teacherId}`);
+            logger.log("verbose", `User ${data.clientName} wants to join a session of teacher with id ${data.teacherId}`);
             EduSession.getActiveSession(data.teacherId).then(
                 (activeSession) => {
                     if (availableSessionHandlers.has(activeSession.userId) && activeSession) {

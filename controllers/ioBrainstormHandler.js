@@ -5,12 +5,12 @@ const Student = require("../models/student");
 
 module.exports = class IoBrainstormHandler {
     constructor(session, socket) {
-        
         this.session = session;
         this.socketT = socket;
 
         this.teacherId = session.userId;
         this.isRunning = false;
+        
         logger.log('info', `New Brainstorm Session started!`);
         
         // Brainstorming
@@ -21,10 +21,12 @@ module.exports = class IoBrainstormHandler {
                 answers: []
             }
         }
-         
-
+        
+        // Socket memory stores
         this.studentSockets = new Map();
         this.presenterSockets = [];
+        
+        // start listening to events emitted by teacher client
         this.ioEventsTC();
         // Send Teacher client init session
         this.socketT.emit("initSession", 
@@ -32,6 +34,7 @@ module.exports = class IoBrainstormHandler {
             session: this.session,
             brainstorming: this.brainstormingData
         });
+        // send connected students
         this.emitStudentList();
         
          
@@ -39,12 +42,10 @@ module.exports = class IoBrainstormHandler {
         
     }
     ioEventsTC() {
-        // ioEvents emitted by teacher
-       
         // TEACHER ::::::::
         // Teacher Client wants to kick a student
         this.socketT.on("kickStudent", (data) => {
-            logger.log("info", `Teacher wants to kick student with id ${data.studentId}`)
+            logger.log("verbose", `Teacher wants to kick student with id ${data.studentId}`)
             this.emitToPresenters("showInfo", `Spieler ${data.studentName} wurde aus der Sitzung entfernt`);
             if (data.sessionId == this.session.id) {
                 this.removeStudent(data.studentId);
@@ -64,15 +65,17 @@ module.exports = class IoBrainstormHandler {
                             this.session = sessionFromDB;
                             this.socketT.emit("updateSession", this.session);
                         }).catch((error) => {
-                            this.socketT.emit("appError", { errorMsg: `Error while saving: ${error}!`, fatalError: true })
+                            logger.log("error", `Error while saving session: ${error}!`)
+                            this.socketT.emit("appError", { errorMsg: `Error while saving session: ${error}!`, fatalError: true })
                         })
                     }
                 }).catch((error) => {
+                    logger.log("error", `Error while saving session: ${error}!`)
                     this.socketT.emit("appError", { errorMsg: `Error while saving: ${error}!`, fatalError: true })
                 })
             }
         });
-
+        // teacher -> server
         this.socketT.on("updateBrainstorming", (brainstorming) => {
             if(brainstorming) {
                 this.brainstormingData = brainstorming;
@@ -81,99 +84,19 @@ module.exports = class IoBrainstormHandler {
            
 
         });
-
-        this.socketT.on("getBrainstorming", (answer) => {
+        // server -> teacher
+        this.socketT.on("getBrainstorming", () => {
             this.socketT.emit("updateBrainstorming", this.brainstormingData);
         });
 
         this.socketT.on("changePzoomLevel", (level) => {
-            logger.log("debug", "Teacher tells presenters to adjust the zoom level!");
+            logger.log("verbose", "Teacher tells presenters to adjust the zoom level!");
             this.emitToPresenters("changePzoomLevel", level);
         });
     }
-    ioEventsSC(socketS) {
-        // ioEvents emitted by student clients
-        // student requests updated session data
-        socketS.on("getSession", () => {
-            socketS.emit("updateSession", this.session);
-        });
-        // student sends updated session data
-        socketS.on("updateSession", (session) => {
-            if (session && session.id == this.session.id) {
-                this.updateSessionDB.then((saved) => {
-                    if (saved) {
-                        EduSession.getActiveSession(this.userId).then((sessionFromDB) => {
-                            this.session = sessionFromDB;
-                            socketS.emit("updateSession", this.session);
-                        }).catch((error) => {
-                            socketS.emit("appError", { errorMsg: `Error while saving: ${error}!`, fatalError: true })
-                        })
-                    }
-                }).catch((error) => {
-                    socketS.emit("appError", { errorMsg: `Error while saving: ${error}!`, fatalError: true })
-                })
-            }
-        })
 
-        socketS.on("disconnect", () => {
-            this.cleanUpStudents();
-        });
-        // BRAINSTORMING
-        // Student client sends new brainstorming answer
-        socketS.on("newBSAnswer", (data) => {
-            logger.log("info", "Got new BS Answer!");
-            if (data) {
-                console.log(this.brainstormingData.answers, "NEW BSS");
-                
-                this.brainstormingData.answers.push(data);
-                this.emitToPresenters("showInfo", `${data.clientName} hatte eine Idee!`);
-                this.emitToPresenters("updateBrainstorming", this.brainstormingData);
-                this.emitToStudents("updateBrainstorming", this.brainstormingData);
-                this.socketT.emit("updateBrainstorming", this.brainstormingData);
-
-            }
-        })
-
-    }
-
-    ioEventsPC(socketP) {
-        // io Events emitted by presenter clients
-
-        socketP.on("getSession", () => {
-            socketP.emit("updateSession", this.session);
-        });
-
-    }
-
-    async updateSessionDB() {
-        try {
-            const saved = await EduSession.saveActiveSession(this.session)
-            if (!saved) {
-                return false;
-            }
-            return true;
-        } catch (error) {
-            throw new Error(error);
-        }
-
-    }
-
-    async updateMemorySession() {
-        try {
-            const newSession = await EduSession.getActiveSession(this.teacherId);
-            if (newSession) {
-                this.session = newSession;
-                return true
-            }
-            return false;
-
-        } catch (error) {
-            throw new Error(error);
-        }
-
-    }
-    /// TEACHER :::::::
-    updateSessionT() {
+     /// TEACHER Functions :::::::
+     updateSessionT() {
         this.socketT.emit("updateSession", this.session);
     }
 
@@ -193,19 +116,61 @@ module.exports = class IoBrainstormHandler {
         )
     }
 
-    // PRESENTER :::::: 
-    attachPresenter(presenterS) {
-        this.presenterSockets.push(presenterS);
-        presenterS.emit("initSession", { session: this.session, isRunning: this.isRunning, brainstorming: this.brainstormingData });
-        this.emitStudentList();
-        this.ioEventsPC(presenterS);
+    // STUDENTS ::::::::
+    ioEventsSC(socketS) {
+        // ioEvents emitted by student clients
+        // student requests updated session data
+        socketS.on("getSession", () => {
+            socketS.emit("updateSession", this.session);
+        });
+        // student sends updated session data
+        socketS.on("updateSession", (session) => {
+            if (session && session.id == this.session.id) {
+                this.updateSessionDB.then((saved) => {
+                    if (saved) {
+                        EduSession.getActiveSession(this.userId).then((sessionFromDB) => {
+                            this.session = sessionFromDB;
+                            socketS.emit("updateSession", this.session);
+                        }).catch((error) => {
+                            logger.log("error", `Error while saving session: ${error}!`);
+                            socketS.emit("appError", { errorMsg: `Error while saving session: ${error}!`, fatalError: true })
+                        })
+                    }
+                }).catch((error) => {
+                    logger.log("error", `Error while saving session: ${error}!`);
+                    socketS.emit("appError", { errorMsg: `Error while saving: ${error}!`, fatalError: true })
+                })
+            }
+        })
+
+        // if a studend disconnects
+        socketS.on("disconnect", () => {
+            this.cleanUpStudents();
+        });
+
+        // BRAINSTORMING
+        // Student client sends new brainstorming answer
+        socketS.on("newBSAnswer", (data) => {
+            logger.log("silly", "Got new BS Answer!");
+            if (data) {
+                console.log(this.brainstormingData.answers, "NEW BSS");
+                
+                this.brainstormingData.answers.push(data);
+                this.emitToPresenters("showInfo", `${data.clientName} hatte eine Idee!`);
+                this.emitToPresenters("updateBrainstorming", this.brainstormingData);
+                this.emitToStudents("updateBrainstorming", this.brainstormingData);
+                this.socketT.emit("updateBrainstorming", this.brainstormingData);
+
+            }
+        })
+
     }
 
-
-    // STUDENTS :::::::
+   
+    // STUDENTS Functions :::::::
     addStudent(student) {
 
-        logger.log("debug", `Add student NAME ${student.name}, SOCKET: ${student.socket} 
+        logger.log("verbose", `Add student NAME ${student.name}, SOCKET: ${student.socket} 
         to game ${this.session.id}, ${this.session.name}`);
 
         Student.addStudentToSession(this.session.id, student.name).then((
@@ -288,8 +253,27 @@ module.exports = class IoBrainstormHandler {
 
     }
 
+    // PRESENTERS ::::::::
+    ioEventsPC(socketP) {
+        // io Events emitted by presenter clients
 
-    // LOGIC FUNCTIONS
+        // Server -> Presenter
+        socketP.on("getSession", () => {
+            socketP.emit("updateSession", this.session);
+        });
+
+    }
+
+     // PRESENTER Functions :::::: 
+     attachPresenter(presenterS) {
+        this.presenterSockets.push(presenterS);
+        presenterS.emit("initSession", { session: this.session, isRunning: this.isRunning, brainstorming: this.brainstormingData });
+        this.emitStudentList();
+        this.ioEventsPC(presenterS);
+    }
+
+
+    // <--- LOGIC FUNCTIONS --> 
     // remove all disconnected student sockets
     cleanUpStudentS() {
         this.studentSockets.forEach((studendS, studentId) => {
@@ -298,7 +282,7 @@ module.exports = class IoBrainstormHandler {
             }
         })
     }
-
+    // remove certain student
     cleanUpStudent(studentId) {
         if (this.studentSockets.has(studentId)) {
             this.studentSockets.delete(studentId);
@@ -312,6 +296,35 @@ module.exports = class IoBrainstormHandler {
         this.socketT.emit("startSession", true);
         this.emitToStudents("startSession", true);
         this.emitToPresenters("startSession", true);
+    }
+
+
+    async updateSessionDB() {
+        try {
+            const saved = await EduSession.saveActiveSession(this.session)
+            if (!saved) {
+                return false;
+            }
+            return true;
+        } catch (error) {
+            throw new Error(error);
+        }
+
+    }
+
+    async updateMemorySession() {
+        try {
+            const newSession = await EduSession.getActiveSession(this.teacherId);
+            if (newSession) {
+                this.session = newSession;
+                return true
+            }
+            return false;
+
+        } catch (error) {
+            throw new Error(error);
+        }
+
     }
 
     async endSession() {

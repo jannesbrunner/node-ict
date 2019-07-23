@@ -16,15 +16,13 @@ module.exports = class IoQuizHandler {
         // Quizzing
         // Check if there is at least one question!
         if (this.session.lecture.questions.length > 0) {
-
-           
             this.quizzingData = {
                 givenAnswers: []
             };
-
             this.currentQuestionId = 0;
         } else {
             this.socketT.emit("appError", { errorMsg: `Dieses Quiz hat noch keine Fragen!`, fatalError: true });
+            logger.log("info", "Error starting a session due to no questions present.")
             EduSession.unsetActiveSession(this.teacherId).then(() => {
                 logger.log('info', 'Disabling session due to no questions present');
             }).catch(error => {
@@ -32,12 +30,11 @@ module.exports = class IoQuizHandler {
             });
         }
 
-
-
-
-
+        // Socket memory stores
         this.studentSockets = new Map();
         this.presenterSockets = [];
+        
+        // start listening to events emitted by teacher client
         this.ioEventsTC();
         // Send Teacher client init session
         this.socketT.emit("initSession",
@@ -47,6 +44,7 @@ module.exports = class IoQuizHandler {
                 currentQuestionId: this.currentQuestionId,
                 receivedAnswers: this.receivedAnswers,
             });
+        // send connected students
         this.emitStudentList();
 
 
@@ -59,7 +57,7 @@ module.exports = class IoQuizHandler {
         // TEACHER ::::::::
         // Teacher Client wants to kick a student
         this.socketT.on("kickStudent", (data) => {
-            logger.log("info", `Teacher wants to kick student with id ${data.studentId}`)
+            logger.log("verbose", `Teacher wants to kick student with id ${data.studentId}`)
             this.emitToPresenters("showInfo", `Spieler ${data.studentName} wurde aus der Sitzung entfernt`);
             if (data.sessionId == this.session.id) {
                 this.removeStudent(data.studentId);
@@ -79,22 +77,24 @@ module.exports = class IoQuizHandler {
                             this.session = sessionFromDB;
                             this.socketT.emit("updateSession", this.session);
                         }).catch((error) => {
+                            logger.log("error", `Error while saving session: ${error}!`)
                             this.socketT.emit("appError", { errorMsg: `Error while saving: ${error}!`, fatalError: true })
                         })
                     }
                 }).catch((error) => {
+                    logger.log("error", `Error while saving session: ${error}!`)
                     this.socketT.emit("appError", { errorMsg: `Error while saving: ${error}!`, fatalError: true })
                 })
             }
         });
-
+        // Theache is adjusting the presnters zoom level
         this.socketT.on("changePzoomLevel", (level) => {
             logger.log("debug", "Teacher tells presenters to adjust the zoom level!");
             this.emitToPresenters("changePzoomLevel", level);
         });
 
-        // The specific quizzing object
 
+        // teacher -> server
         this.socketT.on("updateQuizzing", (quizzing) => {
             if (quizzing) {
                 this.quizzingData = quizzing;
@@ -103,7 +103,7 @@ module.exports = class IoQuizHandler {
 
 
         });
-
+        // server -> teacher
         this.socketT.on("getQuizzing", () => {
             this.socketT.emit("updateQuizzing", this.quizzingData);
         });
@@ -125,6 +125,30 @@ module.exports = class IoQuizHandler {
             this.emitToStudents("endQuiz", this.quizzingData);
         });
     }
+
+    /// TEACHER logic functions :::::::
+    updateSessionT() {
+        this.socketT.emit("updateSession", this.session);
+    }
+
+    emitStudentList() {
+        Student.getStudentsForSession(this.session.id).then(
+            (students) => {
+                if (students) {
+                    this.socketT.emit("updateStudentList", students.students);
+                    this.emitToPresenters("updateStudentList", students.students);
+                }
+            }
+        ).catch(
+            (error) => {
+                this.socketT.emit("appError",
+                    { errorMsg: `Unable to emit studentList (id ${this.session.id}): ${error}`, fatalError: false });
+                    logger.log("error", `Unable to emit studentList (id ${this.session.id}): ${error}`);
+                }
+        )
+    }
+
+    // STUDENTS ::::::::
     ioEventsSC(socketS) {
         // ioEvents emitted by student clients
         // student requests updated session data
@@ -140,20 +164,22 @@ module.exports = class IoQuizHandler {
                             this.session = sessionFromDB;
                             socketS.emit("updateSession", this.session);
                         }).catch((error) => {
+                            logger.log("error", `Error while saving session: ${error}!`);
                             socketS.emit("appError", { errorMsg: `Error while saving: ${error}!`, fatalError: true })
                         })
                     }
                 }).catch((error) => {
+                    logger.log("error", `Error while saving session: ${error}!`);
                     socketS.emit("appError", { errorMsg: `Error while saving: ${error}!`, fatalError: true })
                 })
             }
         })
-
+        // if a studend disconnects
         socketS.on("disconnect", () => {
             this.cleanUpStudents();
         });
+        
         // QUIZZING 
-
         socketS.on("newAnswer", (answer) => {
             this.quizzingData.receivedAnswers += 1;
             this.quizzingData.givenAnswers.push(answer);
@@ -161,7 +187,7 @@ module.exports = class IoQuizHandler {
             this.socketT.emit("newAnswer", answer);
             this.socketT.emit("updateQuizzing", this.quizzingData)
         })
-
+        // Quiz ends, start conclusion on conn. students
         socketS.on("endQuiz", () => {
             this.emitToPresenters("endQuiz", this.quizzingData);
             this.emitToStudents("endQuiz", this.quizzingData);
@@ -171,14 +197,140 @@ module.exports = class IoQuizHandler {
 
     }
 
+     // STUDENTS logic functions :::::::
+     addStudent(student) {
+
+        logger.log("debug", `Add student NAME ${student.name}, SOCKET: ${student.socket} 
+        to game ${this.session.id}, ${this.session.name}`);
+
+        Student.addStudentToSession(this.session.id, student.name).then((
+            (result) => {
+                if (result) {
+                    // associate student socket with student id
+                    this.studentSockets.set(result.id, student.socket);
+                    student.socket.emit("sessionJoined", { session: this.session, studentId: result.id, quizzing: this.quizzingData });
+                    this.emitToPresenters("showInfo", `${student.name} ist beigetreten!`);
+                    this.emitStudentList();
+                    this.ioEventsSC(student.socket);
+                }
+            }
+        )).catch(
+            (error) => {
+                student.socket.emit("appError",
+                    { errorMsg: `Unable to join session (id ${this.session.id}) (owner ${this.teacherId}): ${error}`, fatalError: false });
+                logger.log("warn", `Unable to join session (id ${this.session.id}) (owner ${this.teacherId}): ${error}`);
+            }
+        )
+
+
+
+    }
+
+    studentLeft(studendS, studentId) {
+        if (studendS, studentId) {
+            logger.log("debug", `Remove student with ID ${studentId}, 
+        from game ${this.session.id}, ${this.session.name}`);
+            Student.removeStudentFromSession(this.session.id, studentId).then(
+                (result) => {
+                    if (result) {
+                        this.cleanUpStudentS();
+                        this.emitStudentList();
+                    }
+                }
+            )
+
+        }
+    }
+
+    removeStudent(studentId) {
+        logger.log("debug", `Remove student with ID ${studentId}, 
+        from game ${this.session.id}, ${this.session.name}`);
+
+
+        Student.removeStudentFromSession(this.session.id, studentId).then(
+            (result) => {
+                if (result) {
+
+                    let studentS = this.studentSockets.get(studentId);
+                    if (studentS) studentS.emit("kicked", studentId);
+                    this.cleanUpStudent(studentId);
+                    this.cleanUpStudentS();
+                    this.emitStudentList();
+                }
+            }
+        )
+
+
+    }
+    // Delete all disconnected students 
+    cleanUpStudents() {
+        logger.log('info', `Clean up Students`);
+
+
+        this.studentSockets.forEach((studentS, studentId) => {
+            if (studentS.disconnected) {
+                Student.removeStudentFromSession(this.session.id, studentId).then(
+                    (result) => {
+                        if (result) {
+                            this.emitStudentList();
+                        }
+                    }).catch(
+                        (error) => { logger.log('error', `Student with id ${studentId} is no longer connected. Error during deletion: ${error}`); }
+                    )
+            }
+        })
+
+
+    }
+
+    // PRESENTER :::::: 
+    attachPresenter(presenterS) {
+        this.presenterSockets.push(presenterS);
+        presenterS.emit("initSession", { session: this.session, isRunning: this.isRunning, quizzing: this.quizzingData });
+        this.emitStudentList();
+        this.ioEventsPC(presenterS);
+    }
+
+    // PRESENTER logic functions :::::: 
     ioEventsPC(socketP) {
         // io Events emitted by presenter clients
-
         socketP.on("getSession", () => {
             socketP.emit("updateSession", this.session);
         });
 
     }
+
+    
+    // LOGIC FUNCTIONS
+
+    async updateSessionDB() {
+        try {
+            const saved = await EduSession.saveActiveSession(this.session)
+            if (!saved) {
+                return false;
+            }
+            return true;
+        } catch (error) {
+            throw new Error(error);
+        }
+
+    }
+
+    async updateMemorySession() {
+        try {
+            const newSession = await EduSession.getActiveSession(this.teacherId);
+            if (newSession) {
+                this.session = newSession;
+                return true
+            }
+            return false;
+
+        } catch (error) {
+            throw new Error(error);
+        }
+
+    }
+
     // Calculates the quiz statistics at the end
     calculateStatistics() {
         
@@ -266,151 +418,6 @@ module.exports = class IoQuizHandler {
 
     }
 
-    async updateSessionDB() {
-        try {
-            const saved = await EduSession.saveActiveSession(this.session)
-            if (!saved) {
-                return false;
-            }
-            return true;
-        } catch (error) {
-            throw new Error(error);
-        }
-
-    }
-
-    async updateMemorySession() {
-        try {
-            const newSession = await EduSession.getActiveSession(this.teacherId);
-            if (newSession) {
-                this.session = newSession;
-                return true
-            }
-            return false;
-
-        } catch (error) {
-            throw new Error(error);
-        }
-
-    }
-    /// TEACHER :::::::
-    updateSessionT() {
-        this.socketT.emit("updateSession", this.session);
-    }
-
-    emitStudentList() {
-        Student.getStudentsForSession(this.session.id).then(
-            (students) => {
-                if (students) {
-                    this.socketT.emit("updateStudentList", students.students);
-                    this.emitToPresenters("updateStudentList", students.students);
-                }
-            }
-        ).catch(
-            (error) => {
-                this.socketT.emit("appError",
-                    { errorMsg: `Unable to emit studentList (id ${this.session.id}): ${error}`, fatalError: false });
-            }
-        )
-    }
-
-    // PRESENTER :::::: 
-    attachPresenter(presenterS) {
-        this.presenterSockets.push(presenterS);
-        presenterS.emit("initSession", { session: this.session, isRunning: this.isRunning, quizzing: this.quizzingData });
-        this.emitStudentList();
-        this.ioEventsPC(presenterS);
-    }
-
-
-    // STUDENTS :::::::
-    addStudent(student) {
-
-        logger.log("debug", `Add student NAME ${student.name}, SOCKET: ${student.socket} 
-        to game ${this.session.id}, ${this.session.name}`);
-
-        Student.addStudentToSession(this.session.id, student.name).then((
-            (result) => {
-                if (result) {
-                    // associate student socket with student id
-                    this.studentSockets.set(result.id, student.socket);
-                    student.socket.emit("sessionJoined", { session: this.session, studentId: result.id, quizzing: this.quizzingData });
-                    this.emitToPresenters("showInfo", `${student.name} ist beigetreten!`);
-                    this.emitStudentList();
-                    this.ioEventsSC(student.socket);
-                }
-            }
-        )).catch(
-            (error) => {
-                student.socket.emit("appError",
-                    { errorMsg: `Unable to join session (id ${this.session.id}) (owner ${this.teacherId}): ${error}`, fatalError: false });
-                logger.log("warn", `Unable to join session (id ${this.session.id}) (owner ${this.teacherId}): ${error}`);
-            }
-        )
-
-
-
-    }
-
-    studentLeft(studendS, studentId) {
-        if (studendS, studentId) {
-            logger.log("debug", `Remove student with ID ${studentId}, 
-        from game ${this.session.id}, ${this.session.name}`);
-            Student.removeStudentFromSession(this.session.id, studentId).then(
-                (result) => {
-                    if (result) {
-                        this.cleanUpStudentS();
-                        this.emitStudentList();
-                    }
-                }
-            )
-
-        }
-    }
-
-    removeStudent(studentId) {
-        logger.log("debug", `Remove student with ID ${studentId}, 
-        from game ${this.session.id}, ${this.session.name}`);
-
-
-        Student.removeStudentFromSession(this.session.id, studentId).then(
-            (result) => {
-                if (result) {
-
-                    let studentS = this.studentSockets.get(studentId);
-                    if (studentS) studentS.emit("kicked", studentId);
-                    this.cleanUpStudent(studentId);
-                    this.cleanUpStudentS();
-                    this.emitStudentList();
-                }
-            }
-        )
-
-
-    }
-    // Delete all disconnected students 
-    cleanUpStudents() {
-        logger.log('info', `Clean up Students`);
-
-
-        this.studentSockets.forEach((studentS, studentId) => {
-            if (studentS.disconnected) {
-                Student.removeStudentFromSession(this.session.id, studentId).then(
-                    (result) => {
-                        if (result) {
-                            this.emitStudentList();
-                        }
-                    }).catch(
-                        (error) => { logger.log('error', `Student with id ${studentId} is no longer connected. Error during deletion: ${error}`); }
-                    )
-            }
-        })
-
-
-    }
-
-
-    // LOGIC FUNCTIONS
     // remove all disconnected student sockets
     cleanUpStudentS() {
         this.studentSockets.forEach((studendS, studentId) => {

@@ -17,6 +17,7 @@ exports.getError = (req, res) => {
     {error: error})
 }
 
+// set global error
 exports.setError = (err) => {
   error = err;
 }

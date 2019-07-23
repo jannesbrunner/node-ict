@@ -1,4 +1,12 @@
-
+/**
+ * SocketIO Client for connected students
+ * @author Jannes Brunner
+ * @version 1.0
+ * @copyright 2019
+ * WARNING: You need to run "npm run buildClients" to 
+ * trigger Browserify generation in order to see 
+ * changes in production!
+ */
 const socketIO = require('socket.io-client');
 const Vue = require("vue");
 const Swal = require('sweetalert2');
@@ -327,8 +335,6 @@ function socketListen() {
         vue.quizConclusion = conclusion;
         vue.quizRight = rightAnswers;
         vue.quizWrong = wrongAnswers;
-    
-    
         vue.endQuiz = true;
 
     });
@@ -343,7 +349,6 @@ function socketListen() {
                 footer: 'Danke für das Nutzen von Node ICT!'
             })
             window.removeEventListener('beforeunload', beforeUnload);
-
         }
     });
 
@@ -370,10 +375,7 @@ function socketListen() {
             vue.errorText = error.errorMsg;
             vue.isError = true;
             window.removeEventListener('beforeunload', beforeUnload);
-
         }
-
-
     })
 }
 

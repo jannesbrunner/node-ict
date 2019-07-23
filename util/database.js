@@ -1,5 +1,5 @@
 /**
- * This will handle the sqlite database
+ * This will handle the sqlite via Sequelize database
  * @author Jannes Brunner
  * @version 1.0
  * @copyright 2019
@@ -9,7 +9,7 @@
 const path = require('../util/path')
 // 3rd Party Imports
 const Sequelize = require('sequelize');
-
+const logger = require('winston')
 // Tables
 const tables = require('../data/tables')
 
@@ -17,7 +17,7 @@ const tables = require('../data/tables')
 
 const dbPath = `${path}/data/db.sqlite`;
 const dbLog = (log) => {
-        console.log(` DB Action: ${log}`);
+        logger.log("debug", `DB: ${log}`);
 }
 
 
@@ -30,7 +30,7 @@ const sequelize = new Sequelize({
                 acquire: 30000,
                 idle: 10000
               },
-        logging: false, // false
+        logging: dbLog,
 
 })
 

@@ -1,3 +1,10 @@
+/**
+ * This will setup the dabase
+ * @author Jannes Brunner
+ * @version 1.0
+ * @copyright 2019
+ */
+
 const db = require('./database');
 const logger = require('winston');
 
@@ -16,7 +23,7 @@ exports.connect = async () => {
 async function syncDB( options = {} ) {
   try {
     
-    logger.log('debug', `Sync Databse with Option(s): ${JSON.stringify(options)}`);
+    logger.log('verbose', `Sync Databse with Option(s): ${JSON.stringify(options)}`);
     db.sequelize.sync(options);
     // await db.User.sync();  
     // await db.Settings.sync();
@@ -25,7 +32,9 @@ async function syncDB( options = {} ) {
     throw new Error(`DB Sync Error: ${error}`);
   }
 }
+// Sync all database tables
 exports.sync = () => syncDB();
 
+// DELETE and Sync all database tables
 exports.forceSync = () => syncDB({ force: true });
 

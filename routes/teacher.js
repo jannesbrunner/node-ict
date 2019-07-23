@@ -1,5 +1,5 @@
 /**
- * This will handle all teacher related routes
+ * This will handle all teacher related routes "/teacher"
  * @author Jannes Brunner
  * @version 1.0
  * @copyright 2019

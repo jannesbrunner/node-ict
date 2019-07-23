@@ -3,6 +3,7 @@
  * @author Jannes Brunner
  * @version 1.0
  * @copyright 2019
+ * An interactive learning session within the app
  */
 const db = require('../util/database');
 const User = require('../models/user');
