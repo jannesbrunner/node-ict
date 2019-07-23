@@ -14,6 +14,7 @@ const vue = new Vue({
         isActive: true,
         isError: false,
         errorText: "",
+        zoomLevel: 50,
 
         students: [],
         // VUE DOM
@@ -149,6 +150,10 @@ const vue = new Vue({
                 }
             })
         },
+        zoom: function(mode) {
+            mode == 1 ? this.zoomLevel += 2 : this.zoomLevel -= 2;
+            socket.emit("changePzoomLevel", this.zoomLevel);
+         },
 
         // Brainstorming
         removeAnswer: function (answer, clientId) {

@@ -88,6 +88,11 @@ module.exports = class IoQuizHandler {
             }
         });
 
+        this.socketT.on("changePzoomLevel", (level) => {
+            logger.log("debug", "Teacher tells presenters to adjust the zoom level!");
+            this.emitToPresenters("changePzoomLevel", level);
+        });
+
         // The specific quizzing object
 
         this.socketT.on("updateQuizzing", (quizzing) => {

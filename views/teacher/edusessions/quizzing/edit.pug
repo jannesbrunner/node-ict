@@ -8,19 +8,19 @@ block content
     li.nav-item
       a.nav-link(href="/teacher/sessions") Zurück
     li.nav-item
-      a.nav-link(href="/teacher/sessions/brainstorming/new") Neue Brainstorm Session anlegen
+      a.nav-link(href="/teacher/sessions/brainstorming/new") Neue Brainstorm Lehreinheit anlegen
     li.nav-item
-      a.nav-link.active(href="#") Quiz Session bearbeiten  
+      a.nav-link.active(href="#") Quiz Lehreinheit bearbeiten  
   hr
   div.card
     div.card-header Quiz Session Bearbeiten
   div.card-body
     form(method='POST' action=`/teacher/sessions/quizzing-edit/${session.id}`)
       div.form-group
-        label(for='name') Name der Quiz Session
+        label(for='name') Name der Quiz Lehreinheit
         input.form-control(type='text' id='name' placeholder='z.B. Klasse 7A: Deutsch' name='name' value=`${session.name}` required) 
       div.form-group
-        label(for='topic') Thema der Quiz Session 
+        label(for='topic') Thema der Quiz Lehreinheit
         input.form-control(type='text' id='topic' placeholder='z.B. Werke von Goethe' name='topic' value=`${session.lecture.topic}` required) 
       button.btn.btn-primary(type='submit') Speichern
       

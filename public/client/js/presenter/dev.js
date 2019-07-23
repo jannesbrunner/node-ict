@@ -15,6 +15,7 @@ function initialState() {
         isError: false,
         errorText: "",
         studentList: [],
+        zoomLevel: 50,
         // Brainstorming 
         brainstorming: {},
         cloudWordWeight: 200,
@@ -61,18 +62,25 @@ const vue = new Vue({
             if(newValue == false) {
                 this.session = null;
                 Swal.fire({
-                    type: 'warning',
-                    title: 'Session Beendet',
-                    text: 'Der Lehrende hat diese Session beendet',
-                    footer: 'Vielen Dank für das Nutzen von Node ICT!'
-                })
+                    position: 'top-end',
+                    type: 'success',
+                    title: "Der Lehrende hat diese Session beendet!",
+                    showConfirmButton: false,
+                    timer: 1500,
+                    backdrop: 'rgba(0,0,0,0)'
+                  })
+              
+                
             } else {
                 Swal.fire({
-                    type: 'info',
-                    title: 'Gestartet!',
-                    text: 'Der Lehrende hat die Session gestartet!',
-                    timer: 2000
-                })
+                    position: 'top-end',
+                    type: 'success',
+                    title: "Der Lehrende hat die Session gestartet!",
+                    showConfirmButton: false,
+                    timer: 1500,
+                    backdrop: 'rgba(0,0,0,0)'
+                  })
+                
             }
         },
         studentList: (newValue) => {
@@ -122,6 +130,9 @@ const vue = new Vue({
         },
         resetClient: function() {
             Object.assign(this.$data, initialState());
+        },
+        zoom: function(mode) {
+           mode == 1 ? this.zoomLevel += 2 : this.zoomLevel -= 2;
         }
         
     },
@@ -160,8 +171,9 @@ function renderCloud() {
                   }
             }
         },
-        height: 700,
-        width: 700,
+        
+       width: "100%",
+       height: 700,
 
     });
 }
@@ -283,6 +295,10 @@ function socketListen () {
         
 
     })
+
+    socket.on("changePzoomLevel", (level) => {
+        vue.zoomLevel = level;
+    });
 
 
     /// -------- BRAINSTORMING --------- ///

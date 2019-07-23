@@ -1,111 +1,142 @@
-//-
-  Material Design Lite
-  Copyright 2015 Google Inc. All rights reserved.
-
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
-
-    https://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License
-
-<!DOCTYPE html>
-html(lang="de")
+doctype html
+html
   head
-    meta(charset="UTF-8")
-    mmeta(name="viewport", content="width=device-width, initial-scale=1.0, minimum-scale=1.0")
-    meta(http-equiv="X-UA-Compatible", content="ie=edge")
+    meta(charset='utf-8')
+    meta(http-equiv='X-UA-Compatible', content='IE=edge')
     title #{docTitle}
-    // link(rel="stylesheet", href="/css/normalize.css")
-    // Page styles
-    link(rel="stylesheet", href="/css/fonts/fonts.css")
-    link(rel="stylesheet", href="/css/material_icons.css")
-    link(rel="stylesheet", href="/css/material.min.css")
-    link(rel="stylesheet", href="/css/template.css")
+    meta(name='viewport', content='width=device-width, initial-scale=1')
+    meta(name='description', content='Node ICT interaktiv lernen interactive course teaching')
+    meta(name='keywords', content='free node js learning lernen teaching lehren schulen university')
+    meta(name='author', content='jannes brunner')
+    //
 
-    script(src="/js/jquery.min.js")
-    script(src="/client/js/sweetalert.js")
-    block scripts
+      FREE HTML5 TEMPLATE
+      DESIGNED & DEVELOPED by FreeHTML5.co
+      Website: 		http://freehtml5.co/
+      Email: 			info@freehtml5.co
+      Twitter: 		http://twitter.com/fh5co
+      Facebook: 		https://www.facebook.com/fh5co
+
+    // Facebook and Twitter integration
+    meta(property='og:title', content='')
+    meta(property='og:image', content='')
+    meta(property='og:url', content='')
+    meta(property='og:site_name', content='')
+    meta(property='og:description', content='')
+    meta(name='twitter:title', content='')
+    meta(name='twitter:image', content='')
+    meta(name='twitter:url', content='')
+    meta(name='twitter:card', content='')
+    link(href='/css/fonts/fonts.css', rel='stylesheet')
+    // Animate.css
+    link(rel='stylesheet', href='/css/template/animate.css')
+    // Icomoon Icon Fonts
+    link(rel='stylesheet', href='/css/template/icomoon.css')
+    // Bootstrap
+    link(rel='stylesheet', href='/css/bootstrap.css')
+    // Magnific Popup
+    link(rel='stylesheet', href='/css/template/magnific-popup.css')
+    // Flexslider
+    link(rel='stylesheet', href='/css/template/flexslider.css')
+    // Theme style
+    link(rel='stylesheet', href='/css/template/style.css')
     block styles
+    // Modernizr JS
+    script(src='/js/modernizr-2.6.2.min.js')
+    // FOR IE9 below
+    //if lt IE 9
+      script(src='/js/respond.min.js')
   body
-    div.mdl-layout.mdl-js-layout.mdl-layout--fixed-header
-      div.android-header.mdl-layout__header.mdl-layout__header--waterfall
-        div.mdl-layout__header-row
-          span.android-title.mdl-layout-title
-            img.android-logo-image(src='/images/android-logo.png')
-          // Add spacer, to align navigation to the right in desktop
-          div.android-header-spacer.mdl-layout-spacer
-          div.android-search-box.mdl-textfield.mdl-js-textfield.mdl-textfield--expandable.mdl-textfield--floating-label.mdl-textfield--align-right.mdl-textfield--full-width
-            label.mdl-button.mdl-js-button.mdl-button--icon(for='search-field')
-              i.material-icons search
-            div.mdl-textfield__expandable-holder
-              input#search-field.mdl-textfield__input(type='text')
-          // Navigation
-          div.android-navigation-container
-            nav.android-navigation.mdl-navigation
-              if loggedUser
-                a.mdl-navigation__link.mdl-typography--text-uppercase(href='/teacher/') Start
-                a.mdl-navigation__link.mdl-typography--text-uppercase(href="/teacher/sessions") Lehreinheiten
-                a.mdl-navigation__link.mdl-typography--text-uppercase(href="/teacher/settings") Einstellungen
-                a.mdl-navigation__link.mdl-typography--text-uppercase(href="/client/student" target="_blank") Zu Teilnehmer wechseln
-                form(method="POST" action="/teacher/logout")
-                  button(type="SUBMIT") Log Out 
-              unless isLoggedIn
-                a.mdl-navigation__link.mdl-typography--text-uppercase(href="/teacher/signup") Registrieren
-                a.mdl-navigation__link.mdl-typography--text-uppercase(href="/teacher/login") Login  
-          span.android-mobile-title.mdl-layout-title
-            img.android-logo-image(src='/images/android-logo.png')
-          button#more-button.android-more-button.mdl-button.mdl-js-button.mdl-button--icon.mdl-js-ripple-effect
-            i.material-icons more_vert
-          ul.mdl-menu.mdl-js-menu.mdl-menu--bottom-right.mdl-js-ripple-effect(for='more-button')
-            li.mdl-menu__item Reserverd
-            li.mdl-menu__item Reserverd
-            li.mdl-menu__item(disabled='') Reserverd disabled
-            li.mdl-menu__item Reserverd
-      div.android-drawer.mdl-layout__drawer
-        span.mdl-layout-title
-          img.android-logo-image(src='/images/android-logo-white.png')
-        nav.mdl-navigation
-          if loggedUser
-            span von #{loggedUser.name}
-          if isLoggedIn
-            a.mdl-navigation__link(href='/teacher/') Start
-            a.mdl-navigation__link(href="/teacher/sessions") Lehreinheiten
-            a.mdl-navigation__link(href="/teacher/settings") Einstellungen
-            a.mdl-navigation__link(href="/client/student" target="_blank") Zu Teilnehmer wechseln
-            form(method="POST" action="/teacher/logout")
-              button(type="SUBMIT") Log Out
-          unless isLoggedIn
-            a.mdl-navigation__link(href="/teacher/signup") Registrieren
-            a.mdl-navigation__link(href="/teacher/login") Login
-      .android-content.mdl-layout__content
-        a(name="top")
-        .android-screen-section
+    .fh5co-loader
+    #page
+      nav.fh5co-nav(role='navigation')
+        .container-wrap
+          .top-menu
+            .row(style="justify-content: space-between;")
+              .col-xs-2
+                #fh5co-logo
+                  a(href='index.html') Node ICT
+              .col-xs-10.text-right.menu-1
+                ul
+                  li
+                    a(href='/teacher/') Start
+                  li
+                  if loggedUser
+                    li
+                      a(href="/teacher/settings") Einstellungen
+                    li.has-dropdown
+                      a(href="/teacher/sessions") Lehreinheiten
+                      ul.dropdown
+                        li
+                          a(href='#') Übersicht
+                        li
+                          a(href='#') Brainstorming
+                        li
+                          a(href='#') Quiz
+                    li
+                      a(href="/client/student" target="_blank") Zu Teilnehmer wechseln
+                    form#logout(method="POST" action="/teacher/logout" style="display: none;")
+                    li
+                      a(href="#", onclick="userLogout()") Logout
+                  unless isLoggedIn
+                    li
+                      a(href="/teacher/signup") Registrieren
+                    li
+                      a(href="/teacher/login") Login 
+      .container-wrap
+        .content
           block content
-        footer.android-footer.mdl-mega-footer
-          .mdl-mega-footer--top-section
-            .mdl-mega-footer--left-section
-            .mdl-mega-footer--right-section
-              a.mdl-typography--font-light(href='#top')
-                | Back to Top
-                i.material-icons expand_less
-          .mdl-mega-footer--middle-section
-            p.mdl-typography--font-light Node ICT: © 2019 Jannes Brunner, HTW Berlin
-            p.mdl-typography--font-light THIS APP IS IN BETA STATE
-          .mdl-mega-footer--bottom-section
-            a.android-link.mdl-typography--font-light(href='') Blog
-            a.android-link.mdl-typography--font-light(href='') Privacy Policy
-    a#view-source.mdl-button.mdl-js-button.mdl-button--raised.mdl-js-ripple-effect.mdl-color--accent.mdl-color-text--accent-contrast(href='https://github.com/google/material-design-lite/blob/mdl-1.x/templates/android-dot-com/', target='_blank') View Source
-    script(src='https://code.getmdl.io/1.3.0/material.min.js')
 
-
-
-
-
-
-
+      // END container-wrap
+      .container-wrap
+        footer#fh5co-footer(role='contentinfo')
+          .row(style="justify-content: space-between;")
+            .col-md-3.fh5co-widget
+              h4 Über Node ICT
+              p
+                | Node ICT ist eine freie Software zur unterstützung interaktiver digitaler
+                | Unterrichtsmethoden.
+            .col-md-3.fh5co-widget
+                p
+                  small.block © 2019 Node ICT. All Rights Reserved.
+                  small.block
+                    | Template Designed by 
+                    a(href='http://freehtml5.co/', target='_blank') FreeHTML5.co
+            p
+            .col-md-3
+              h4 Kontakt Information
+              ul.fh5co-footer-links
+                li
+                  | Jannes Brunner, 
+                  br
+                  | int. Studiengang Medieninformatik
+                  br
+                  | Hochschule für Technik und Wirtschaft (HTW) Berlin
+                li
+                  a(href='mailto:s0553435@htw-berlin.de') s0553435@htw-berlin.de
+                li
+                  a(href='https://github.com/jannesbrunner/node-ict') github.com/jannesbrunner/node-ict
+           
+      // END container-wrap
+    .gototop.js-top
+      a.js-gotop(href='#')
+        i.icon-arrow-up2
+    // jQuery
+    script(src='/js/jquery.min.js')
+    // jQuery Easing
+    script(src='/js/jquery.easing.1.3.js')
+    // Bootstrap
+    script(src='/js/bootstrap.min.js')
+    // Waypoints
+    script(src='/js/jquery.waypoints.min.js')
+    // Flexslider
+    script(src='/js/jquery.flexslider-min.js')
+    // Magnific Popup
+    script(src='/js/jquery.magnific-popup.min.js')
+    script(src='/js/magnific-popup-options.js')
+    // Counters
+    script(src='/js/jquery.countTo.js')
+    // Main
+    script(src='/js/main.js')
+    // App UI
+    script(src='/js/ui.js')
