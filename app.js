@@ -7,11 +7,12 @@
 
 // Node Imports 
 const path = require('path');
+const readline = require('readline');
 // 3rd Party Imports
 const express = require('express');
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser');
-const opn = require('opn');
+const open = require('open');
 const ip = require('ip');
 const session = require('express-session');
 const sharedsession = require("express-socket.io-session");
@@ -42,7 +43,7 @@ const server_ip = ip.address();
 // Set up Event Emitter 
 require('./util/eventEmitter').init();
 const server = app.listen(server_port, server_ip, function () {
-  logger.log({ level: 'info', message: `Hello! The Server is running on ${server_ip}:${server_port} !`});
+  logger.log({ level: 'verbose', message: `Server is running on ${server_ip}:${server_port} !`});
 });
 
 // Set static content folder
@@ -133,5 +134,29 @@ process.on('uncaughtException', (err) => {
 })
 
 init();
+
+process.on( 'SIGINT', function() {
+  console.log( "\nGracefully shutting down from SIGINT (Ctrl-C)\nThanks for using Node ICT! Good bye..." );
+  logger.log("info", "Server shutdown initiated. Reason: SIGINT")
+  process.exit( );
+})
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
+
+rl.question('Welcome to Node ICT!\nWould you like to open the start page now? (Y/n) ', (answer) => {
+
+  if(answer != "n") {
+    open(`http://${server_ip}:${server_port}`).then( () => {
+      console.log("Check your Browser!");
+    }).catch( (error) => {
+      console.error(`Unable to open the start page: ${error}`);
+      console.log(`Please open http://${server_ip}:${server_port} with your Webbrowser of choice manually.`)
+    })
+  }
+  rl.close();
+});
 
 
