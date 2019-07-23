@@ -9,6 +9,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon app.js",
+    "postinstall": "yarn run buildPresenterClient && yarn run buildTeacherClient && yarn run buildStudentClient",
     "buildPresenterClient": "browserify ./public/client/js/presenter/dev.js > ./public/client/js/presenter/index.js",
     "buildTeacherClient": "browserify ./public/client/js/teacher/dev.js > ./public/client/js/teacher/index.js",
     "buildStudentClient": "browserify ./public/client/js/student/dev.js > ./public/client/js/student/index.js",

@@ -15,6 +15,7 @@ module.exports = async (req, res, next) => {
         const settings = await Settings.getSettings();
         if (!settings) {
             // res.render('error', { error: "Datenbank Error"})
+            
             return res.redirect('/teacher/new');
         } else {
             next();
