@@ -45,6 +45,7 @@
     "open": "^6.4.0",
     "popper.js": "^1.15.0",
     "pug": "^2.0.3",
+    "qrcode": "^1.4.1",
     "sequelize": "^5.8.6",
     "session.socket.io": "^0.2.1",
     "socket.io": "^2.2.0",
