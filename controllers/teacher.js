@@ -11,13 +11,16 @@ const Settings = require("../models/settings");
 const dbSetup = require('../util/db_setup');
 const eventEmitter = require('../util/eventEmitter');
 const logger = require('winston');
-const winHotspot = require('../util/winHotspot')
+const winHotspot = require('../util/winHotspot');
+
 
 
 
 
 // GET => /teacher
 exports.getMain = (req, res) => {
+    
+
     res.render('teacher/index',
         {
             docTitle: 'Teacher | Node ICT',

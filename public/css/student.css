@@ -4,29 +4,35 @@
     justify-content: center;
 }
 
-#signup {
 
-}
 
 #student{
     padding: 1em;
 }
 
-game-browser-item {
+.game-browser-item {
     border: 1px solid black;
     margin: 1em;
 }
 
-label {
-    font-size: 2em;
-    margin: 0.5em;
+#signup {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
-input {
-    margin: 0.5em;
+.label-playername {
+  font-size: 2em;
+  display: flex;
+  flex-direction: column;
 }
 
-.button {
+.input-playername {
+  text-align: center;
+  border: 2px solid black;
+}
+
+.button-join {
     background-color: #f4511e;
     border: none;
     color: white;
@@ -39,6 +45,39 @@ input {
     display: inline-block;
     text-decoration: none;
     cursor: pointer;
+  }
+
+  @media screen and (max-width: 768px) {
+    #signup {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    
+    .label-playername {
+      font-size: 1em;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .input-playername {
+      text-align: center;
+      border: 1px solid black;
+    }
+
+    .button-join {
+      background-color: #f4511e;
+      border: none;
+      color: white;
+      padding: 8px 16px;
+      text-align: center;
+      font-size: 2em;
+      opacity: 0.6;
+      transition: 0.3s;
+      display: inline-block;
+      text-decoration: none;
+      cursor: pointer;
+    }
   }
   
   .button:hover {opacity: 1}

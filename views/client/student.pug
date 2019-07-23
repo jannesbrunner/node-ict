@@ -9,15 +9,15 @@ block content
           div(v-if="sessionBrowser")
             template(v-if="newUser")
               div#signup
-                label Name
-                  input(type="text", v-model="username")
-                  button(@click="signup").button Mitmachen!
+                label.label-playername Name
+                  input.input-playername(type="text", v-model="username")
+                  button(@click="signup").button-join Mitmachen
             template(v-else)
               p(style="text-align: left;")
                 span.display-4 {{username}}<br/>
                 a(href="#" onclick="location.reload();") (Namen ändern)
-              h3 Verfügbare Spiele
-              p(v-if="!sessions.length") Keine Spiele gefunden.
+              h3 Verfügbare Lehreinheiten
+              p(v-if="!sessions.length") Keine Lehreinheiten gefunden.
               div.col-md-4(v-for="(session, i) in sessions")
                 div.blog-text.game-browser-item
                   h3 {{ session.name | capitalize}}
