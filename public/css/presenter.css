@@ -91,7 +91,7 @@
 }
 
 .players {
-    font-size: 4em;
+    font-size: 2em;
 }
 
 .player {
@@ -119,6 +119,7 @@
 
 .quiz-stats-box {
     display: flex;
+    flex-direction: column;
 }
 
 
@@ -128,7 +129,7 @@
 }
 
 p.quiz-stats-headline {
-    font-size: 5em;
+    font-size: 4em;
     text-align: center;
     color: black;
     padding: .1em;
@@ -137,7 +138,7 @@ p.quiz-stats-headline {
 .quiz-stats-stat {
     display: flex;
     justify-content: space-between;
-    font-size: 5em;
+    font-size: 2em;
     border: 1px solid;
 }
 
