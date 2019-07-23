@@ -153,7 +153,7 @@ module.exports = class IoBrainstormHandler {
         socketS.on("newBSAnswer", (data) => {
             logger.log("silly", "Got new BS Answer!");
             if (data) {
-                console.log(this.brainstormingData.answers, "NEW BSS");
+                // console.log(this.brainstormingData.answers, "NEW BSS");
                 
                 this.brainstormingData.answers.push(data);
                 this.emitToPresenters("showInfo", `${data.clientName} hatte eine Idee!`);
@@ -330,7 +330,7 @@ module.exports = class IoBrainstormHandler {
     async endSession() {
         try {
            
-                logger.log("info", `Saving BS... ID:${this.session.id}`);
+                logger.log("verbose", `Saving BS... ID:${this.session.id}`);
                 if(this.brainstormingData && this.session) {
                     this.session.lecture.brainstormingJSON = JSON.stringify(this.brainstormingData);
                     const save = await EduSession.saveActiveSession(this.session);
@@ -370,8 +370,8 @@ module.exports = class IoBrainstormHandler {
 
     // Emit a Message with title and message to all connected students
     emitToStudents(title, message) {
-        this.studentSockets.forEach((studentS, studentId) => {
-            console.log(`Emitting: ${title} to student ${studentId}`)
+        this.studentSockets.forEach( (studentS) => {
+            // console.log(`Emitting: ${title} to student ${studentId}`)
             studentS.emit(title, message);
         });
     }

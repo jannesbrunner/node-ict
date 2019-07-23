@@ -62,7 +62,7 @@ exports.removeStudentsFromSession = async (sessionId) => {
             if(foundStudents) {
                 foundStudents.forEach( (student) => {
                     student.destroy({force: true}).then((result) => {
-                        logger.log('info', `User destroyed: ${result}`)
+                        logger.log('verbose', `User destroyed: ${result.id}`)
                     }).catch((err) => {
                         throw new Error("unable to destroy user: " + err);
                     });

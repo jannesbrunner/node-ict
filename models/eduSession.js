@@ -84,7 +84,7 @@ exports.unsetActiveSession = async (userId) => {
             await activeSession.save();
             return true
         } else {  
-            logger.log("info", `No active edu Session for user with ID ${userId} . Skip.`)
+            logger.log("verbose", `No active edu Session for user with ID ${userId} . Skip.`)
             return true
         }
     } catch (error) {
