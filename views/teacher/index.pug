@@ -1,19 +1,29 @@
 extends ../layouts/teacher-layout.pug
 
 block content
-    h3 Hallo #{loggedUser.name}!
-    p Sie befinden sich im Lehrer_in Bereich von Node ICT.
-    p Von hier aus können Sie die Applikation verwalten, 
-       | Lehreinheiten anlegen und starten. 
+  h3 Hallo #{loggedUser.name}!
+  p Sie befinden sich im Lehrer_in Bereich von Node ICT.
+  p Von hier aus können Sie die Applikation verwalten, 
+    | Lehreinheiten anlegen und starten. 
 
-    .jumbotron
-        h3 Teilnehmende?
-        .lead Teilnehmende verbinden sich bitte mit einem Endgerät (z.B. Smartphone) 
-          | mit dem gleichen Netzwerk und öffnen anschließend in ihrem Webbrowser:
-        a.btn.btn-primary.btn-lg(href="#" role="button") 192.168.192:3000
-        hr
-        span.badge.badge-info info
-        p Sie können unter einem Windows Betriebsystem einen mobilen WiFi/WLAN
-         | Hotspot im <a href="/teacher/settings">Einstellungen</a> Bereich einrichten.
-        p Alternativ bietet sich die Verwendung eines Smartphones als mobiler Hotspot an.
-         | In diesem Fall verbinden sie den Host des Servers ebenfalls mit diesem und starten ihn anschließend neu.
+  .jumbotron
+    h3 Teilnehmende?
+    .lead Teilnehmende verbinden sich bitte mit einem Endgerät (z.B. Smartphone) 
+      | mit dem gleichen Netzwerk und öffnen anschließend in ihrem Webbrowser:
+    a#serverURL.btn.btn-primary.btn-lg(href="#" role="button")
+    .lead Teilnehmende können auch diesen QR Code zur Teilnahme scannen:
+    a(href="/images/clientqr.svg" target="_blank")
+      img(src="/images/clientqr.svg" alt="Client QR Node ICT SVG" width="200" height="300")
+    br
+    div.badge.badge-info info
+    p Klicken Se auf den QR Code um ihn vergrößert in einem anderen Fenster anzuzeigen. 
+    hr
+    span.badge.badge-info info
+    p Sie können unter einem Windows Betriebsystem einen mobilen WiFi/WLAN
+      | Hotspot im <a href="/teacher/settings">Einstellungen</a> Bereich einrichten.
+    p Alternativ bietet sich die Verwendung eines Smartphones als mobiler Hotspot an.
+      | In diesem Fall verbinden sie den Host des Servers ebenfalls mit diesem und starten ihn anschließend neu.
+  script.
+    let port = window.location.port === 0 || "" ? "" : `:${window.location.port}`;
+    let url = `${window.location.protocol}//${window.location.hostname}${port}/client`
+    document.getElementById("serverURL").innerHTML = url;

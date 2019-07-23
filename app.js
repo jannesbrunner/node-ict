@@ -17,6 +17,7 @@ const ip = require('ip');
 const session = require('express-session');
 const sharedsession = require("express-socket.io-session");
 const ios = require('socket.io-express-session');
+const qrcode = require('qrcode');
 
 
 
@@ -140,6 +141,13 @@ process.on( 'SIGINT', function() {
   logger.log("info", "Server shutdown initiated. Reason: SIGINT")
   process.exit( );
 })
+
+// Create Client QR Picture
+qrcode.toFile(__dirname + '/public/images/clientqr.svg', `http://${server_ip}:${server_port}/client`).then( () => {
+  logger.log("verbose", "Created Client QR Picture");
+}).catch( (error) => {
+  logger.log("error", "Unable to create client QR Picture! -> " + error);
+});
 
 const rl = readline.createInterface({
   input: process.stdin,
