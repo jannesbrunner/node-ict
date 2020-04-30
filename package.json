@@ -38,7 +38,7 @@
     "express-socket.io-session": "^1.3.5",
     "generate-password": "^1.4.2",
     "ip": "^1.1.5",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "mysql2": "^1.6.5",
     "node-flags": "^0.1.9",
     "node-hotspot": "^0.1.7",
