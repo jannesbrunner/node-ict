@@ -46,7 +46,7 @@
     "popper.js": "^1.15.0",
     "pug": "^2.0.3",
     "qrcode": "^1.4.1",
-    "sequelize": "^5.8.6",
+    "sequelize": "^5.15.1",
     "session.socket.io": "^0.2.1",
     "socket.io": "^2.4.0",
     "socket.io-express-session": "^0.1.3",
