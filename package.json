@@ -24,7 +24,7 @@
     "eslint-plugin-vue": "^5.2.2",
     "get-google-fonts": "^1.2.0",
     "nodemon": "^1.19.0",
-    "yarn": "^1.17.3"
+    "yarn": "^1.22.0"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
