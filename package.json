@@ -33,7 +33,7 @@
     "connect-session-sequelize": "^6.0.0",
     "cookie-parser": "^1.4.4",
     "d3": "^5.9.2",
-    "express": "^4.16.4",
+    "express": "^4.17.3",
     "express-session": "^1.16.1",
     "express-socket.io-session": "^1.3.5",
     "generate-password": "^1.4.2",
